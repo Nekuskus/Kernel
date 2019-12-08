@@ -100,7 +100,7 @@ int sprintf(char* text, const char* format, ...) {
         } else if (*format == 'p') {
             format++;
             void* item = va_arg(parameters, void*);
-            
+
             char str[32] = "";
 
             htoa((uintptr_t)item, str, false);
@@ -115,7 +115,7 @@ int sprintf(char* text, const char* format, ...) {
 
             for (size_t i = 0; i < len; i++)
                 text[i] = str[i];
-            
+
             text += len;
             written += len;
         } else {
@@ -139,13 +139,14 @@ int sprintf(char* text, const char* format, ...) {
     return written;
 }
 
-int strncmp(const char* str1, const char* str2, size_t len) {
-    size_t i = 0;
+int strncmp(const char* s1, const char* s2, size_t n) {
+    while (n && *s1 && (*s1 == *s2)) {
+        ++s1;
+        ++s2;
+        --n;
+    }
 
-    while (i < len - 1 && str1[i] == str2[i])
-        i++;
-
-    return str1[i] - str2[i];
+    return !n ? 0 : (*(uint8_t*)s1 - *(uint8_t*)s2);
 }
 
 size_t strlen(const char* chr) {
@@ -219,7 +220,4 @@ void htoa(uint64_t n, char* str, bool caps) {
 
 // fuck off clang
 extern "C" void atexit(...) {
-
-
-    
 }

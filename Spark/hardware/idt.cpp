@@ -1,8 +1,8 @@
 #include <hardware/devices/vbe.hpp>
-#include <hardware/port.hpp>
-#include <lib/lib.hpp>
 #include <hardware/idt.hpp>
+#include <hardware/port.hpp>
 #include <hardware/terminal.hpp>
+#include <lib/lib.hpp>
 
 Spark::Idt::Entry idt_entries[256]{};
 Spark::Idt::Pointer idt_pointer{};
@@ -27,7 +27,7 @@ void Spark::Idt::init() {
     Port::wait();
 
     // Mask all IRQs
-    Port::outb(0xa1, 0);
+    Port::outb(0xA1, 0);
     Port::outb(0x21, 0);
 
     idt_pointer.limit = 256 * sizeof(Entry) - 1;  // Set Interrupt Descriptor Table pointer size
