@@ -26,9 +26,9 @@ inline Spark::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
     Spark::Acpi::RsdpInfo info{};
 
     for (size_t off = 0; off < length; off += 16) {
-        Spark::Acpi::RsdpDescriptor* rsdp = (Spark::Acpi::RsdpDescriptor*)(address + off);
+        Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), (void*)(address + off), (void*)((uint64_t)address + off + virtual_physical_base), 1, 0);
 
-        Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), rsdp, (void*)((uint64_t)rsdp - virtual_physical_base), 1, 0);
+        Spark::Acpi::RsdpDescriptor* rsdp = (Spark::Acpi::RsdpDescriptor*)(address + off);
 
         if (strncmp(rsdp->signature, "RSD PTR ", 8) || bios_calculate_checksum(rsdp, sizeof(Spark::Acpi::RsdpDescriptor)))
             continue;
@@ -84,10 +84,10 @@ Spark::Acpi::SdtHeader* Spark::Acpi::get_table(const char* signature) {
         uint32_t entries = (xsdt->header.length - sizeof(xsdt->header)) / 4;
 
         for (uint32_t i = 0; i < entries; i++) {
-            Spark::Acpi::SdtHeader* h = (Spark::Acpi::SdtHeader*)((uint64_t)xsdt->other_std[i] + virtual_physical_base);
-
-            Vmm::map_pages(Vmm::get_current_context(), h, (void*)(h - virtual_physical_base), 1, 0);
-            Vmm::map_pages(Vmm::get_current_context(), h, (void*)(h - virtual_physical_base), (h->length + 0x1000 - 1) / 0x1000, 0);
+            Vmm::map_pages(Vmm::get_current_context(), (void*)(xsdt->other_std[i]), (void*)(xsdt->other_std[i] - virtual_physical_base), 1, 0);
+            Spark::Acpi::SdtHeader* h = (Spark::Acpi::SdtHeader*)(xsdt->other_std[i] + virtual_physical_base);
+            
+            Vmm::map_pages(Vmm::get_current_context(), h, (void*)((uint64_t)h - virtual_physical_base), (h->length + 0x1000 - 1) / 0x1000, 0);
 
             if (!strncmp(h->signature, signature, 4))
                 return h;
@@ -97,10 +97,10 @@ Spark::Acpi::SdtHeader* Spark::Acpi::get_table(const char* signature) {
         uint32_t entries = (rsdt->header.length - sizeof(rsdt->header)) / 8;
 
         for (uint32_t i = 0; i < entries; i++) {
+            Vmm::map_pages(Vmm::get_current_context(), (void*)((uint64_t)rsdt->other_std[i]), (void*)(rsdt->other_std[i] - virtual_physical_base), 1, 0);
             Spark::Acpi::SdtHeader* h = (Spark::Acpi::SdtHeader*)((uint64_t)rsdt->other_std[i] + virtual_physical_base);
-
-            Vmm::map_pages(Vmm::get_current_context(), h, (void*)(h - virtual_physical_base), 1, 0);
-            Vmm::map_pages(Vmm::get_current_context(), h, (void*)(h - virtual_physical_base), (h->length + 0x1000 - 1) / 0x1000, 0);
+            
+            Vmm::map_pages(Vmm::get_current_context(), h, (void*)((uint64_t)h - virtual_physical_base), (h->length + 0x1000 - 1) / 0x1000, 0);
 
             if (!strncmp(h->signature, signature, 4))
                 return h;
