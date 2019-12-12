@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-constexpr inline size_t address_mask = ~(0xFFF | (1ull << 63));
+constexpr size_t address_mask = ~(0xFFF | (1ull << 63));
 
 namespace Spark::Vmm {
     /**
