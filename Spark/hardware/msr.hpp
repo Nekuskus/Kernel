@@ -14,17 +14,6 @@ constexpr uint32_t kernelgs_base = 0xC0000102;
 
 
 namespace Spark::Msr {
-    /**
-     * @brief Gets MSR
-     * @param msr The MSR
-     * @return The value of the MSR
-     */
     uint64_t read(uint32_t msr);
-
-    /**
-     * @brief Sets MSR
-     * @param msr The MSR
-     * @param value The value to set the MSR to
-     */
     void write(uint32_t msr, uint64_t value);
 }  // namespace Spark::Msr

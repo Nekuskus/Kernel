@@ -1,6 +1,6 @@
 #include <hardware/devices/vbe.hpp>
-#include <lib/lib.hpp>
 #include <hardware/terminal.hpp>
+#include <lib/lib.hpp>
 
 uint16_t x = 0, y = 0;
 

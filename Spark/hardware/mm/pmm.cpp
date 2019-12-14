@@ -3,28 +3,17 @@
 #include <hardware/mm/pmm.hpp>
 #include <lib/math.hpp>
 
-uint64_t* bitmap;        // The bitmap
-size_t free_pages = 0;   // Total free pages
-size_t total_pages = 0;  // Total pages
-size_t bitmap_len = 64;  // Count of bitmaps
+uint64_t* bitmap;
+size_t free_pages = 0;
+size_t total_pages = 0;
+size_t bitmap_len = 64;
 
-/**
- * @brief Read bitmap
- * @param idx The bit
- * @ret Returns if the bit is flipped or not
- */
 bool bit_read(size_t idx) {
     size_t off = idx / 64, mask = (1 << (idx % 64));
 
     return (bitmap[off] & mask) == mask;
 }
 
-/**
- * @brief Write to bitmap
- * @param idx
- * @param bit
- * @param count
- */
 void bit_write(size_t idx, int bit, size_t count) {
     for (; count; count--, idx++) {
         size_t off = idx / 64, mask = (1 << (idx % 64));
@@ -36,12 +25,6 @@ void bit_write(size_t idx, int bit, size_t count) {
     }
 }
 
-/**
- * @brief Tells you if a bitmap is free
- * @param idx
- * @param count
- * @ret
- */
 bool bitmap_is_free(size_t idx, size_t count) {
     for (; count; idx++, count--)
         if (bit_read(idx))
@@ -50,12 +33,6 @@ bool bitmap_is_free(size_t idx, size_t count) {
     return true;
 }
 
-/**
- * @brief Finds available memory on the top
- * @param mmap
- * @param mmap_len
- * @ret
- */
 uintptr_t find_available_memory_top(Spark::Multiboot::MemoryMap* mmap, size_t mmap_len) {
     uintptr_t top = 0;
 
@@ -133,6 +110,8 @@ void* Spark::Pmm::alloc(size_t count) {
 
 void Spark::Pmm::free(void* mem, size_t count) {
     size_t idx = (size_t)mem / page_size;
+
     bit_write(idx, 0, count);
+
     free_pages += count;
 }

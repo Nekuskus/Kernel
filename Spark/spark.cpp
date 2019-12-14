@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <hardware/acpi/acpi.hpp>
+#include <hardware/acpi/apic.hpp>
 #include <hardware/cpu/cpu.hpp>
 #include <hardware/cpu/smp/smp.hpp>
 #include <hardware/devices/pci.hpp>
@@ -11,12 +12,9 @@
 #include <hardware/terminal.hpp>
 #include <lib/lib.hpp>
 #include <multiboot.hpp>
+#include <userland/exceptions.hpp>
 
 namespace Spark {
-    /**
-     * @brief The kernel entry method
-     * 
-     */
     extern "C" void kernel_main(void* mb_info_ptr, uint32_t multiboot_magic) {
         if (multiboot_magic == 0x2BADB002 && mb_info_ptr) {
             Multiboot::Info* mb_info = (Multiboot::Info*)((uint64_t)mb_info_ptr + virtual_kernel_base);
@@ -37,12 +35,14 @@ namespace Spark {
 
                 Graphics::init(mode_info);
                 Idt::init();
+                Exceptions::init();
                 Acpi::init();
+                Apic::init();
                 Pci::init();
             } else
-                return;  // Not enough memory (Out of bounds?)
+                return;
         } else
-            return;  // Bootloader not multiboot1 compliant
+            return;
 
         while (1)
             asm volatile("hlt");

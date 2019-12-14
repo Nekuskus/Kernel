@@ -8,11 +8,11 @@ void Spark::Port::outb(uint16_t port, uint8_t value) {
 
 uint8_t Spark::Port::inb(uint16_t port) {
     uint8_t ret;
-    
+
     asm volatile("inb %1, %0"
                  : "=a"(ret)
                  : "Nd"(port));
-                 
+
     return ret;
 }
 

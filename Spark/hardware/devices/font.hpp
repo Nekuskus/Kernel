@@ -1,10 +1,6 @@
 #pragma once
 
 namespace Spark::Graphics {
-    /**
-     * @brief D-Do I really have to document this?
-     * 
-     */
     static constexpr unsigned char __font_bitmap__[] = {
         0x00,
         0x00,

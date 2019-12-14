@@ -1,16 +1,17 @@
 #include <hardware/devices/font.hpp>
 #include <hardware/devices/vbe.hpp>
 #include <hardware/mm/mm.hpp>
-#include <lib/lib.hpp>
 #include <hardware/terminal.hpp>
+#include <lib/lib.hpp>
 
-Spark::Graphics::ModeInfo mode_info; 
+Spark::Graphics::ModeInfo mode_info;
 bool is_working = false;
 
 void Spark::Graphics::init(ModeInfo gfx_mode_info) {
     is_working = false;
     mode_info = gfx_mode_info;
     is_working = true;
+
     Spark::Graphics::clear(0x000000);
 }
 
@@ -70,8 +71,7 @@ inline void Spark::Graphics::set_pixel(uint16_t x, uint16_t y, uint32_t color) {
     if (!is_working)
         return;
 
-    //mode_info.backbuffer[(x * 4 + y * mode_info.pitch) / (mode_info.bpp / 8)] = color;
-    mode_info.framebuffer[(x * 4 + y * mode_info.pitch) / (mode_info.bpp / 8)] = color;
+    mode_info.framebuffer[(x * 4 + y * mode_info.pitch) / (mode_info.bpp / 8)] = mode_info.backbuffer[(x * 4 + y * mode_info.pitch) / (mode_info.bpp / 8)] = color;
 }
 
 Spark::Graphics::ModeInfo Spark::Graphics::get_mode_info() {

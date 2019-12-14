@@ -1,8 +1,12 @@
+#include <cpuid.h>
+#include <hardware/acpi/acpi.hpp>
+#include <hardware/acpi/apic.hpp>
+#include <hardware/cpu/smp/smp.hpp>
 #include <hardware/mm/mm.hpp>
 #include <hardware/mm/vmm.hpp>
 #include <hardware/msr.hpp>
-#include <hardware/acpi/apic.hpp>
 
+Spark::Acpi::MadtHeader* madt;
 uint64_t lapic_base;
 
 uint32_t Spark::Apic::LocalApic::read(uint32_t reg) {
@@ -26,5 +30,38 @@ void Spark::Apic::LocalApic::init() {
 void Spark::Apic::LocalApic::send_ipi(uint32_t target, uint32_t flags) {
     write(icr_high, target << 24);
     write(icr_low, flags);
-    while(read(icr_low) & IcrFlags::PENDING);
+    while (read(icr_low) & IcrFlags::PENDING)
+        ;
+}
+
+void Spark::Apic::init() {
+    madt = (Spark::Acpi::MadtHeader*)Acpi::get_table("APIC");
+    size_t table_size = madt->header.length - sizeof(Acpi::MadtHeader);
+    uint64_t list = (uint64_t)madt + sizeof(Acpi::MadtHeader), offset = 0;
+
+    Apic::LocalApic::init();
+    Cpu::Smp::init();
+
+    while (offset < table_size) {
+        Acpi::InterruptController* interrupt_controller = (Acpi::InterruptController*)(list + offset);
+
+        if (interrupt_controller->type == Spark::Acpi::InterruptControllerType::LAPIC) {
+            Acpi::LocalApic* cpu = (Acpi::LocalApic*)interrupt_controller;
+
+            if (!(cpu->flags & 1))
+                continue;
+
+            uint32_t a, b, c, d;
+            __cpuid(1, a, b, c, d);
+
+            Cpu::Smp::CpuEntry cpu_entry{
+                .lapic_id = cpu->id,
+                .bsp = ((b >> 24) & 0xFF) == cpu->id
+            };
+
+            Cpu::Smp::boot_cpu(cpu_entry);
+        }
+
+        offset += interrupt_controller->length;
+    }
 }

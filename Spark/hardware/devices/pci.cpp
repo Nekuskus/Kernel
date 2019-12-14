@@ -117,10 +117,6 @@ void Spark::Pci::write(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t func
 void Spark::Pci::init() {
     Acpi::McfgHeader* mcfg = (Acpi::McfgHeader*)Acpi::get_table("MCFG");
 
-    char text[255] = "";
-    sprintf(text, "[DEVMGR] MCFG exists = %s", mcfg != nullptr ? "true" : "false");
-    Terminal::write_line(text, 0xFFFFFF);
-
     if (mcfg != nullptr) {
         size_t entry_len = (mcfg->header.length - (sizeof(Acpi::SdtHeader) + sizeof(uint64_t))) / sizeof(Acpi::McfgEntry);
         for (uint64_t i = 0; i < entry_len; i++) {

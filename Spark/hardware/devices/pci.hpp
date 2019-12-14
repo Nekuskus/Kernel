@@ -97,71 +97,11 @@ namespace Spark::Pci {
         uint32_t pc_card_legacy_mode_base;
     };
 
-    /**
-     * @brief Reads a value from a PCI(e) configuration space
-     * 
-     * @param segment
-     * @param bus 
-     * @param slot 
-     * @param function 
-     * @param offset 
-     * @return uint16_t 
-     */
     uint32_t read(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset);
-
-    /**
-     * @brief Writes a value to a PCI(e) configuration space
-     * 
-     * @param segment
-     * @param bus 
-     * @param slot 
-     * @param function 
-     * @param offset 
-     * @param value 
-     * @param access_size 
-     */
     void write(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value);
-
-    /**
-     * @brief Reads a value from a PCI(e) configuration space
-     * 
-     * @param bus 
-     * @param slot 
-     * @param function 
-     * @param offset 
-     * @return uint16_t 
-     */
     uint32_t read(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset);
-
-    /**
-     * @brief Writes a value to a PCI(e) configuration space
-     * 
-     * @param bus 
-     * @param slot 
-     * @param function 
-     * @param offset 
-     * @param value 
-     * @param access_size 
-     */
     void write(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value);
-
-    /**
-     * @brief Converts class code to a string
-     * 
-     * @param class_code 
-     * @return const char* 
-     */
     const char* class_code_to_str(uint8_t class_code);
-
-    /**
-     * @brief Does a "Brute Force" PCI scan
-     * 
-     */
     void scan_all_buses();
-
-    /**
-     * @brief Initializes PCI(e)
-     * 
-     */
     void init();
-};
+};  // namespace Spark::Pci

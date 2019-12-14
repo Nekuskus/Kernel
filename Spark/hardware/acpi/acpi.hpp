@@ -77,12 +77,12 @@ namespace Spark::Acpi {
 
     struct [[gnu::packed]] RsdtHeader {
         SdtHeader header;
-        uint32_t other_std[];
+        uint32_t tables[];
     };
 
     struct [[gnu::packed]] XsdtHeader {
         SdtHeader header;
-        uint64_t other_std[];
+        uint64_t tables[];
     };
 
     struct [[gnu::packed]] GenericAddress {
@@ -164,17 +164,6 @@ namespace Spark::Acpi {
         GenericAddress x_gpe1_block;
     };
 
-    /**
-     * @brief Gets a table from a signature inside the RSDT/XSDT
-     * 
-     * @param signature 
-     * @return Spark::Acpi::SdtHeader* 
-     */
     Spark::Acpi::SdtHeader* get_table(const char* signature);
-
-    /**
-     * @brief Initializes ACPI
-     * 
-     */
     void init();
 };  // namespace Spark::Acpi
