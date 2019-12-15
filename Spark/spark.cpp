@@ -12,7 +12,7 @@
 #include <hardware/terminal.hpp>
 #include <lib/lib.hpp>
 #include <multiboot.hpp>
-#include <userland/exceptions.hpp>
+#include <hardware/exceptions.hpp>
 
 namespace Spark {
     extern "C" void kernel_main(void* mb_info_ptr, uint32_t multiboot_magic) {

@@ -33,7 +33,7 @@ uint32_t mmap_read(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function
         uint64_t addr = (entry.ecm_base + (((bus - entry.start_bus_number) << 20) | (slot << 25) | (function << 12))) | offset;
         uint64_t addr_virtual = addr + virtual_physical_base;
 
-        Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), (void*)addr_virtual, (void*)addr, 1, Spark::Vmm::VirtualMemoryFlags::VMM_WRITE);
+        Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), (void*)addr_virtual, (void*)addr, 1, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT | Spark::Vmm::VirtualMemoryFlags::VMM_WRITE);
         return *(uint32_t*)addr_virtual;
     }
 
@@ -48,7 +48,7 @@ void mmap_write(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, u
         uint64_t addr = (entry.ecm_base + (((bus - entry.start_bus_number) << 20) | (slot << 25) | (function << 12))) | offset;
         uint64_t addr_virtual = addr + virtual_physical_base;
 
-        Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), (void*)addr_virtual, (void*)addr, 1, Spark::Vmm::VirtualMemoryFlags::VMM_WRITE);
+        Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), (void*)addr_virtual, (void*)addr, 1, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT | Spark::Vmm::VirtualMemoryFlags::VMM_WRITE);
         *(uint32_t*)addr_virtual = value;
     }
 }

@@ -41,7 +41,9 @@ int sprintf(char* text, const char* format, ...) {
                 return -1;
             }
 
-            text[written++] = c;
+            text[0] = c;
+            text++;
+            written++;
             va_end(parameters);
         } else if (*format == 's') {
             format++;

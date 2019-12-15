@@ -67,7 +67,7 @@ bool Spark::Vmm::map_pages(PageTable* pml4, void* virt, void* phys, size_t count
         PageTable* pdp_virt = get_or_alloc_ent(pml4_virt, offs.pml4, perms);
         PageTable* pd_virt = get_or_alloc_ent(pdp_virt, offs.pdp, perms);
         PageTable* pt_virt = get_or_alloc_ent(pd_virt, offs.pd, perms);
-        pt_virt->ents[offs.pt] = (uint64_t)phys | perms | VirtualMemoryFlags::VMM_PRESENT;
+        pt_virt->ents[offs.pt] = (uint64_t)phys | perms;
         virt = (void*)((uintptr_t)virt + 0x1000);
         phys = (void*)((uintptr_t)phys + 0x1000);
     }

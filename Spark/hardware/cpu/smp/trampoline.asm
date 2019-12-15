@@ -24,8 +24,8 @@ smp_entry:
     lgdt [gdt32_ptr]
 
     mov eax, cr0
-	or eax, 1
-	mov cr0, eax
+    or eax, 1
+    mov cr0, eax
 
     jmp 0x08:.prot_mode
 .prot_mode:
@@ -57,9 +57,9 @@ bits 32
     mov cr0, eax
 
     mov ecx, 0x277
-	mov eax, 0x05010406
-	xor edx, edx
-	wrmsr
+    mov eax, 0x05010406
+    xor edx, edx
+    wrmsr
 
     jmp 0x08:.long_mode
 .long_mode:
@@ -76,38 +76,38 @@ bits 64
     hlt
 
 gdt32_start:
-	dd 0x0
-	dd 0x0
-	dw 0xFFFF
-	dw 0x0
-	db 0x0
-	db 10011010b
-	db 11001111b
-	db 0x0
-	dw 0xFFFF
-	dw 0x0
-	db 0x0
-	db 10010010b
-	db 11001111b
-	db 0x0
+    dd 0x0
+    dd 0x0
+    dw 0xFFFF
+    dw 0x0
+    db 0x0
+    db 10011010b
+    db 11001111b
+    db 0x0
+    dw 0xFFFF
+    dw 0x0
+    db 0x0
+    db 10010010b
+    db 11001111b
+    db 0x0
 gdt32_end:
 
 gdt32_ptr:
-	dw gdt32_end - gdt32_start - 1
-	dd gdt32_start
+    dw gdt32_end - gdt32_start - 1
+    dd gdt32_start
 
 gdt64_start:
-	dq 0
-	dq 0x00209A0000000000
+    dq 0
+    dq 0x00209A0000000000
 gdt64_end:
 
 gdt64_ptr:
-	dw gdt64_end - gdt64_start - 1
-	dq gdt64_start
+    dw gdt64_end - gdt64_start - 1
+    dq gdt64_start
 
 gdt64_ptr_high:
-	dw gdt64_end - gdt64_start - 1
-	dq gdt64_start + 0xFFFF800000000000
+    dw gdt64_end - gdt64_start - 1
+    dq gdt64_start + 0xFFFF800000000000
 
 section .data
 global trampoline_stack

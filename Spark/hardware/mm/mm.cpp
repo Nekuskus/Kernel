@@ -20,7 +20,7 @@ extern "C" void* malloc(size_t bytes) {
         return nullptr;
     }
 
-    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), (void*)top, p, pages, Spark::Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), (void*)top, p, pages, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT | Spark::Vmm::VirtualMemoryFlags::VMM_WRITE);
 
     top += page_size * pages;
     out = (void*)((uintptr_t)out + (pages * page_size - bytes));

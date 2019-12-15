@@ -5,6 +5,7 @@
 #include <hardware/mm/mm.hpp>
 #include <hardware/mm/vmm.hpp>
 #include <hardware/msr.hpp>
+#include <hardware/terminal.hpp>
 
 Spark::Acpi::MadtHeader* madt;
 uint64_t lapic_base;
@@ -23,7 +24,7 @@ void Spark::Apic::LocalApic::init() {
     uint64_t apic_msr_base = Msr::read(apic_base);
     lapic_base = (apic_base & 0xFFFFFFFFFFFFF000) + virtual_kernel_base;
     apic_msr_base |= 1 << 11;
-    Vmm::map_pages(Vmm::get_current_context(), (void*)lapic_base, (void*)(apic_msr_base & 0xFFFFFFFFFFFFF000), 1, Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Vmm::map_pages(Vmm::get_current_context(), (void*)lapic_base, (void*)(apic_msr_base & 0xFFFFFFFFFFFFF000), 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
     Msr::write(apic_base, apic_msr_base);
 }
 
@@ -39,13 +40,13 @@ void Spark::Apic::init() {
     size_t table_size = madt->header.length - sizeof(Acpi::MadtHeader);
     uint64_t list = (uint64_t)madt + sizeof(Acpi::MadtHeader), offset = 0;
 
-    Apic::LocalApic::init();
+    LocalApic::init();
     Cpu::Smp::init();
 
     while (offset < table_size) {
         Acpi::InterruptController* interrupt_controller = (Acpi::InterruptController*)(list + offset);
 
-        if (interrupt_controller->type == Spark::Acpi::InterruptControllerType::LAPIC) {
+        if (interrupt_controller->type == Acpi::InterruptControllerType::LAPIC) {
             Acpi::LocalApic* cpu = (Acpi::LocalApic*)interrupt_controller;
 
             if (!(cpu->flags & 1))
@@ -54,12 +55,10 @@ void Spark::Apic::init() {
             uint32_t a, b, c, d;
             __cpuid(1, a, b, c, d);
 
-            Cpu::Smp::CpuEntry cpu_entry{
-                .lapic_id = cpu->id,
-                .bsp = ((b >> 24) & 0xFF) == cpu->id
-            };
+            if (((b >> 24) & 0xFF) == cpu->id)
+                continue;
 
-            Cpu::Smp::boot_cpu(cpu_entry);
+            Cpu::Smp::boot_cpu(cpu->id);
         }
 
         offset += interrupt_controller->length;

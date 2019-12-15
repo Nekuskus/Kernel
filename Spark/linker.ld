@@ -15,14 +15,6 @@ SECTIONS {
 		*(.data)
 	}
 
-	.rodata ALIGN (4096) : AT (ADDR (.rodata) - KERNEL_VMA) {
-		*(.rodata*)
-		_init_array_start = .;
-		KEEP(*(SORT(.ctors)))
-		KEEP(*(.ctors))
-		_init_array_end = .;
-	}
-
 	.bss : AT(ADDR(.bss) - KERNEL_VMA) {
 		_sbss = .;
 		*(COMMON)

@@ -2,257 +2,99 @@
 #include <hardware/mm/mm.hpp>
 
 template <typename T>
-struct NodeLink {
-    T data;
-    NodeLink<T>* next;
-    int index;
-};
-
-template <typename T>
 class LinkedList {
-    using Type = T;
-    using Link = NodeLink<T>;
+    size_t length;
 
 public:
+    template <typename entry_T>
+    class LinkedListEntry {
+    public:
+        entry_T item;
+        LinkedListEntry<entry_T>* next;
+        LinkedListEntry<entry_T>* prev;
+
+        LinkedListEntry()
+            : item(entry_T()), prev(nullptr), next(nullptr) {
+        }
+    };
+
     template <typename iterator_T>
     class LinkedListIterator {
     public:
-        explicit LinkedListIterator(NodeLink<iterator_T>* link)
-            : link(link) {
+        explicit LinkedListIterator(LinkedListEntry<iterator_T>* entry)
+            : entry(entry) {
         }
 
-        Type& operator*() {
-            return link->data;
+        iterator_T& operator*() {
+            return entry->item;
         }
 
         void operator++() {
-            if (link == nullptr)
-                link = link->next;
+            if (entry)
+                entry = entry->next;
         }
 
         bool operator!=(LinkedListIterator it) {
-            return link == it.link;
+            return entry != it.entry;
         }
 
-        NodeLink<iterator_T>* link;
+        LinkedListEntry<iterator_T>* entry;
     };
 
-    LinkedList()
-        : list(nullptr) {
+    LinkedListEntry<T>* head;
+    LinkedListEntry<T>* tail;
+
+    constexpr LinkedList() noexcept
+        : length(0), head(nullptr), tail(nullptr) {
     }
 
     ~LinkedList() {
-        clear();
+        if (head != nullptr && tail != nullptr && length != 0)
+            for (T& e : *this)
+                free((void*)&e);
     }
 
-    Link* find(int index) {
-        Link* temp = list;
+    T* push_back(T entry) {
+        LinkedListEntry<T>* new_entry = (LinkedListEntry<T>*)calloc(sizeof(LinkedListEntry<T>));
+        new_entry->item = entry;
+        new_entry->next = nullptr;
 
-        while (temp && temp->index != index)
-            temp = temp->next;
+        if (length == 0) {
+            head = new_entry;
+            tail = new_entry;
+            new_entry->prev = nullptr;
+            length++;
 
-        return temp;
-    }
-
-    Type* operator[](int index) {
-        Link* node = find(index);
-
-        return node ? &node->data : nullptr;
-    }
-
-    void push(Type value) {
-        Link* node = (Link*)calloc(sizeof(Link));
-        node->data = value;
-        node->next = list;
-        list = node;
-        update();
-    }
-
-    void push_back(Type value) {
-        Link *node = (Link*)calloc(sizeof(Link)), *last = list;
-        node->data = value;
-        node->next = nullptr;
-
-        if (list != nullptr) {
-            while (last->next != nullptr)
-                last = last->next;
-
-            last->next = node;
-        } else
-            list = node;
-
-        update();
-    }
-
-    bool insert_before(int index, Type value) {
-        Link *node = list, *last, *result = (Link*)calloc(sizeof(Link));
-        bool found = false;
-
-        while (node != nullptr) {
-            if (node->index == index) {
-                found = true;
-                break;
-            }
-
-            last = node;
-            node = node->next;
+            return &new_entry->item;
         }
 
-        if (found) {
-            if (node == list) {
-                push(value);
-                free(result);
-            } else {
-                result->data = value;
-                last->next = result;
-                result->next = node;
+        tail->next = new_entry;
+        new_entry->prev = tail;
+        tail = new_entry;
+        length++;
 
-                update();
-            }
-
-            return true;
-        }
-
-        free(result);
-
-        return false;
+        return &new_entry->item;
     }
 
-    bool insert_after(int index, Type value) {
-        Link *node = list, *last, *result = (Link*)calloc(sizeof(Link));
-        bool found = false;
+    LinkedListEntry<T>* get_entry_for_item(T* entry) {
+        for (LinkedListEntry<T>* item = head; item != nullptr; item = item->next)
+            if (item->item == entry)
+                return item;
 
-        while (node != nullptr) {
-            if (node->index == index) {
-                found = true;
-                break;
-            }
-
-            node = node->next;
-        }
-
-        if (found) {
-            if (node->next == nullptr) {
-                push_back(value);
-                free(result);
-            } else {
-                result->data = value;
-                last = node->next;
-                node->next = result;
-                result->next = last;
-
-                update();
-
-                return true;
-            }
-        }
-
-        free(result);
-
-        return false;
+        return nullptr;
     }
 
-    bool pop() {
-        if (!list)
-            return false;
+    LinkedListIterator<T> get_iterator_for_item(T* item) {
+        LinkedListEntry<T>* entry = get_entry_for_item(item);
 
-        Link* node = list;
-        list = list->next;
-        free(node);
-        update();
-
-        return true;
+        return LinkedListIterator<T>(entry);
     }
 
-    bool pop(int index) {
-        if (!list)
-            return false;
-
-        Link *node = list, *last;
-        bool found = false;
-
-        while (node != nullptr) {
-            if (node->index == index) {
-                found = true;
-                break;
-            }
-
-            last = node;
-            node = node->next;
-        }
-
-        if (found) {
-            if (node == list)
-                return false;
-
-            if (node == list->next) {
-                list = node;
-                free(last);
-            } else {
-                find(last->index - 1)->next = node;
-                free(last);
-            }
-
-            update();
-
-            return true;
-        }
-
-        return false;
+    LinkedListIterator<T> begin() {
+        return LinkedListIterator<T>(head);
     }
 
-    bool pop_back() {
-        if (!list)
-            return false;
-
-        Link *node = list, *last = nullptr;
-
-        if (node == nullptr || !node->next) {
-            list = nullptr;
-            free(node);
-        } else {
-            while (node->next != nullptr) {
-                last = node;
-                node = node->next;
-            }
-
-            if (last == nullptr)
-                return false;
-
-            last->next = nullptr;
-            free(node);
-        }
-        return true;
+    LinkedListIterator<T> end() {
+        return LinkedListIterator<T>(nullptr);
     }
-
-    void clear() {
-        if (list == nullptr)
-            return;
-
-        while (list != nullptr)
-            pop_back();
-    }
-
-    LinkedListIterator<Type> begin() {
-        return LinkedListIterator<Type>(list);
-    }
-
-    LinkedListIterator<Type> end() {
-        return LinkedListIterator<Type>(nullptr);
-    }
-
-private:
-    void update() {
-        if (list == nullptr)
-            return;
-
-        Link* last = list;
-        int idx = 0;
-
-        while (last != nullptr) {
-            last->index = idx++;
-            last = last->next;
-        }
-    }
-    Link* list;
 };

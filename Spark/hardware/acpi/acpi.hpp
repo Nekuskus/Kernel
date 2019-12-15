@@ -10,7 +10,7 @@ namespace Spark::Acpi {
         uint32_t rsdt_address;
     };
 
-    struct [[gnu::packed]] RsdpDescriptor2 {
+    struct [[gnu::packed]] XsdpDescriptor {
         RsdpDescriptor rsdp;
         uint32_t length;
         uint64_t xsdt_address;
