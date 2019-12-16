@@ -8,7 +8,7 @@
 #include <hardware/idt.hpp>
 #include <hardware/mm/mm.hpp>
 #include <hardware/mm/pmm.hpp>
-#include <hardware/mm/vmm.hpp>
+#include <hardware/mm/paging.hpp>
 #include <hardware/terminal.hpp>
 #include <lib/lib.hpp>
 #include <multiboot.hpp>
@@ -21,9 +21,9 @@ namespace Spark {
             Multiboot::MemoryMap* memory_map = (Multiboot::MemoryMap*)(uint64_t)mb_info->mmap_addr;
             Pmm::init(memory_map, mb_info->mmap_length / sizeof(*memory_map));
             Vmm::init();
-            void* virtual_fb = (void*)(mb_info->framebuffer_addr + virtual_kernel_base);
+            uint64_t virtual_fb = mb_info->framebuffer_addr + virtual_kernel_base;
 
-            if (Vmm::map_pages(Vmm::get_current_context(), virtual_fb, (void*)mb_info->framebuffer_addr, (mb_info->framebuffer_width * mb_info->framebuffer_pitch + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE)) {
+            if (Vmm::map_pages(Vmm::get_current_context(), virtual_fb, mb_info->framebuffer_addr, (mb_info->framebuffer_width * mb_info->framebuffer_pitch + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE)) {
                 Graphics::ModeInfo mode_info = {
                     .backbuffer = (uint32_t*)malloc(mb_info->framebuffer_width * mb_info->framebuffer_pitch),
                     .framebuffer = (uint32_t*)virtual_fb,

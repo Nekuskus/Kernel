@@ -1,6 +1,6 @@
 #include <hardware/acpi/acpi.hpp>
 #include <hardware/mm/mm.hpp>
-#include <hardware/mm/vmm.hpp>
+#include <hardware/mm/paging.hpp>
 #include <hardware/panic.hpp>
 #include <hardware/terminal.hpp>
 #include <lib/lib.hpp>
@@ -22,7 +22,7 @@ inline Spark::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
     uint64_t address = base + virtual_physical_base;
     Spark::Acpi::RsdpInfo info{};
 
-    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), (void*)address, (void*)base, (length + page_size - 1) / page_size, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT);
+    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), address, base, (length + page_size - 1) / page_size, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
     for (size_t off = 0; off < length; off += 16) {
         Spark::Acpi::RsdpDescriptor* rsdp = (Spark::Acpi::RsdpDescriptor*)(address + off);
@@ -59,7 +59,7 @@ inline Spark::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
 inline Spark::Acpi::RsdpInfo bios_detect_rsdp() {
     uint16_t* ebda_seg_ptr = (uint16_t*)(0x40E + virtual_physical_base);
 
-    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), (void*)(0x40E + virtual_physical_base), (void*)0x40E, (sizeof(uint16_t) + page_size - 1) / page_size, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT);
+    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), 0x40E + virtual_physical_base, 0x40E, (sizeof(uint16_t) + page_size - 1) / page_size, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
     Spark::Acpi::RsdpInfo info = bios_detect_rsdp(*ebda_seg_ptr << 4, 0x400);
 
@@ -95,11 +95,11 @@ void Spark::Acpi::init() {
             if ((SdtHeader*)xsdt->tables[i] == nullptr)
                 continue;
 
-            Vmm::map_pages(Vmm::get_current_context(), (void*)(xsdt->tables[i] + virtual_physical_base), (void*)xsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+            Vmm::map_pages(Vmm::get_current_context(), xsdt->tables[i] + virtual_physical_base, xsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
             Spark::Acpi::SdtHeader* h = (Spark::Acpi::SdtHeader*)(xsdt->tables[i] + virtual_physical_base);
 
-            Vmm::map_pages(Vmm::get_current_context(), (void*)(xsdt->tables[i] + virtual_physical_base), (void*)xsdt->tables[i], (h->length + page_size - 1) / page_size + 2, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+            Vmm::map_pages(Vmm::get_current_context(), xsdt->tables[i] + virtual_physical_base, xsdt->tables[i], (h->length + page_size - 1) / page_size + 2, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
             if (calculate_checksum(h, h->length) == 0) {
                 char text[255] = "";
@@ -117,11 +117,11 @@ void Spark::Acpi::init() {
             if ((SdtHeader*)(uint64_t)rsdt->tables[i] == nullptr)
                 continue;
 
-            Vmm::map_pages(Vmm::get_current_context(), (void*)(rsdt->tables[i] + virtual_physical_base), (void*)(uint64_t)rsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+            Vmm::map_pages(Vmm::get_current_context(), rsdt->tables[i] + virtual_physical_base, (uint64_t)rsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
             Spark::Acpi::SdtHeader* h = (Spark::Acpi::SdtHeader*)((uint64_t)rsdt->tables[i] + virtual_physical_base);
 
-            Vmm::map_pages(Vmm::get_current_context(), (void*)(rsdt->tables[i] + virtual_physical_base), (void*)(uint64_t)rsdt->tables[i], (h->length + page_size - 1) / page_size + 2, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+            Vmm::map_pages(Vmm::get_current_context(), rsdt->tables[i] + virtual_physical_base, (uint64_t)rsdt->tables[i], (h->length + page_size - 1) / page_size + 2, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
             if (calculate_checksum(h, h->length) == 0) {
                 char text[255] = "";

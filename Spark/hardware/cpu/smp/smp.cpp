@@ -1,7 +1,7 @@
 #include <hardware/cpu/smp/smp.hpp>
 #include <hardware/mm/mm.hpp>
 #include <hardware/mm/pmm.hpp>
-#include <hardware/mm/vmm.hpp>
+#include <hardware/mm/paging.hpp>
 #include <lib/lib.hpp>
 #include <hardware/acpi/apic.hpp>
 #include <hardware/terminal.hpp>
@@ -25,14 +25,14 @@ bool Spark::Cpu::Smp::wait_for_boot() {
 }
 
 void Spark::Cpu::Smp::init() {
-    uint64_t len = (uintptr_t)&_trampoline_end - (uintptr_t)&_trampoline_start;
+    uint64_t len = (uint64_t)&_trampoline_end - (uint64_t)&_trampoline_start;
 
-    Vmm::map_pages(Vmm::get_current_context(), &_trampoline_start, &_trampoline_start, (len + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Vmm::map_pages(Vmm::get_current_context(), (uint64_t)&_trampoline_start, (uint64_t)&_trampoline_start, (len + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
     memcpy(&_trampoline_start, (void*)(0x400000 + virtual_physical_base), len);
 }
 
 void Spark::Cpu::Smp::boot_cpu(uint32_t lapic_id) {
-    trampoline_stack = (void*)((uintptr_t)Pmm::alloc(0x10000 / page_size) + virtual_physical_base);
+    trampoline_stack = (void*)((uint64_t)Pmm::alloc(0x10000 / page_size) + virtual_physical_base);
     char debug[255] = "";
 
     if (trampoline_stack == nullptr) {
@@ -42,7 +42,7 @@ void Spark::Cpu::Smp::boot_cpu(uint32_t lapic_id) {
     }
 
     Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::TM_LEVEL | Apic::LocalApic::IcrFlags::LEVELASSERT | Apic::LocalApic::IcrFlags::DM_INIT);
-    Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uintptr_t)&smp_entry >> 12) & 0xFF));
+    Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)&smp_entry >> 12) & 0xFF));
 
     if (!wait_for_boot()) Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uintptr_t)&smp_entry >> 12) & 0xFF));
 

@@ -26,16 +26,16 @@ namespace Spark::Vmm {
         size_t pt;
     };
 
-    PageTableEntries virtual_to_entries(void* virt);
+    PageTableEntries virtual_to_entries(uint64_t virt);
     void* entries_to_virtual(PageTableEntries entries);
     void init();
-    bool map_pages(PageTable* pml4, void* virt, void* phys, size_t count, int perms);
-    bool unmap_pages(PageTable* pml4, void* virt, size_t count);
-    bool update_perms(PageTable* pml4, void* virt, size_t count, int perms);
-    bool map_huge_pages(PageTable* pml4, void* virt, void* phys, size_t count, int perms);
-    bool unmap_huge_pages(PageTable* pml4, void* virt, size_t count);
-    bool update_huge_perms(PageTable* pml4, void* virt, size_t count, int perms);
-    uintptr_t get_entry(PageTable* pml4, void* virt);
+    bool map_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t count, int perms);
+    bool unmap_pages(PageTable* pml4, uint64_t virt, size_t count);
+    bool update_perms(PageTable* pml4, uint64_t virt, size_t count, int perms);
+    bool map_huge_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t count, int perms);
+    bool unmap_huge_pages(PageTable* pml4, uint64_t virt, size_t count);
+    bool update_huge_perms(PageTable* pml4, uint64_t virt, size_t count, int perms);
+    uintptr_t get_entry(PageTable* pml4, uint64_t virt);
     PageTable* new_address_space();
     void save_context();
     PageTable** get_ctx_ptr();

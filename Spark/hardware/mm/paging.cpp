@@ -1,19 +1,17 @@
 #include <hardware/cpu/cpu.hpp>
 #include <hardware/mm/mm.hpp>
 #include <hardware/mm/pmm.hpp>
-#include <hardware/mm/vmm.hpp>
+#include <hardware/mm/paging.hpp>
 #include <lib/math.hpp>
 
 extern "C" Spark::Vmm::PageTable* kernel_pml4;
 
-Spark::Vmm::PageTableEntries Spark::Vmm::virtual_to_entries(void* virt) {
-    uintptr_t addr = (uintptr_t)virt;
-
+Spark::Vmm::PageTableEntries Spark::Vmm::virtual_to_entries(uint64_t virt) {
     Vmm::PageTableEntries off = {
-        .pml4 = (addr >> 39) & 0x1ff,
-        .pdp = (addr >> 30) & 0x1ff,
-        .pd = (addr >> 21) & 0x1ff,
-        .pt = (addr >> 12) & 0x1ff,
+        .pml4 = (virt >> 39) & 0x1ff,
+        .pdp = (virt >> 30) & 0x1ff,
+        .pd = (virt >> 21) & 0x1ff,
+        .pt = (virt >> 12) & 0x1ff,
     };
 
     return off;
@@ -60,22 +58,22 @@ inline Spark::Vmm::PageTable* get_or_null_ent(Spark::Vmm::PageTable* tab, size_t
     return (Spark::Vmm::PageTable*)(ent_addr + virtual_physical_base);
 }
 
-bool Spark::Vmm::map_pages(PageTable* pml4, void* virt, void* phys, size_t count, int perms) {
+bool Spark::Vmm::map_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t count, int perms) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
         PageTable* pdp_virt = get_or_alloc_ent(pml4_virt, offs.pml4, perms);
         PageTable* pd_virt = get_or_alloc_ent(pdp_virt, offs.pdp, perms);
         PageTable* pt_virt = get_or_alloc_ent(pd_virt, offs.pd, perms);
-        pt_virt->ents[offs.pt] = (uint64_t)phys | perms;
-        virt = (void*)((uintptr_t)virt + 0x1000);
-        phys = (void*)((uintptr_t)phys + 0x1000);
+        pt_virt->ents[offs.pt] = phys | perms;
+        virt += page_size;
+        phys += page_size;
     }
 
     return true;
 }
 
-bool Spark::Vmm::unmap_pages(PageTable* pml4, void* virt, size_t count) {
+bool Spark::Vmm::unmap_pages(PageTable* pml4, uint64_t virt, size_t count) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -95,13 +93,13 @@ bool Spark::Vmm::unmap_pages(PageTable* pml4, void* virt, size_t count) {
             return false;
 
         pt_virt->ents[offs.pt] = 0;
-        virt = (void*)((uintptr_t)virt + 0x1000);
+        virt += page_size;
     }
 
     return true;
 }
 
-bool Spark::Vmm::update_perms(PageTable* pml4, void* virt, size_t count, int perms) {
+bool Spark::Vmm::update_perms(PageTable* pml4, uint64_t virt, size_t count, int perms) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -121,27 +119,27 @@ bool Spark::Vmm::update_perms(PageTable* pml4, void* virt, size_t count, int per
             return false;
 
         pt_virt->ents[offs.pt] = (pt_virt->ents[offs.pt] & address_mask) | perms | VirtualMemoryFlags::VMM_PRESENT;
-        virt = (void*)((uintptr_t)virt + 0x1000);
+        virt += page_size;
     }
 
     return true;
 }
 
-bool Spark::Vmm::map_huge_pages(PageTable* pml4, void* virt, void* phys, size_t count, int perms) {
+bool Spark::Vmm::map_huge_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t count, int perms) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
         PageTable* pdp_virt = get_or_alloc_ent(pml4_virt, offs.pml4, perms);
         PageTable* pd_virt = get_or_alloc_ent(pdp_virt, offs.pdp, perms);
-        pd_virt->ents[offs.pd] = (uint64_t)phys | perms | VirtualMemoryFlags::VMM_PRESENT | VirtualMemoryFlags::VMM_LARGE;
-        virt = (void*)((uintptr_t)virt + 0x200000);
-        phys = (void*)((uintptr_t)phys + 0x200000);
+        pd_virt->ents[offs.pd] = phys | perms | VirtualMemoryFlags::VMM_PRESENT | VirtualMemoryFlags::VMM_LARGE;
+        virt += 0x200000;
+        phys += 0x200000;
     }
 
     return true;
 }
 
-bool Spark::Vmm::unmap_huge_pages(PageTable* pml4, void* virt, size_t count) {
+bool Spark::Vmm::unmap_huge_pages(PageTable* pml4, uint64_t virt, size_t count) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -152,13 +150,13 @@ bool Spark::Vmm::unmap_huge_pages(PageTable* pml4, void* virt, size_t count) {
 
         PageTable* pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
         pd_virt->ents[offs.pd] = 0;
-        virt = (void*)((uintptr_t)virt + 0x200000);
+        virt += 0x200000;
     }
 
     return true;
 }
 
-bool Spark::Vmm::update_huge_perms(PageTable* pml4, void* virt, size_t count, int perms) {
+bool Spark::Vmm::update_huge_perms(PageTable* pml4, uint64_t virt, size_t count, int perms) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -169,18 +167,18 @@ bool Spark::Vmm::update_huge_perms(PageTable* pml4, void* virt, size_t count, in
 
         PageTable* pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
         pd_virt->ents[offs.pd] = (pd_virt->ents[offs.pd] & address_mask) | perms | VirtualMemoryFlags::VMM_PRESENT | VirtualMemoryFlags::VMM_LARGE;
-        virt = (void*)((uintptr_t)virt + 0x200000);
+        virt += 0x200000;
     }
 
     return true;
 }
 
-uintptr_t Spark::Vmm::get_entry(PageTable* pml4, void* virt) {
-    if ((uintptr_t)virt >= 0xFFFFFFFF80000000)
-        return (uintptr_t)virt - 0xFFFFFFFF80000000;
+uintptr_t Spark::Vmm::get_entry(PageTable* pml4, uint64_t virt) {
+    if (virt >= 0xFFFFFFFF80000000)
+        return virt - 0xFFFFFFFF80000000;
 
-    if ((uintptr_t)virt >= 0xFFFF800000000000)
-        return (uintptr_t)virt - 0xFFFF800000000000;
+    if (virt >= 0xFFFF800000000000)
+        return virt - 0xFFFF800000000000;
 
     PageTableEntries offs = virtual_to_entries(virt);
     PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -206,8 +204,8 @@ Spark::Vmm::PageTable* Spark::Vmm::new_address_space() {
     PageTable* new_pml4 = (PageTable*)Pmm::alloc(1);
     memset((void*)((uintptr_t)new_pml4 + virtual_physical_base), 0, 4096);
 
-    map_huge_pages(new_pml4, (void*)0xFFFFFFFF80000000, NULL, 64, 3);
-    map_huge_pages(new_pml4, (void*)0xFFFF800000000000, NULL, 512 * 4, 3);
+    map_huge_pages(new_pml4, 0xFFFFFFFF80000000, 0, 64, 3);
+    map_huge_pages(new_pml4, 0xFFFF800000000000, 0, 512 * 4, 3);
 
     return new_pml4;
 }

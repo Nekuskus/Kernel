@@ -1,6 +1,6 @@
 #include <hardware/mm/mm.hpp>
 #include <hardware/mm/pmm.hpp>
-#include <hardware/mm/vmm.hpp>
+#include <hardware/mm/paging.hpp>
 #include <lib/lib.hpp>
 #include <lib/spinlock.hpp>
 
@@ -20,7 +20,7 @@ extern "C" void* malloc(size_t bytes) {
         return nullptr;
     }
 
-    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), (void*)top, p, pages, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT | Spark::Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), top, (uint64_t)p, pages, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT | Spark::Vmm::VirtualMemoryFlags::VMM_WRITE);
 
     top += page_size * pages;
     out = (void*)((uintptr_t)out + (pages * page_size - bytes));
@@ -60,14 +60,14 @@ extern "C" bool free(void* memory) {
     mm_lock.lock();
 
     size_t size = ((uint64_t)((uintptr_t)memory - 16)) + 16, pages = (size + page_size - 1) / page_size + 1;
-    void* start = (void*)((uintptr_t)memory & (~(page_size - 1)));
+    uint64_t start = (uintptr_t)memory & (~(page_size - 1));
 
     if (pages != (uint64_t)memory - 8)
         return false;
 
-    void *curr = (void*)((uintptr_t)start), *p = (void*)Spark::Vmm::get_entry(Spark::Vmm::get_current_context(), curr);
+    void *p = (void*)Spark::Vmm::get_entry(Spark::Vmm::get_current_context(), start);
 
-    Spark::Vmm::unmap_pages(Spark::Vmm::get_current_context(), curr, pages);
+    Spark::Vmm::unmap_pages(Spark::Vmm::get_current_context(), start, pages);
     Spark::Pmm::free(p, pages);
     mm_lock.release();
 

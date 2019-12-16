@@ -3,7 +3,7 @@
 #include <hardware/acpi/apic.hpp>
 #include <hardware/cpu/smp/smp.hpp>
 #include <hardware/mm/mm.hpp>
-#include <hardware/mm/vmm.hpp>
+#include <hardware/mm/paging.hpp>
 #include <hardware/msr.hpp>
 
 Spark::Acpi::MadtHeader* madt;
@@ -23,7 +23,7 @@ void Spark::Apic::LocalApic::init() {
     uint64_t apic_msr_base = Msr::read(apic_base);
     lapic_base = (apic_base & 0xFFFFFFFFFFFFF000) + virtual_kernel_base;
     apic_msr_base |= 1 << 11;
-    Vmm::map_pages(Vmm::get_current_context(), (void*)lapic_base, (void*)(apic_msr_base & 0xFFFFFFFFFFFFF000), 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Vmm::map_pages(Vmm::get_current_context(), lapic_base, apic_msr_base & 0xFFFFFFFFFFFFF000, 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
     Msr::write(apic_base, apic_msr_base);
 }
 
