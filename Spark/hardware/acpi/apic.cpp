@@ -5,7 +5,6 @@
 #include <hardware/mm/mm.hpp>
 #include <hardware/mm/vmm.hpp>
 #include <hardware/msr.hpp>
-#include <hardware/terminal.hpp>
 
 Spark::Acpi::MadtHeader* madt;
 uint64_t lapic_base;
@@ -43,19 +42,16 @@ void Spark::Apic::init() {
     LocalApic::init();
     Cpu::Smp::init();
 
+    uint32_t a, b, c, d;
+    __cpuid(1, a, b, c, d);
+
     while (offset < table_size) {
         Acpi::InterruptController* interrupt_controller = (Acpi::InterruptController*)(list + offset);
 
         if (interrupt_controller->type == Acpi::InterruptControllerType::LAPIC) {
             Acpi::LocalApic* cpu = (Acpi::LocalApic*)interrupt_controller;
 
-            if (!(cpu->flags & 1))
-                continue;
-
-            uint32_t a, b, c, d;
-            __cpuid(1, a, b, c, d);
-
-            if (((b >> 24) & 0xFF) == cpu->id)
+            if (!(cpu->flags & 1) || ((b >> 24) & 0xFF) == cpu->id)
                 continue;
 
             Cpu::Smp::boot_cpu(cpu->id);

@@ -126,7 +126,7 @@ void Spark::Acpi::init() {
             if (calculate_checksum(h, h->length) == 0) {
                 char text[255] = "";
 
-                sprintf(text, "[ACPI] Found table with signature %s", h->signature);
+                sprintf(text, "[ACPI] Found table with signature %c%c%c%c", h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
                 Terminal::write_line(text, 0xFFFFFF);
                 acpi_tables.push_back(h);
             }
