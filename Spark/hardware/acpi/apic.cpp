@@ -5,8 +5,6 @@
 #include <hardware/mm/mm.hpp>
 #include <hardware/mm/paging.hpp>
 #include <hardware/msr.hpp>
-#include <hardware/terminal.hpp>
-#include <lib/lib.hpp>
 
 Spark::Acpi::MadtHeader* madt;
 uint64_t lapic_base;
@@ -41,9 +39,6 @@ void Spark::Apic::LocalApic::send_ipi(uint32_t target, uint32_t flags) {
 
 void Spark::Apic::init() {
     madt = (Spark::Acpi::MadtHeader*)Acpi::get_table("APIC");
-    char text[255] = "";
-    sprintf(text, "[MADT] Address is %x", (uint64_t)madt);
-    Terminal::write_line(text, 0x123456);
     size_t table_size = madt->header.length - sizeof(Acpi::MadtHeader);
     uint64_t list = (uint64_t)madt + sizeof(Acpi::MadtHeader), offset = 0;
 
@@ -56,13 +51,14 @@ void Spark::Apic::init() {
     while (offset < table_size) {
         Acpi::InterruptController* interrupt_controller = (Acpi::InterruptController*)(list + offset);
 
-        if (interrupt_controller->type == Acpi::InterruptControllerType::LAPIC) {
-            Acpi::LocalApic* cpu = (Acpi::LocalApic*)interrupt_controller;
+        switch (interrupt_controller->type) {
+            case Acpi::InterruptControllerType::LAPIC: {
+                Acpi::LocalApic* cpu = (Acpi::LocalApic*)interrupt_controller;
 
-            if (!(cpu->flags & 1) || ((b >> 24) & 0xFF) == cpu->id)
-                continue;
-
-            Cpu::Smp::boot_cpu(cpu->id);
+                if (cpu->flags & 1 && ((b >> 24) & 0xFF) != cpu->id)
+                    Cpu::Smp::boot_cpu(cpu->id);
+                break;
+            }
         }
 
         offset += interrupt_controller->length;
