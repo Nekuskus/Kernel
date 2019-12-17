@@ -29,8 +29,5 @@ The kernel for the Spark Operating System.
 - CLang
 - CMake
 - Nasm
-- xorriso
-- grub-common
-- grub-pc-bin
 
 Building is easy, just use CMake like you would with any other project.
