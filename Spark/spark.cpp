@@ -36,7 +36,7 @@ namespace Spark {
                 Idt::init();
                 Exceptions::init();
                 Acpi::init();
-                //Apic::init();
+                Apic::init();
                 Pci::init();
             } else
                 return;
