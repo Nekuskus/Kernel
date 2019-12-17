@@ -112,11 +112,11 @@ void Spark::Acpi::init() {
             if ((SdtHeader*)(uint64_t)rsdt->tables[i] == nullptr)
                 continue;
 
-            Vmm::map_pages(Vmm::get_current_context(), rsdt->tables[i] + virtual_physical_base, (uint64_t)rsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+            Vmm::map_pages(Vmm::get_current_context(), (uint64_t)rsdt->tables[i] + virtual_physical_base, (uint64_t)rsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
             Spark::Acpi::SdtHeader* h = (Spark::Acpi::SdtHeader*)((uint64_t)rsdt->tables[i] + virtual_physical_base);
 
-            Vmm::map_pages(Vmm::get_current_context(), rsdt->tables[i] + virtual_physical_base, (uint64_t)rsdt->tables[i], (h->length + page_size - 1) / page_size + 2, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+            Vmm::map_pages(Vmm::get_current_context(), (uint64_t)rsdt->tables[i] + virtual_physical_base, (uint64_t)rsdt->tables[i], (h->length + page_size - 1) / page_size + 2, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
             if (calculate_checksum(h, h->length) == 0) {
                 char text[255] = "";
