@@ -56,22 +56,20 @@ extern "C" void* realloc(void* old, size_t s) {
     return newm;
 }
 
-extern "C" bool free(void* memory) {
+extern "C" void free(void* memory) {
     mm_lock.lock();
 
     size_t size = ((uint64_t)((uintptr_t)memory - 16)) + 16, pages = (size + page_size - 1) / page_size + 1;
     uint64_t start = (uintptr_t)memory & (~(page_size - 1));
 
     if (pages != (uint64_t)memory - 8)
-        return false;
+        return;
 
     void *p = (void*)Spark::Vmm::get_entry(Spark::Vmm::get_current_context(), start);
 
     Spark::Vmm::unmap_pages(Spark::Vmm::get_current_context(), start, pages);
-    Spark::Pmm::free(p, pages);
+    Spark::Pmm::free((size_t)p, pages);
     mm_lock.release();
-
-    return true;
 }
 
 extern "C" void* memset(void* s, int c, size_t n) {

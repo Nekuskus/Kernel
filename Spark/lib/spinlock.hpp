@@ -7,6 +7,5 @@ namespace Spark {
     public:
         void lock();
         void release();
-        ~Spinlock();
     };
 }  // namespace Spark

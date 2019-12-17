@@ -8,7 +8,3 @@ void Spark::Spinlock::lock() {
 void Spark::Spinlock::release() {
     Cpu::atomic_unset(&locked);
 }
-
-Spark::Spinlock::~Spinlock() {
-    release();
-}

@@ -25,7 +25,6 @@ namespace Spark {
 
             if (Vmm::map_pages(Vmm::get_current_context(), virtual_fb, mb_info->framebuffer_addr, (mb_info->framebuffer_width * mb_info->framebuffer_pitch + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE)) {
                 Graphics::ModeInfo mode_info = {
-                    .backbuffer = (uint32_t*)malloc(mb_info->framebuffer_width * mb_info->framebuffer_pitch),
                     .framebuffer = (uint32_t*)virtual_fb,
                     .pitch = mb_info->framebuffer_pitch,
                     .width = mb_info->framebuffer_width,
@@ -37,7 +36,7 @@ namespace Spark {
                 Idt::init();
                 Exceptions::init();
                 Acpi::init();
-                Apic::init();
+                //Apic::init();
                 Pci::init();
             } else
                 return;

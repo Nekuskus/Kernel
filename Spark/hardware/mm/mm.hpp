@@ -17,6 +17,6 @@ enum MemoryFlags {
 
 extern "C" void* malloc(size_t blocks);
 extern "C" void* calloc(size_t blocks);
-extern "C" bool free(void* memory);
+extern "C" void free(void* memory);
 extern "C" void* memset(void* s, int c, size_t n);
 extern "C" void* memcpy(void* dest, const void* src, size_t len);

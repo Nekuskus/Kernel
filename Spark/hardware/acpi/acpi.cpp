@@ -9,7 +9,7 @@
 Spark::Acpi::RsdpInfo rsdp_info;
 auto acpi_tables = LinkedList<Spark::Acpi::SdtHeader*>();
 
-inline uint8_t calculate_checksum(void* ptr, size_t size) {
+uint8_t calculate_checksum(void* ptr, size_t size) {
     uint8_t sum = 0;
 
     for (size_t i = 0; i < size; i++)
@@ -18,7 +18,7 @@ inline uint8_t calculate_checksum(void* ptr, size_t size) {
     return sum;
 }
 
-inline Spark::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
+Spark::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
     uint64_t address = base + virtual_physical_base;
     Spark::Acpi::RsdpInfo info{};
 
@@ -56,22 +56,6 @@ inline Spark::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
     return info;
 }
 
-inline Spark::Acpi::RsdpInfo bios_detect_rsdp() {
-    uint16_t* ebda_seg_ptr = (uint16_t*)(0x40E + virtual_physical_base);
-
-    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), 0x40E + virtual_physical_base, 0x40E, (sizeof(uint16_t) + page_size - 1) / page_size, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT);
-
-    Spark::Acpi::RsdpInfo info = bios_detect_rsdp(*ebda_seg_ptr << 4, 0x400);
-
-    if (!info.version)
-        info = bios_detect_rsdp(0xE0000, 0x20000);
-
-    if (!info.version)
-        Spark::panic("ACPI not supported");
-
-    return info;
-}
-
 Spark::Acpi::SdtHeader* Spark::Acpi::get_table(const char* signature) {
     for (auto table : acpi_tables)
         if (strncmp(table->signature, signature, 4) == 0)
@@ -81,7 +65,18 @@ Spark::Acpi::SdtHeader* Spark::Acpi::get_table(const char* signature) {
 }
 
 void Spark::Acpi::init() {
-    rsdp_info = bios_detect_rsdp();
+    uint16_t* ebda_seg_ptr = (uint16_t*)(0x40E + virtual_physical_base);
+
+    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), 0x40E + virtual_physical_base, 0x40E, (sizeof(uint16_t) + page_size - 1) / page_size, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT);
+
+    rsdp_info = bios_detect_rsdp(*ebda_seg_ptr << 4, 0x400);
+
+    if (!rsdp_info.version)
+        rsdp_info = bios_detect_rsdp(0xE0000, 0x20000);
+
+    if (!rsdp_info.version)
+        Spark::panic("ACPI not supported");
+
     char text[255] = "";
 
     sprintf(text, "[ACPI] Detected ACPI with OEM ID %s and version %d", rsdp_info.oem_id, rsdp_info.version);
@@ -104,7 +99,7 @@ void Spark::Acpi::init() {
             if (calculate_checksum(h, h->length) == 0) {
                 char text[255] = "";
 
-                sprintf(text, "[ACPI] Found table with signature %c%c%c%c", h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
+                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c", (uint64_t)h, h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
                 Terminal::write_line(text, 0xFFFFFF);
                 acpi_tables.push_back(h);
             }
@@ -126,7 +121,7 @@ void Spark::Acpi::init() {
             if (calculate_checksum(h, h->length) == 0) {
                 char text[255] = "";
 
-                sprintf(text, "[ACPI] Found table with signature %c%c%c%c", h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
+                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c", (uint64_t)h, h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
                 Terminal::write_line(text, 0xFFFFFF);
                 acpi_tables.push_back(h);
             }

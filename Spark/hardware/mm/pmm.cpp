@@ -50,6 +50,7 @@ void Spark::Pmm::init(Multiboot::MemoryMap* mmap, size_t mmap_len) {
     bitmap = (uint64_t*)(memory_base + virtual_physical_base);
     bitmap_len = mem_pages;
     size_t bitmap_phys = (size_t)bitmap - virtual_physical_base;
+
     memset(bitmap, 0xFF, bitmap_len / 8);
 
     for (size_t i = 0; i < mmap_len; i++) {
@@ -68,14 +69,14 @@ void Spark::Pmm::init(Multiboot::MemoryMap* mmap, size_t mmap_len) {
 
             if (Math::overlaps(bitmap_phys, bitmap_len / 8, start, len)) {
                 if (start < bitmap_phys)
-                    free((void*)start, (start - bitmap_phys) / page_size);
+                    free(start, (start - bitmap_phys) / page_size);
 
                 start = bitmap_phys + bitmap_len / 8;
                 len -= bitmap_len / 8;
                 count = len / page_size;
             }
 
-            free((void*)start, count);
+            free(start, count);
         }
     }
 
@@ -108,8 +109,8 @@ void* Spark::Pmm::alloc(size_t count) {
     return alloc(count, 1, 0);
 }
 
-void Spark::Pmm::free(void* mem, size_t count) {
-    size_t idx = (size_t)mem / page_size;
+void Spark::Pmm::free(size_t mem, size_t count) {
+    size_t idx = mem / page_size;
 
     bit_write(idx, 0, count);
 

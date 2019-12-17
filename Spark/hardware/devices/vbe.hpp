@@ -4,7 +4,6 @@
 
 namespace Spark::Graphics {
     struct ModeInfo {
-        uint32_t* backbuffer;
         uint32_t* framebuffer;
         uint32_t pitch;
         uint32_t width;
@@ -20,5 +19,4 @@ namespace Spark::Graphics {
     void write_text(const char* str, uint16_t x, uint16_t y, uint32_t foreground, uint32_t background);
     inline void set_pixel(uint16_t x, uint16_t y, uint32_t color);
     ModeInfo get_mode_info();
-    void update();
 };  // namespace Spark::Graphics

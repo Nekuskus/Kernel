@@ -71,13 +71,9 @@ inline void Spark::Graphics::set_pixel(uint16_t x, uint16_t y, uint32_t color) {
     if (!is_working)
         return;
 
-    mode_info.framebuffer[(x * 4 + y * mode_info.pitch) / (mode_info.bpp / 8)] = mode_info.backbuffer[(x * 4 + y * mode_info.pitch) / (mode_info.bpp / 8)] = color;
+    mode_info.framebuffer[(x * 4 + y * mode_info.pitch) / (mode_info.bpp / 8)] = color;
 }
 
 Spark::Graphics::ModeInfo Spark::Graphics::get_mode_info() {
     return mode_info;
-}
-
-void Spark::Graphics::update() {
-    memcpy(mode_info.framebuffer, mode_info.backbuffer, mode_info.width * mode_info.pitch);
 }
