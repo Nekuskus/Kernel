@@ -1,5 +1,5 @@
-# Spark Kernel
-The kernel for the Spark Operating System.
+# FireworkKernel
+The kernel for Firework.
 
 ## Features
 - VBE Framebuffer graphics with lean-and-mean text drawing
@@ -9,9 +9,10 @@ The kernel for the Spark Operating System.
 - Panic
 - Terminal
 - Symmetric Multiprocessing (SMP)
+- PCI
 
 ## Planned features
-- ACPI (currently being worked on)
+- ACPI
 - (U)EFI
 - VFS
 - R/W from disk
@@ -22,12 +23,11 @@ The kernel for the Spark Operating System.
 - Multitasking
 
 
-(this list is not sorted by priority)
-
 ## Compiling the kernel
 ### Compiling the kernel - the dependencies
 - CLang
 - CMake
 - Nasm
+
 
 Building is easy, just use CMake like you would with any other project.
