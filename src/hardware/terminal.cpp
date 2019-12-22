@@ -4,7 +4,7 @@
 
 uint16_t x = 0, y = 0;
 
-bool Spark::Terminal::handle_special_characters(const char c) {
+bool Firework::Terminal::handle_special_characters(const char c) {
     bool ret = false;
 
     switch (c) {
@@ -29,26 +29,26 @@ bool Spark::Terminal::handle_special_characters(const char c) {
     return ret;
 }
 
-void Spark::Terminal::set_cursor(uint16_t nx, uint16_t ny) {
+void Firework::Terminal::set_cursor(uint16_t nx, uint16_t ny) {
     x = nx;
     y = ny;
 }
 
-void Spark::Terminal::write(const char* str, uint32_t foreground, uint32_t background) {
+void Firework::Terminal::write(const char* str, uint32_t foreground, uint32_t background) {
     uint32_t ln = strlen(str);
 
     for (uint32_t idx = 0; idx < ln; idx++)
         write(str[idx], foreground, background);
 }
 
-void Spark::Terminal::write(const char* str, uint32_t foreground) {
+void Firework::Terminal::write(const char* str, uint32_t foreground) {
     uint32_t ln = strlen(str);
 
     for (uint32_t idx = 0; idx < ln; idx++)
         write(str[idx], foreground);
 }
 
-void Spark::Terminal::write(const char c, uint32_t foreground, uint32_t background) {
+void Firework::Terminal::write(const char c, uint32_t foreground, uint32_t background) {
     if (handle_special_characters(c))
         return;
 
@@ -67,7 +67,7 @@ void Spark::Terminal::write(const char c, uint32_t foreground, uint32_t backgrou
     set_cursor(++x, y);
 }
 
-void Spark::Terminal::write(const char c, uint32_t foreground) {
+void Firework::Terminal::write(const char c, uint32_t foreground) {
     if (handle_special_characters(c))
         return;
 
@@ -85,12 +85,12 @@ void Spark::Terminal::write(const char c, uint32_t foreground) {
     set_cursor(++x, y);
 }
 
-void Spark::Terminal::write_line(const char* str, uint32_t foreground, uint32_t background) {
+void Firework::Terminal::write_line(const char* str, uint32_t foreground, uint32_t background) {
     write(str, foreground, background);
     write("\r\n", foreground, background);
 }
 
-void Spark::Terminal::write_line(const char* str, uint32_t foreground) {
+void Firework::Terminal::write_line(const char* str, uint32_t foreground) {
     write(str, foreground);
     write("\r\n", foreground);
 }

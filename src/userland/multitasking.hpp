@@ -1,5 +1,5 @@
 #pragma once
 
-namespace Spark::Userland::Multitasking {
+namespace Firework::Userland::Multitasking {
 
 }

@@ -4,7 +4,7 @@
 #include <lib/lib.hpp>
 #include <lib/spinlock.hpp>
 
-Spark::Spinlock mm_lock{};
+Firework::Spinlock mm_lock{};
 uintptr_t top = memory_base;
 
 extern "C" void* malloc(size_t bytes) {
@@ -12,7 +12,7 @@ extern "C" void* malloc(size_t bytes) {
 
     bytes = (((bytes + 7) / 8) * 8) + 16;
     size_t pages = (bytes + page_size - 1) / page_size + 1;
-    void *out = (void*)top, *p = Spark::Pmm::alloc(pages);
+    void *out = (void*)top, *p = Firework::Pmm::alloc(pages);
 
     if (!p) {
         mm_lock.release();
@@ -20,7 +20,7 @@ extern "C" void* malloc(size_t bytes) {
         return nullptr;
     }
 
-    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), top, (uint64_t)p, pages, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT | Spark::Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Firework::Vmm::map_pages(Firework::Vmm::get_current_context(), top, (uint64_t)p, pages, Firework::Vmm::VirtualMemoryFlags::VMM_PRESENT | Firework::Vmm::VirtualMemoryFlags::VMM_WRITE);
 
     top += page_size * pages;
     out = (void*)((uintptr_t)out + (pages * page_size - bytes));
@@ -65,10 +65,10 @@ extern "C" void free(void* memory) {
     if (pages != (uint64_t)memory - 8)
         return;
 
-    void *p = (void*)Spark::Vmm::get_entry(Spark::Vmm::get_current_context(), start);
+    void *p = (void*)Firework::Vmm::get_entry(Firework::Vmm::get_current_context(), start);
 
-    Spark::Vmm::unmap_pages(Spark::Vmm::get_current_context(), start, pages);
-    Spark::Pmm::free((size_t)p, pages);
+    Firework::Vmm::unmap_pages(Firework::Vmm::get_current_context(), start, pages);
+    Firework::Pmm::free((size_t)p, pages);
     mm_lock.release();
 }
 

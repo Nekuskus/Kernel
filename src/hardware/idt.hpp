@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-namespace Spark::Idt {
+namespace Firework::Idt {
     struct [[gnu::packed]] InterruptRegisters {
         uint64_t ds;
         uint64_t r15, r14, r13, r12, r11, r10, r9, r8, rdi, rsi, rbp, useless, rbx, rdx, rcx, rax;
@@ -33,4 +33,4 @@ namespace Spark::Idt {
 
     void init();
     void register_interrupt_handler(uint16_t n, idt_function function, bool is_irq, bool should_iret);
-};  // namespace Spark::Idt
+};  // namespace Firework::Idt

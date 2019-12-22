@@ -6,8 +6,8 @@
 #include <lib/lib.hpp>
 #include <lib/linked_list.hpp>
 
-Spark::Acpi::RsdpInfo rsdp_info;
-auto acpi_tables = LinkedList<Spark::Acpi::SdtHeader*>();
+Firework::Acpi::RsdpInfo rsdp_info;
+auto acpi_tables = LinkedList<Firework::Acpi::SdtHeader*>();
 
 uint8_t calculate_checksum(void* ptr, size_t size) {
     uint8_t sum = 0;
@@ -18,16 +18,16 @@ uint8_t calculate_checksum(void* ptr, size_t size) {
     return sum;
 }
 
-Spark::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
+Firework::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
     uint64_t address = base + virtual_physical_base;
-    Spark::Acpi::RsdpInfo info{};
+    Firework::Acpi::RsdpInfo info{};
 
-    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), address, base, (length + page_size - 1) / page_size, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT);
+    Firework::Vmm::map_pages(Firework::Vmm::get_current_context(), address, base, (length + page_size - 1) / page_size, Firework::Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
     for (size_t off = 0; off < length; off += 16) {
-        Spark::Acpi::RsdpDescriptor* rsdp = (Spark::Acpi::RsdpDescriptor*)(address + off);
+        Firework::Acpi::RsdpDescriptor* rsdp = (Firework::Acpi::RsdpDescriptor*)(address + off);
 
-        if (strncmp(rsdp->signature, "RSD PTR ", 8) != 0 || calculate_checksum(rsdp, sizeof(Spark::Acpi::RsdpDescriptor)) != 0)
+        if (strncmp(rsdp->signature, "RSD PTR ", 8) != 0 || calculate_checksum(rsdp, sizeof(Firework::Acpi::RsdpDescriptor)) != 0)
             continue;
 
         info.rsdp_address = address + off;
@@ -42,9 +42,9 @@ Spark::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
             info.address = (uint64_t)rsdp->rsdt_address + virtual_physical_base;
             break;
         } else {
-            Spark::Acpi::XsdpDescriptor* xsdp = (Spark::Acpi::XsdpDescriptor*)rsdp;
+            Firework::Acpi::XsdpDescriptor* xsdp = (Firework::Acpi::XsdpDescriptor*)rsdp;
 
-            if (calculate_checksum(xsdp, sizeof(Spark::Acpi::XsdpDescriptor)) != 0)
+            if (calculate_checksum(xsdp, sizeof(Firework::Acpi::XsdpDescriptor)) != 0)
                 continue;
 
             info.version = 2;
@@ -56,7 +56,7 @@ Spark::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
     return info;
 }
 
-Spark::Acpi::SdtHeader* Spark::Acpi::get_table(const char* signature) {
+Firework::Acpi::SdtHeader* Firework::Acpi::get_table(const char* signature) {
     for (auto table : acpi_tables)
         if (strncmp(table->signature, signature, 4) == 0)
             return table;
@@ -64,10 +64,10 @@ Spark::Acpi::SdtHeader* Spark::Acpi::get_table(const char* signature) {
     return nullptr;
 }
 
-void Spark::Acpi::init() {
+void Firework::Acpi::init() {
     uint16_t* ebda_seg_ptr = (uint16_t*)(0x40E + virtual_physical_base);
 
-    Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), 0x40E + virtual_physical_base, 0x40E, (sizeof(uint16_t) + page_size - 1) / page_size, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT);
+    Firework::Vmm::map_pages(Firework::Vmm::get_current_context(), 0x40E + virtual_physical_base, 0x40E, (sizeof(uint16_t) + page_size - 1) / page_size, Firework::Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
     rsdp_info = bios_detect_rsdp(*ebda_seg_ptr << 4, 0x400);
 
@@ -75,7 +75,7 @@ void Spark::Acpi::init() {
         rsdp_info = bios_detect_rsdp(0xE0000, 0x20000);
 
     if (!rsdp_info.version)
-        Spark::panic("ACPI not supported");
+        Firework::panic("ACPI not supported");
 
     char text[255] = "";
 
@@ -83,7 +83,7 @@ void Spark::Acpi::init() {
     Terminal::write_line(text, 0xFFFFFF);
 
     if (rsdp_info.version >= 2) {
-        Spark::Acpi::XsdtHeader* xsdt = (Spark::Acpi::XsdtHeader*)rsdp_info.address;
+        Firework::Acpi::XsdtHeader* xsdt = (Firework::Acpi::XsdtHeader*)rsdp_info.address;
         size_t entries = (xsdt->header.length - sizeof(xsdt->header)) / 8;
 
         for (size_t i = 0; i < entries; i++) {
@@ -92,7 +92,7 @@ void Spark::Acpi::init() {
 
             Vmm::map_pages(Vmm::get_current_context(), xsdt->tables[i] + virtual_physical_base, xsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
-            Spark::Acpi::SdtHeader* h = (Spark::Acpi::SdtHeader*)(xsdt->tables[i] + virtual_physical_base);
+            Firework::Acpi::SdtHeader* h = (Firework::Acpi::SdtHeader*)(xsdt->tables[i] + virtual_physical_base);
 
             Vmm::map_pages(Vmm::get_current_context(), xsdt->tables[i] + virtual_physical_base, xsdt->tables[i], (h->length + page_size - 1) / page_size + 2, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
@@ -105,7 +105,7 @@ void Spark::Acpi::init() {
             }
         }
     } else {
-        Spark::Acpi::RsdtHeader* rsdt = (Spark::Acpi::RsdtHeader*)rsdp_info.address;
+        Firework::Acpi::RsdtHeader* rsdt = (Firework::Acpi::RsdtHeader*)rsdp_info.address;
         size_t entries = (rsdt->header.length - sizeof(rsdt->header)) / 4;
 
         for (size_t i = 0; i < entries; i++) {
@@ -114,7 +114,7 @@ void Spark::Acpi::init() {
 
             Vmm::map_pages(Vmm::get_current_context(), (uint64_t)rsdt->tables[i] + virtual_physical_base, (uint64_t)rsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
-            Spark::Acpi::SdtHeader* h = (Spark::Acpi::SdtHeader*)((uint64_t)rsdt->tables[i] + virtual_physical_base);
+            Firework::Acpi::SdtHeader* h = (Firework::Acpi::SdtHeader*)((uint64_t)rsdt->tables[i] + virtual_physical_base);
 
             Vmm::map_pages(Vmm::get_current_context(), (uint64_t)rsdt->tables[i] + virtual_physical_base, (uint64_t)rsdt->tables[i], (h->length + page_size - 1) / page_size + 2, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 

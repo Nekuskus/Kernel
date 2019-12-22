@@ -4,9 +4,9 @@
 #include <hardware/mm/paging.hpp>
 #include <lib/math.hpp>
 
-extern "C" Spark::Vmm::PageTable* kernel_pml4;
+extern "C" Firework::Vmm::PageTable* kernel_pml4;
 
-Spark::Vmm::PageTableEntries Spark::Vmm::virtual_to_entries(uint64_t virt) {
+Firework::Vmm::PageTableEntries Firework::Vmm::virtual_to_entries(uint64_t virt) {
     Vmm::PageTableEntries off = {
         .pml4 = (virt >> 39) & 0x1ff,
         .pdp = (virt >> 30) & 0x1ff,
@@ -17,7 +17,7 @@ Spark::Vmm::PageTableEntries Spark::Vmm::virtual_to_entries(uint64_t virt) {
     return off;
 }
 
-void* Spark::Vmm::entries_to_virtual(PageTableEntries offs) {
+void* Firework::Vmm::entries_to_virtual(PageTableEntries offs) {
     uintptr_t addr = 0;
 
     addr |= offs.pml4 << 39;
@@ -28,37 +28,37 @@ void* Spark::Vmm::entries_to_virtual(PageTableEntries offs) {
     return (void*)addr;
 }
 
-void Spark::Vmm::init() {
+void Firework::Vmm::init() {
     kernel_pml4 = new_address_space();
     set_context(kernel_pml4);
 }
 
-Spark::Vmm::PageTable* get_or_alloc_ent(Spark::Vmm::PageTable* tab, size_t off, int flags) {
+Firework::Vmm::PageTable* get_or_alloc_ent(Firework::Vmm::PageTable* tab, size_t off, int flags) {
     uint64_t ent_addr = tab->ents[off] & address_mask;
 
     if (!ent_addr) {
-        ent_addr = tab->ents[off] = (uint64_t)Spark::Pmm::alloc(1);
+        ent_addr = tab->ents[off] = (uint64_t)Firework::Pmm::alloc(1);
 
         if (!ent_addr)
             return nullptr;
 
-        tab->ents[off] |= flags | Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT;
+        tab->ents[off] |= flags | Firework::Vmm::VirtualMemoryFlags::VMM_PRESENT;
         memset((void*)(ent_addr + virtual_physical_base), 0, 4096);
     }
 
-    return (Spark::Vmm::PageTable*)(ent_addr + virtual_physical_base);
+    return (Firework::Vmm::PageTable*)(ent_addr + virtual_physical_base);
 }
 
-Spark::Vmm::PageTable* get_or_null_ent(Spark::Vmm::PageTable* tab, size_t off) {
+Firework::Vmm::PageTable* get_or_null_ent(Firework::Vmm::PageTable* tab, size_t off) {
     uint64_t ent_addr = tab->ents[off] & address_mask;
 
     if (!ent_addr)
         return nullptr;
 
-    return (Spark::Vmm::PageTable*)(ent_addr + virtual_physical_base);
+    return (Firework::Vmm::PageTable*)(ent_addr + virtual_physical_base);
 }
 
-bool Spark::Vmm::map_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t count, int perms) {
+bool Firework::Vmm::map_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t count, int perms) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -73,7 +73,7 @@ bool Spark::Vmm::map_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t
     return true;
 }
 
-bool Spark::Vmm::unmap_pages(PageTable* pml4, uint64_t virt, size_t count) {
+bool Firework::Vmm::unmap_pages(PageTable* pml4, uint64_t virt, size_t count) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -99,7 +99,7 @@ bool Spark::Vmm::unmap_pages(PageTable* pml4, uint64_t virt, size_t count) {
     return true;
 }
 
-bool Spark::Vmm::update_perms(PageTable* pml4, uint64_t virt, size_t count, int perms) {
+bool Firework::Vmm::update_perms(PageTable* pml4, uint64_t virt, size_t count, int perms) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -125,7 +125,7 @@ bool Spark::Vmm::update_perms(PageTable* pml4, uint64_t virt, size_t count, int 
     return true;
 }
 
-bool Spark::Vmm::map_huge_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t count, int perms) {
+bool Firework::Vmm::map_huge_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t count, int perms) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -139,7 +139,7 @@ bool Spark::Vmm::map_huge_pages(PageTable* pml4, uint64_t virt, uint64_t phys, s
     return true;
 }
 
-bool Spark::Vmm::unmap_huge_pages(PageTable* pml4, uint64_t virt, size_t count) {
+bool Firework::Vmm::unmap_huge_pages(PageTable* pml4, uint64_t virt, size_t count) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -156,7 +156,7 @@ bool Spark::Vmm::unmap_huge_pages(PageTable* pml4, uint64_t virt, size_t count) 
     return true;
 }
 
-bool Spark::Vmm::update_huge_perms(PageTable* pml4, uint64_t virt, size_t count, int perms) {
+bool Firework::Vmm::update_huge_perms(PageTable* pml4, uint64_t virt, size_t count, int perms) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -173,7 +173,7 @@ bool Spark::Vmm::update_huge_perms(PageTable* pml4, uint64_t virt, size_t count,
     return true;
 }
 
-uintptr_t Spark::Vmm::get_entry(PageTable* pml4, uint64_t virt) {
+uintptr_t Firework::Vmm::get_entry(PageTable* pml4, uint64_t virt) {
     if (virt >= 0xFFFFFFFF80000000)
         return virt - 0xFFFFFFFF80000000;
 
@@ -200,7 +200,7 @@ uintptr_t Spark::Vmm::get_entry(PageTable* pml4, uint64_t virt) {
     return pt_virt->ents[offs.pt];
 }
 
-Spark::Vmm::PageTable* Spark::Vmm::new_address_space() {
+Firework::Vmm::PageTable* Firework::Vmm::new_address_space() {
     PageTable* new_pml4 = (PageTable*)Pmm::alloc(1);
 
     memset((void*)((uintptr_t)new_pml4 + virtual_physical_base), 0, 4096);
@@ -210,39 +210,39 @@ Spark::Vmm::PageTable* Spark::Vmm::new_address_space() {
     return new_pml4;
 }
 
-Spark::Vmm::PageTable** Spark::Vmm::get_ctx_ptr() {
+Firework::Vmm::PageTable** Firework::Vmm::get_ctx_ptr() {
     return (PageTable**)kernel_pml4;
 }
 
-void Spark::Vmm::save_context() {
+void Firework::Vmm::save_context() {
     PageTable** ctx = get_ctx_ptr();
     *ctx = get_current_context();
 }
 
-Spark::Vmm::PageTable* get_saved_context() {
-    Spark::Vmm::PageTable** ctx = Spark::Vmm::get_ctx_ptr();
+Firework::Vmm::PageTable* get_saved_context() {
+    Firework::Vmm::PageTable** ctx = Firework::Vmm::get_ctx_ptr();
     return *ctx;
 }
 
-void Spark::Vmm::restore_context() {
+void Firework::Vmm::restore_context() {
     PageTable** ctx = get_ctx_ptr();
     set_context(*ctx);
     *ctx = nullptr;
 }
 
-void Spark::Vmm::drop_context() {
+void Firework::Vmm::drop_context() {
     PageTable** ctx = get_ctx_ptr();
     *ctx = nullptr;
 }
 
-void Spark::Vmm::set_context(PageTable* ctx) {
+void Firework::Vmm::set_context(PageTable* ctx) {
     asm volatile("mov %%rax, %%cr3"
                  :
                  : "a"(ctx)
                  : "memory");
 }
 
-Spark::Vmm::PageTable* Spark::Vmm::get_current_context() {
+Firework::Vmm::PageTable* Firework::Vmm::get_current_context() {
     uintptr_t ctx;
     asm volatile("mov %%cr3, %%rax"
                  : "=a"(ctx)

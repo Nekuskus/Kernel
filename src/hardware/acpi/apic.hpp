@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-namespace Spark::Apic {
+namespace Firework::Apic {
     namespace LocalApic {
         constexpr uint64_t icr_low = 0x300;
         constexpr uint64_t icr_high = 0x310;
@@ -23,4 +23,4 @@ namespace Spark::Apic {
 
     void init();
     // TODO: Implement other APIC things
-};  // namespace Spark::Apic
+};  // namespace Firework::Apic

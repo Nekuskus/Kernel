@@ -12,7 +12,7 @@ extern "C" void* _trampoline_start;
 extern "C" void* _trampoline_end;
 extern "C" void* trampoline_stack;
 
-bool Spark::Cpu::Smp::wait_for_boot() {
+bool Firework::Cpu::Smp::wait_for_boot() {
     for (uint64_t timeout = 100; timeout > 0; timeout--) {
         if (trampoline_booted)
             return true;
@@ -24,14 +24,14 @@ bool Spark::Cpu::Smp::wait_for_boot() {
     return false;
 }
 
-void Spark::Cpu::Smp::init() {
+void Firework::Cpu::Smp::init() {
     uint64_t len = (uint64_t)&_trampoline_end - (uint64_t)&_trampoline_start;
 
     Vmm::map_pages(Vmm::get_current_context(), (uint64_t)&_trampoline_start, (uint64_t)&_trampoline_start, (len + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
     memcpy(&_trampoline_start, (void*)(0x400000 + virtual_physical_base), len);
 }
 
-void Spark::Cpu::Smp::boot_cpu(uint32_t lapic_id) {
+void Firework::Cpu::Smp::boot_cpu(uint32_t lapic_id) {
     trampoline_stack = (void*)((uint64_t)Pmm::alloc(0x10000 / page_size) + virtual_physical_base);
     char debug[255] = "";
 
@@ -57,6 +57,6 @@ void Spark::Cpu::Smp::boot_cpu(uint32_t lapic_id) {
     trampoline_booted = false;
 }
 
-void Spark::Cpu::Smp::set_booted() {
+void Firework::Cpu::Smp::set_booted() {
     trampoline_booted = true;
 }

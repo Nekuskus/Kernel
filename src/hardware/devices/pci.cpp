@@ -6,20 +6,20 @@
 #include <lib/lib.hpp>
 #include <lib/linked_list.hpp>
 
-auto mcfg_entries = LinkedList<Spark::Acpi::McfgEntry>();
+auto mcfg_entries = LinkedList<Firework::Acpi::McfgEntry>();
 
 using read_function = uint32_t (*)(uint16_t, uint8_t, uint8_t, uint8_t, uint8_t);
 using write_function = void (*)(uint16_t, uint8_t, uint8_t, uint8_t, uint8_t, uint32_t);
 
 uint32_t iomap_read([[maybe_unused]] uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
-    Spark::Port::outd(0xCF8, ((uint32_t)bus << 16) | ((uint32_t)slot << 11) | ((uint32_t)function << 8) | (offset & 0xFC) | (1u << 31));
+    Firework::Port::outd(0xCF8, ((uint32_t)bus << 16) | ((uint32_t)slot << 11) | ((uint32_t)function << 8) | (offset & 0xFC) | (1u << 31));
 
-    return Spark::Port::ind(0xCFC + (offset % 4));
+    return Firework::Port::ind(0xCFC + (offset % 4));
 }
 
 void iomap_write([[maybe_unused]] uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value) {
-    Spark::Port::outd(0xCF8, ((uint32_t)bus << 16) | ((uint32_t)slot << 11) | ((uint32_t)function << 8) | (offset & 0xFC) | (1u << 31));
-    Spark::Port::outd(0xCFC + (offset % 4), value);
+    Firework::Port::outd(0xCF8, ((uint32_t)bus << 16) | ((uint32_t)slot << 11) | ((uint32_t)function << 8) | (offset & 0xFC) | (1u << 31));
+    Firework::Port::outd(0xCFC + (offset % 4), value);
 }
 
 read_function internal_read = iomap_read;
@@ -33,7 +33,7 @@ uint32_t mmap_read(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function
         uint64_t addr = (entry.ecm_base + (((bus - entry.start_bus_number) << 20) | (slot << 25) | (function << 12))) | offset;
         uint64_t addr_virtual = addr + virtual_physical_base;
 
-        Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), addr_virtual, addr, 1, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT | Spark::Vmm::VirtualMemoryFlags::VMM_WRITE);
+        Firework::Vmm::map_pages(Firework::Vmm::get_current_context(), addr_virtual, addr, 1, Firework::Vmm::VirtualMemoryFlags::VMM_PRESENT | Firework::Vmm::VirtualMemoryFlags::VMM_WRITE);
         return *(uint32_t*)addr_virtual;
     }
 
@@ -48,12 +48,12 @@ void mmap_write(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, u
         uint64_t addr = (entry.ecm_base + (((bus - entry.start_bus_number) << 20) | (slot << 25) | (function << 12))) | offset;
         uint64_t addr_virtual = addr + virtual_physical_base;
 
-        Spark::Vmm::map_pages(Spark::Vmm::get_current_context(), addr_virtual, addr, 1, Spark::Vmm::VirtualMemoryFlags::VMM_PRESENT | Spark::Vmm::VirtualMemoryFlags::VMM_WRITE);
+        Firework::Vmm::map_pages(Firework::Vmm::get_current_context(), addr_virtual, addr, 1, Firework::Vmm::VirtualMemoryFlags::VMM_PRESENT | Firework::Vmm::VirtualMemoryFlags::VMM_WRITE);
         *(uint32_t*)addr_virtual = value;
     }
 }
 
-const char* Spark::Pci::class_code_to_str(uint8_t class_code) {
+const char* Firework::Pci::class_code_to_str(uint8_t class_code) {
     switch (class_code) {
         case 0:
             return "Unclassified";
@@ -98,23 +98,23 @@ const char* Spark::Pci::class_code_to_str(uint8_t class_code) {
     return "Unknown";
 }
 
-uint32_t Spark::Pci::read(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
+uint32_t Firework::Pci::read(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
     return internal_read(0, bus, slot, function, offset);
 }
 
-uint32_t Spark::Pci::read(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
+uint32_t Firework::Pci::read(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
     return internal_read(segment, bus, slot, function, offset);
 }
 
-void Spark::Pci::write(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value) {
+void Firework::Pci::write(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value) {
     internal_write(0, bus, slot, function, offset, value);
 }
 
-void Spark::Pci::write(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value) {
+void Firework::Pci::write(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value) {
     internal_write(segment, bus, slot, function, offset, value);
 }
 
-void Spark::Pci::init() {
+void Firework::Pci::init() {
     Acpi::McfgHeader* mcfg = (Acpi::McfgHeader*)Acpi::get_table("MCFG");
 
     if (mcfg != nullptr) {

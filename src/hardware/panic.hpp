@@ -1,7 +1,7 @@
 #pragma once
 #include <hardware/idt.hpp>
 
-namespace Spark {
+namespace Firework {
     void panic(const char* message);
-    void panic(const char* message, Spark::Idt::InterruptRegisters* registers);
-}  // namespace Spark
+    void panic(const char* message, Firework::Idt::InterruptRegisters* registers);
+}  // namespace Firework

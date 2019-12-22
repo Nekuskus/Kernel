@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Spark::Graphics {
+namespace Firework::Graphics {
     static constexpr unsigned char __font_bitmap__[] = {
         0x00,
         0x00,

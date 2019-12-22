@@ -1,5 +1,5 @@
 #pragma once
 
-namespace Spark::Exceptions {
+namespace Firework::Exceptions {
     void init();
 }

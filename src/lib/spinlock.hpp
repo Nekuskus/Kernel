@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Spark {
+namespace Firework {
     class Spinlock {
         volatile int locked;
 
@@ -8,4 +8,4 @@ namespace Spark {
         void lock();
         void release();
     };
-}  // namespace Spark
+}  // namespace Firework

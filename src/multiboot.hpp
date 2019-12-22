@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-namespace Spark::Multiboot {
+namespace Firework::Multiboot {
     enum FramebufferType {
         INDEXED = 0,
         RBG = 1,
@@ -125,4 +125,4 @@ namespace Spark::Multiboot {
         uint16_t cseg_16_len;
         uint16_t dseg_len;
     };
-}  // namespace Spark::Multiboot
+}  // namespace Firework::Multiboot

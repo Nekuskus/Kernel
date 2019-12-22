@@ -13,7 +13,7 @@ constexpr uint32_t gs_base = 0xC0000101;
 constexpr uint32_t kernelgs_base = 0xC0000102;
 
 
-namespace Spark::Msr {
+namespace Firework::Msr {
     uint64_t read(uint32_t msr);
     void write(uint32_t msr, uint64_t value);
-}  // namespace Spark::Msr
+}  // namespace Firework::Msr

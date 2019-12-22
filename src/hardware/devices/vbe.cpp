@@ -4,18 +4,18 @@
 #include <hardware/terminal.hpp>
 #include <lib/lib.hpp>
 
-Spark::Graphics::ModeInfo mode_info;
+Firework::Graphics::ModeInfo mode_info;
 bool is_working = false;
 
-void Spark::Graphics::init(ModeInfo gfx_mode_info) {
+void Firework::Graphics::init(ModeInfo gfx_mode_info) {
     is_working = false;
     mode_info = gfx_mode_info;
     is_working = true;
 
-    Spark::Graphics::clear(0x000000);
+    Firework::Graphics::clear(0x000000);
 }
 
-void Spark::Graphics::clear(uint32_t color) {
+void Firework::Graphics::clear(uint32_t color) {
     if (!is_working)
         return;
 
@@ -24,7 +24,7 @@ void Spark::Graphics::clear(uint32_t color) {
             set_pixel(x, y, color);
 }
 
-void Spark::Graphics::write_text(const char c, uint16_t x, uint16_t y, uint32_t foreground) {
+void Firework::Graphics::write_text(const char c, uint16_t x, uint16_t y, uint32_t foreground) {
     if (!is_working || c == '\0')
         return;
 
@@ -36,7 +36,7 @@ void Spark::Graphics::write_text(const char c, uint16_t x, uint16_t y, uint32_t 
                 set_pixel(x + nx, y + ny, foreground);
 }
 
-void Spark::Graphics::write_text(const char* str, uint16_t x, uint16_t y, uint32_t foreground) {
+void Firework::Graphics::write_text(const char* str, uint16_t x, uint16_t y, uint32_t foreground) {
     if (!is_working)
         return;
 
@@ -46,7 +46,7 @@ void Spark::Graphics::write_text(const char* str, uint16_t x, uint16_t y, uint32
         write_text(str[idx], x, y, foreground);
 }
 
-void Spark::Graphics::write_text(const char c, uint16_t x, uint16_t y, uint32_t foreground, uint32_t background) {
+void Firework::Graphics::write_text(const char c, uint16_t x, uint16_t y, uint32_t foreground, uint32_t background) {
     if (!is_working || c == '\0' || c == '\n' || c == '\t' || c == '\r')
         return;
 
@@ -57,7 +57,7 @@ void Spark::Graphics::write_text(const char c, uint16_t x, uint16_t y, uint32_t 
             set_pixel(x + nx, y + ny, __font_bitmap__[font_off + ny] & (1 << (8 - nx)) ? foreground : background);
 }
 
-void Spark::Graphics::write_text(const char* str, uint16_t x, uint16_t y, uint32_t foreground, uint32_t background) {
+void Firework::Graphics::write_text(const char* str, uint16_t x, uint16_t y, uint32_t foreground, uint32_t background) {
     if (!is_working)
         return;
 
@@ -67,13 +67,13 @@ void Spark::Graphics::write_text(const char* str, uint16_t x, uint16_t y, uint32
         write_text(str[idx], x, y, foreground, background);
 }
 
-inline void Spark::Graphics::set_pixel(uint16_t x, uint16_t y, uint32_t color) {
+inline void Firework::Graphics::set_pixel(uint16_t x, uint16_t y, uint32_t color) {
     if (!is_working)
         return;
 
     mode_info.framebuffer[(x * 4 + y * mode_info.pitch) / (mode_info.bpp / 8)] = color;
 }
 
-Spark::Graphics::ModeInfo Spark::Graphics::get_mode_info() {
+Firework::Graphics::ModeInfo Firework::Graphics::get_mode_info() {
     return mode_info;
 }

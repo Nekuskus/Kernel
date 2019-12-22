@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-namespace Spark::Pci {
+namespace Firework::Pci {
     enum HeaderType {
         STANDARD = 0,
         PCI_TO_PCI_BRIDGE = 1,
@@ -104,4 +104,4 @@ namespace Spark::Pci {
     const char* class_code_to_str(uint8_t class_code);
     void scan_all_buses();
     void init();
-};  // namespace Spark::Pci
+};  // namespace Firework::Pci

@@ -33,18 +33,18 @@ bool bitmap_is_free(size_t idx, size_t count) {
     return true;
 }
 
-uintptr_t find_available_memory_top(Spark::Multiboot::MemoryMap* mmap, size_t mmap_len) {
+uintptr_t find_available_memory_top(Firework::Multiboot::MemoryMap* mmap, size_t mmap_len) {
     uintptr_t top = 0;
 
     for (size_t i = 0; i < mmap_len; i++)
-        if (mmap[i].type == Spark::Multiboot::MemoryState::AVAILABLE)
+        if (mmap[i].type == Firework::Multiboot::MemoryState::AVAILABLE)
             if (mmap[i].addr + mmap[i].len > top)
                 top = mmap[i].addr + mmap[i].len;
 
     return top;
 }
 
-void Spark::Pmm::init(Multiboot::MemoryMap* mmap, size_t mmap_len) {
+void Firework::Pmm::init(Multiboot::MemoryMap* mmap, size_t mmap_len) {
     uintptr_t mem_top = find_available_memory_top(mmap, mmap_len);
     uint32_t mem_pages = (mem_top + page_size - 1) / page_size;
     bitmap = (uint64_t*)(memory_base + virtual_physical_base);
@@ -85,7 +85,7 @@ void Spark::Pmm::init(Multiboot::MemoryMap* mmap, size_t mmap_len) {
     alloc((bitmap_len / 8 + page_size - 1) / page_size);
 }
 
-void* Spark::Pmm::alloc(size_t count, size_t alignment, uintptr_t upper) {
+void* Firework::Pmm::alloc(size_t count, size_t alignment, uintptr_t upper) {
     size_t idx = memory_base / page_size, max_idx = !upper ? bitmap_len : bitmap_len < (upper / page_size) ? bitmap_len : (upper / page_size);
 
     while (idx < max_idx) {
@@ -105,11 +105,11 @@ void* Spark::Pmm::alloc(size_t count, size_t alignment, uintptr_t upper) {
     return nullptr;
 }
 
-void* Spark::Pmm::alloc(size_t count) {
+void* Firework::Pmm::alloc(size_t count) {
     return alloc(count, 1, 0);
 }
 
-void Spark::Pmm::free(size_t mem, size_t count) {
+void Firework::Pmm::free(size_t mem, size_t count) {
     size_t idx = mem / page_size;
 
     bit_write(idx, 0, count);

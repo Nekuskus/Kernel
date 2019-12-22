@@ -14,7 +14,7 @@
 #include <multiboot.hpp>
 #include <hardware/exceptions.hpp>
 
-namespace Spark {
+namespace Firework {
     extern "C" void kernel_main(void* mb_info_ptr, uint32_t multiboot_magic) {
         if (multiboot_magic == 0x2BADB002 && mb_info_ptr) {
             Multiboot::Info* mb_info = (Multiboot::Info*)((uint64_t)mb_info_ptr + virtual_kernel_base);
@@ -54,4 +54,4 @@ namespace Spark {
         while (1)
             asm volatile("hlt");
     }
-}  // namespace Spark
+}  // namespace Firework
