@@ -1,12 +1,12 @@
 #include <hardware/cpu/cpu.hpp>
 #include <hardware/mm/mm.hpp>
+#include <hardware/mm/vmm.hpp>
 #include <hardware/mm/pmm.hpp>
-#include <hardware/mm/paging.hpp>
 #include <lib/math.hpp>
 
-extern "C" Firework::Vmm::PageTable* kernel_pml4;
+extern "C" Firework::FireworkKernel::Vmm::PageTable* kernel_pml4;
 
-Firework::Vmm::PageTableEntries Firework::Vmm::virtual_to_entries(uint64_t virt) {
+Firework::FireworkKernel::Vmm::PageTableEntries Firework::FireworkKernel::Vmm::virtual_to_entries(uint64_t virt) {
     Vmm::PageTableEntries off = {
         .pml4 = (virt >> 39) & 0x1ff,
         .pdp = (virt >> 30) & 0x1ff,
@@ -17,7 +17,7 @@ Firework::Vmm::PageTableEntries Firework::Vmm::virtual_to_entries(uint64_t virt)
     return off;
 }
 
-void* Firework::Vmm::entries_to_virtual(PageTableEntries offs) {
+void* Firework::FireworkKernel::Vmm::entries_to_virtual(PageTableEntries offs) {
     uintptr_t addr = 0;
 
     addr |= offs.pml4 << 39;
@@ -28,37 +28,37 @@ void* Firework::Vmm::entries_to_virtual(PageTableEntries offs) {
     return (void*)addr;
 }
 
-void Firework::Vmm::init() {
+void Firework::FireworkKernel::Vmm::init() {
     kernel_pml4 = new_address_space();
     set_context(kernel_pml4);
 }
 
-Firework::Vmm::PageTable* get_or_alloc_ent(Firework::Vmm::PageTable* tab, size_t off, int flags) {
+Firework::FireworkKernel::Vmm::PageTable* get_or_alloc_ent(Firework::FireworkKernel::Vmm::PageTable* tab, size_t off, int flags) {
     uint64_t ent_addr = tab->ents[off] & address_mask;
 
     if (!ent_addr) {
-        ent_addr = tab->ents[off] = (uint64_t)Firework::Pmm::alloc(1);
+        ent_addr = tab->ents[off] = (uint64_t)Firework::FireworkKernel::Pmm::alloc(1);
 
         if (!ent_addr)
             return nullptr;
 
-        tab->ents[off] |= flags | Firework::Vmm::VirtualMemoryFlags::VMM_PRESENT;
+        tab->ents[off] |= flags | Firework::FireworkKernel::Vmm::VirtualMemoryFlags::VMM_PRESENT;
         memset((void*)(ent_addr + virtual_physical_base), 0, 4096);
     }
 
-    return (Firework::Vmm::PageTable*)(ent_addr + virtual_physical_base);
+    return (Firework::FireworkKernel::Vmm::PageTable*)(ent_addr + virtual_physical_base);
 }
 
-Firework::Vmm::PageTable* get_or_null_ent(Firework::Vmm::PageTable* tab, size_t off) {
+Firework::FireworkKernel::Vmm::PageTable* get_or_null_ent(Firework::FireworkKernel::Vmm::PageTable* tab, size_t off) {
     uint64_t ent_addr = tab->ents[off] & address_mask;
 
     if (!ent_addr)
         return nullptr;
 
-    return (Firework::Vmm::PageTable*)(ent_addr + virtual_physical_base);
+    return (Firework::FireworkKernel::Vmm::PageTable*)(ent_addr + virtual_physical_base);
 }
 
-bool Firework::Vmm::map_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t count, int perms) {
+bool Firework::FireworkKernel::Vmm::map_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t count, int perms) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -73,7 +73,7 @@ bool Firework::Vmm::map_pages(PageTable* pml4, uint64_t virt, uint64_t phys, siz
     return true;
 }
 
-bool Firework::Vmm::unmap_pages(PageTable* pml4, uint64_t virt, size_t count) {
+bool Firework::FireworkKernel::Vmm::unmap_pages(PageTable* pml4, uint64_t virt, size_t count) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -99,7 +99,7 @@ bool Firework::Vmm::unmap_pages(PageTable* pml4, uint64_t virt, size_t count) {
     return true;
 }
 
-bool Firework::Vmm::update_perms(PageTable* pml4, uint64_t virt, size_t count, int perms) {
+bool Firework::FireworkKernel::Vmm::update_perms(PageTable* pml4, uint64_t virt, size_t count, int perms) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -125,7 +125,7 @@ bool Firework::Vmm::update_perms(PageTable* pml4, uint64_t virt, size_t count, i
     return true;
 }
 
-bool Firework::Vmm::map_huge_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t count, int perms) {
+bool Firework::FireworkKernel::Vmm::map_huge_pages(PageTable* pml4, uint64_t virt, uint64_t phys, size_t count, int perms) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -139,7 +139,7 @@ bool Firework::Vmm::map_huge_pages(PageTable* pml4, uint64_t virt, uint64_t phys
     return true;
 }
 
-bool Firework::Vmm::unmap_huge_pages(PageTable* pml4, uint64_t virt, size_t count) {
+bool Firework::FireworkKernel::Vmm::unmap_huge_pages(PageTable* pml4, uint64_t virt, size_t count) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -156,7 +156,7 @@ bool Firework::Vmm::unmap_huge_pages(PageTable* pml4, uint64_t virt, size_t coun
     return true;
 }
 
-bool Firework::Vmm::update_huge_perms(PageTable* pml4, uint64_t virt, size_t count, int perms) {
+bool Firework::FireworkKernel::Vmm::update_huge_perms(PageTable* pml4, uint64_t virt, size_t count, int perms) {
     while (count--) {
         PageTableEntries offs = virtual_to_entries(virt);
         PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
@@ -173,7 +173,7 @@ bool Firework::Vmm::update_huge_perms(PageTable* pml4, uint64_t virt, size_t cou
     return true;
 }
 
-uintptr_t Firework::Vmm::get_entry(PageTable* pml4, uint64_t virt) {
+uintptr_t Firework::FireworkKernel::Vmm::get_entry(PageTable* pml4, uint64_t virt) {
     if (virt >= 0xFFFFFFFF80000000)
         return virt - 0xFFFFFFFF80000000;
 
@@ -200,7 +200,7 @@ uintptr_t Firework::Vmm::get_entry(PageTable* pml4, uint64_t virt) {
     return pt_virt->ents[offs.pt];
 }
 
-Firework::Vmm::PageTable* Firework::Vmm::new_address_space() {
+Firework::FireworkKernel::Vmm::PageTable* Firework::FireworkKernel::Vmm::new_address_space() {
     PageTable* new_pml4 = (PageTable*)Pmm::alloc(1);
 
     memset((void*)((uintptr_t)new_pml4 + virtual_physical_base), 0, 4096);
@@ -210,39 +210,39 @@ Firework::Vmm::PageTable* Firework::Vmm::new_address_space() {
     return new_pml4;
 }
 
-Firework::Vmm::PageTable** Firework::Vmm::get_ctx_ptr() {
+Firework::FireworkKernel::Vmm::PageTable** Firework::FireworkKernel::Vmm::get_ctx_ptr() {
     return (PageTable**)kernel_pml4;
 }
 
-void Firework::Vmm::save_context() {
+void Firework::FireworkKernel::Vmm::save_context() {
     PageTable** ctx = get_ctx_ptr();
     *ctx = get_current_context();
 }
 
-Firework::Vmm::PageTable* get_saved_context() {
-    Firework::Vmm::PageTable** ctx = Firework::Vmm::get_ctx_ptr();
+Firework::FireworkKernel::Vmm::PageTable* get_saved_context() {
+    Firework::FireworkKernel::Vmm::PageTable** ctx = Firework::FireworkKernel::Vmm::get_ctx_ptr();
     return *ctx;
 }
 
-void Firework::Vmm::restore_context() {
+void Firework::FireworkKernel::Vmm::restore_context() {
     PageTable** ctx = get_ctx_ptr();
     set_context(*ctx);
     *ctx = nullptr;
 }
 
-void Firework::Vmm::drop_context() {
+void Firework::FireworkKernel::Vmm::drop_context() {
     PageTable** ctx = get_ctx_ptr();
     *ctx = nullptr;
 }
 
-void Firework::Vmm::set_context(PageTable* ctx) {
+void Firework::FireworkKernel::Vmm::set_context(PageTable* ctx) {
     asm volatile("mov %%rax, %%cr3"
                  :
                  : "a"(ctx)
                  : "memory");
 }
 
-Firework::Vmm::PageTable* Firework::Vmm::get_current_context() {
+Firework::FireworkKernel::Vmm::PageTable* Firework::FireworkKernel::Vmm::get_current_context() {
     uintptr_t ctx;
     asm volatile("mov %%cr3, %%rax"
                  : "=a"(ctx)

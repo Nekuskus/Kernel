@@ -1,5 +1,5 @@
 #pragma once
 
-namespace Firework::Userland::Multitasking {
+namespace Firework::FireworkKernel::Userland::Multitasking {
 
 }

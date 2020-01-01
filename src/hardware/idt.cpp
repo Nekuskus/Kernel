@@ -4,9 +4,9 @@
 #include <hardware/terminal.hpp>
 #include <lib/lib.hpp>
 
-Firework::Idt::Entry idt_entries[256] = {};
-Firework::Idt::InterruptHandler interrupt_handlers[256] = {};
-Firework::Idt::Pointer idt_pointer = {};
+Firework::FireworkKernel::Idt::Entry idt_entries[256] = {};
+Firework::FireworkKernel::Idt::InterruptHandler interrupt_handlers[256] = {};
+Firework::FireworkKernel::Idt::Pointer idt_pointer = {};
 
 struct {
     const char* mnemonic;
@@ -304,15 +304,15 @@ extern "C" void isr253();
 extern "C" void isr254();
 extern "C" void isr255();
 
-extern "C" void isr_handler(Firework::Idt::InterruptRegisters* registers) {
+extern "C" void isr_handler(Firework::FireworkKernel::Idt::InterruptRegisters* registers) {
     uint8_t n = registers->int_num & 0xFF;
-    Firework::Idt::InterruptHandler& handler = interrupt_handlers[n];
+    Firework::FireworkKernel::Idt::InterruptHandler& handler = interrupt_handlers[n];
 
     if (n < 32) {
         char text[8192] = "";
 
         sprintf(text, "Received Exception #%s (%s),\n\rCPU registers: RIP: %x, RSP: %x\n\r    RAX: %x, RBX: %x, RCX: %x, RDX : %x\n\r    RSI: %x, RDI: %x, RSP: %x, RBP: %x\n\r    R8: %x, R9: %x, R10: %x, R11: %x\n\r    R12: %x, R12: %x, R13: %x, R14: %x\n\r    R15: %x", exceptions[n].mnemonic, exceptions[n].message, registers->rip, registers->rsp, registers->rax, registers->rbx, registers->rcx, registers->rbx, registers->rsi, registers->rdi, registers->rsp, registers->rbp, registers->r8, registers->r9, registers->r10, registers->r11, registers->r12, registers->r13, registers->r13, registers->r14, registers->r15);
-        Firework::Terminal::write_line(text, 0xFFFFFF, 0xe50000);
+        Firework::FireworkKernel::Terminal::write_line(text, 0xFFFFFF, 0xe50000);
     }
 
     if (handler.handler)
@@ -325,7 +325,7 @@ extern "C" void isr_handler(Firework::Idt::InterruptRegisters* registers) {
             ;
 }
 
-void Firework::Idt::register_interrupt_handler(uint16_t n, idt_function function, bool is_irq, bool should_iret) {
+void Firework::FireworkKernel::Idt::register_interrupt_handler(uint16_t n, idt_function function, bool is_irq, bool should_iret) {
     interrupt_handlers[n].handler = function;
     interrupt_handlers[n].is_irq = is_irq;
     interrupt_handlers[n].should_iret = should_iret;
@@ -364,7 +364,7 @@ void set_entry(uint8_t vec, uintptr_t function, uint16_t selector, uint8_t ist, 
     idt_entries[vec].reserved = 0;
 }
 
-void Firework::Idt::init() {
+void Firework::FireworkKernel::Idt::init() {
     Port::outb(0x20, 17);
     Port::outb(0xA0, 17);
     Port::outb(0x21, 32);

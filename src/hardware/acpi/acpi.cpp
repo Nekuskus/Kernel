@@ -1,13 +1,13 @@
 #include <hardware/acpi/acpi.hpp>
 #include <hardware/mm/mm.hpp>
-#include <hardware/mm/paging.hpp>
+#include <hardware/mm/vmm.hpp>
 #include <hardware/panic.hpp>
 #include <hardware/terminal.hpp>
 #include <lib/lib.hpp>
 #include <lib/linked_list.hpp>
 
-Firework::Acpi::RsdpInfo rsdp_info;
-auto acpi_tables = LinkedList<Firework::Acpi::SdtHeader*>();
+Firework::FireworkKernel::Acpi::RsdpInfo rsdp_info;
+auto acpi_tables = LinkedList<Firework::FireworkKernel::Acpi::SdtHeader*>();
 
 uint8_t calculate_checksum(void* ptr, size_t size) {
     uint8_t sum = 0;
@@ -18,16 +18,16 @@ uint8_t calculate_checksum(void* ptr, size_t size) {
     return sum;
 }
 
-Firework::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
+Firework::FireworkKernel::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
     uint64_t address = base + virtual_physical_base;
-    Firework::Acpi::RsdpInfo info{};
+    Firework::FireworkKernel::Acpi::RsdpInfo info{};
 
-    Firework::Vmm::map_pages(Firework::Vmm::get_current_context(), address, base, (length + page_size - 1) / page_size, Firework::Vmm::VirtualMemoryFlags::VMM_PRESENT);
+    Firework::FireworkKernel::Vmm::map_pages(Firework::FireworkKernel::Vmm::get_current_context(), address, base, (length + page_size - 1) / page_size, Firework::FireworkKernel::Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
     for (size_t off = 0; off < length; off += 16) {
-        Firework::Acpi::RsdpDescriptor* rsdp = (Firework::Acpi::RsdpDescriptor*)(address + off);
+        Firework::FireworkKernel::Acpi::RsdpDescriptor* rsdp = (Firework::FireworkKernel::Acpi::RsdpDescriptor*)(address + off);
 
-        if (strncmp(rsdp->signature, "RSD PTR ", 8) != 0 || calculate_checksum(rsdp, sizeof(Firework::Acpi::RsdpDescriptor)) != 0)
+        if (strncmp(rsdp->signature, "RSD PTR ", 8) != 0 || calculate_checksum(rsdp, sizeof(Firework::FireworkKernel::Acpi::RsdpDescriptor)) != 0)
             continue;
 
         info.rsdp_address = address + off;
@@ -42,9 +42,9 @@ Firework::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
             info.address = (uint64_t)rsdp->rsdt_address + virtual_physical_base;
             break;
         } else {
-            Firework::Acpi::XsdpDescriptor* xsdp = (Firework::Acpi::XsdpDescriptor*)rsdp;
+            Firework::FireworkKernel::Acpi::XsdpDescriptor* xsdp = (Firework::FireworkKernel::Acpi::XsdpDescriptor*)rsdp;
 
-            if (calculate_checksum(xsdp, sizeof(Firework::Acpi::XsdpDescriptor)) != 0)
+            if (calculate_checksum(xsdp, sizeof(Firework::FireworkKernel::Acpi::XsdpDescriptor)) != 0)
                 continue;
 
             info.version = 2;
@@ -56,7 +56,7 @@ Firework::Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
     return info;
 }
 
-Firework::Acpi::SdtHeader* Firework::Acpi::get_table(const char* signature) {
+Firework::FireworkKernel::Acpi::SdtHeader* Firework::FireworkKernel::Acpi::get_table(const char* signature) {
     for (auto table : acpi_tables)
         if (strncmp(table->signature, signature, 4) == 0)
             return table;
@@ -64,10 +64,10 @@ Firework::Acpi::SdtHeader* Firework::Acpi::get_table(const char* signature) {
     return nullptr;
 }
 
-void Firework::Acpi::init() {
+void Firework::FireworkKernel::Acpi::init() {
     uint16_t* ebda_seg_ptr = (uint16_t*)(0x40E + virtual_physical_base);
 
-    Firework::Vmm::map_pages(Firework::Vmm::get_current_context(), 0x40E + virtual_physical_base, 0x40E, (sizeof(uint16_t) + page_size - 1) / page_size, Firework::Vmm::VirtualMemoryFlags::VMM_PRESENT);
+    Firework::FireworkKernel::Vmm::map_pages(Firework::FireworkKernel::Vmm::get_current_context(), 0x40E + virtual_physical_base, 0x40E, (sizeof(uint16_t) + page_size - 1) / page_size, Firework::FireworkKernel::Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
     rsdp_info = bios_detect_rsdp(*ebda_seg_ptr << 4, 0x400);
 
@@ -75,7 +75,7 @@ void Firework::Acpi::init() {
         rsdp_info = bios_detect_rsdp(0xE0000, 0x20000);
 
     if (!rsdp_info.version)
-        Firework::panic("ACPI not supported");
+        Firework::FireworkKernel::panic("ACPI not supported");
 
     char text[255] = "";
 
@@ -83,7 +83,7 @@ void Firework::Acpi::init() {
     Terminal::write_line(text, 0xFFFFFF);
 
     if (rsdp_info.version >= 2) {
-        Firework::Acpi::XsdtHeader* xsdt = (Firework::Acpi::XsdtHeader*)rsdp_info.address;
+        Firework::FireworkKernel::Acpi::XsdtHeader* xsdt = (Firework::FireworkKernel::Acpi::XsdtHeader*)rsdp_info.address;
         size_t entries = (xsdt->header.length - sizeof(xsdt->header)) / 8;
 
         for (size_t i = 0; i < entries; i++) {
@@ -92,7 +92,7 @@ void Firework::Acpi::init() {
 
             Vmm::map_pages(Vmm::get_current_context(), xsdt->tables[i] + virtual_physical_base, xsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
-            Firework::Acpi::SdtHeader* h = (Firework::Acpi::SdtHeader*)(xsdt->tables[i] + virtual_physical_base);
+            Firework::FireworkKernel::Acpi::SdtHeader* h = (Firework::FireworkKernel::Acpi::SdtHeader*)(xsdt->tables[i] + virtual_physical_base);
 
             Vmm::map_pages(Vmm::get_current_context(), xsdt->tables[i] + virtual_physical_base, xsdt->tables[i], (h->length + page_size - 1) / page_size + 2, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
@@ -105,7 +105,7 @@ void Firework::Acpi::init() {
             }
         }
     } else {
-        Firework::Acpi::RsdtHeader* rsdt = (Firework::Acpi::RsdtHeader*)rsdp_info.address;
+        Firework::FireworkKernel::Acpi::RsdtHeader* rsdt = (Firework::FireworkKernel::Acpi::RsdtHeader*)rsdp_info.address;
         size_t entries = (rsdt->header.length - sizeof(rsdt->header)) / 4;
 
         for (size_t i = 0; i < entries; i++) {
@@ -114,7 +114,7 @@ void Firework::Acpi::init() {
 
             Vmm::map_pages(Vmm::get_current_context(), (uint64_t)rsdt->tables[i] + virtual_physical_base, (uint64_t)rsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
-            Firework::Acpi::SdtHeader* h = (Firework::Acpi::SdtHeader*)((uint64_t)rsdt->tables[i] + virtual_physical_base);
+            Firework::FireworkKernel::Acpi::SdtHeader* h = (Firework::FireworkKernel::Acpi::SdtHeader*)((uint64_t)rsdt->tables[i] + virtual_physical_base);
 
             Vmm::map_pages(Vmm::get_current_context(), (uint64_t)rsdt->tables[i] + virtual_physical_base, (uint64_t)rsdt->tables[i], (h->length + page_size - 1) / page_size + 2, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 

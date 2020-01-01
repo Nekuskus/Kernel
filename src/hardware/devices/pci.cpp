@@ -1,25 +1,25 @@
 #include <hardware/acpi/acpi.hpp>
 #include <hardware/devices/pci.hpp>
-#include <hardware/mm/paging.hpp>
+#include <hardware/mm/vmm.hpp>
 #include <hardware/port.hpp>
 #include <hardware/terminal.hpp>
 #include <lib/lib.hpp>
 #include <lib/linked_list.hpp>
 
-auto mcfg_entries = LinkedList<Firework::Acpi::McfgEntry>();
+auto mcfg_entries = LinkedList<Firework::FireworkKernel::Acpi::McfgEntry>();
 
 using read_function = uint32_t (*)(uint16_t, uint8_t, uint8_t, uint8_t, uint8_t);
 using write_function = void (*)(uint16_t, uint8_t, uint8_t, uint8_t, uint8_t, uint32_t);
 
 uint32_t iomap_read([[maybe_unused]] uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
-    Firework::Port::outd(0xCF8, ((uint32_t)bus << 16) | ((uint32_t)slot << 11) | ((uint32_t)function << 8) | (offset & 0xFC) | (1u << 31));
+    Firework::FireworkKernel::Port::outd(0xCF8, ((uint32_t)bus << 16) | ((uint32_t)slot << 11) | ((uint32_t)function << 8) | (offset & 0xFC) | (1u << 31));
 
-    return Firework::Port::ind(0xCFC + (offset % 4));
+    return Firework::FireworkKernel::Port::ind(0xCFC + (offset % 4));
 }
 
 void iomap_write([[maybe_unused]] uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value) {
-    Firework::Port::outd(0xCF8, ((uint32_t)bus << 16) | ((uint32_t)slot << 11) | ((uint32_t)function << 8) | (offset & 0xFC) | (1u << 31));
-    Firework::Port::outd(0xCFC + (offset % 4), value);
+    Firework::FireworkKernel::Port::outd(0xCF8, ((uint32_t)bus << 16) | ((uint32_t)slot << 11) | ((uint32_t)function << 8) | (offset & 0xFC) | (1u << 31));
+    Firework::FireworkKernel::Port::outd(0xCFC + (offset % 4), value);
 }
 
 read_function internal_read = iomap_read;
@@ -33,7 +33,8 @@ uint32_t mmap_read(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function
         uint64_t addr = (entry.ecm_base + (((bus - entry.start_bus_number) << 20) | (slot << 25) | (function << 12))) | offset;
         uint64_t addr_virtual = addr + virtual_physical_base;
 
-        Firework::Vmm::map_pages(Firework::Vmm::get_current_context(), addr_virtual, addr, 1, Firework::Vmm::VirtualMemoryFlags::VMM_PRESENT | Firework::Vmm::VirtualMemoryFlags::VMM_WRITE);
+        Firework::FireworkKernel::Vmm::map_pages(Firework::FireworkKernel::Vmm::get_current_context(), addr_virtual, addr, 1, Firework::FireworkKernel::Vmm::VirtualMemoryFlags::VMM_PRESENT | Firework::FireworkKernel::Vmm::VirtualMemoryFlags::VMM_WRITE);
+
         return *(uint32_t*)addr_virtual;
     }
 
@@ -48,12 +49,12 @@ void mmap_write(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, u
         uint64_t addr = (entry.ecm_base + (((bus - entry.start_bus_number) << 20) | (slot << 25) | (function << 12))) | offset;
         uint64_t addr_virtual = addr + virtual_physical_base;
 
-        Firework::Vmm::map_pages(Firework::Vmm::get_current_context(), addr_virtual, addr, 1, Firework::Vmm::VirtualMemoryFlags::VMM_PRESENT | Firework::Vmm::VirtualMemoryFlags::VMM_WRITE);
+        Firework::FireworkKernel::Vmm::map_pages(Firework::FireworkKernel::Vmm::get_current_context(), addr_virtual, addr, 1, Firework::FireworkKernel::Vmm::VirtualMemoryFlags::VMM_PRESENT | Firework::FireworkKernel::Vmm::VirtualMemoryFlags::VMM_WRITE);
         *(uint32_t*)addr_virtual = value;
     }
 }
 
-const char* Firework::Pci::class_code_to_str(uint8_t class_code) {
+const char* Firework::FireworkKernel::Pci::class_code_to_str(uint8_t class_code) {
     switch (class_code) {
         case 0:
             return "Unclassified";
@@ -98,23 +99,23 @@ const char* Firework::Pci::class_code_to_str(uint8_t class_code) {
     return "Unknown";
 }
 
-uint32_t Firework::Pci::read(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
+uint32_t Firework::FireworkKernel::Pci::read(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
     return internal_read(0, bus, slot, function, offset);
 }
 
-uint32_t Firework::Pci::read(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
+uint32_t Firework::FireworkKernel::Pci::read(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
     return internal_read(segment, bus, slot, function, offset);
 }
 
-void Firework::Pci::write(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value) {
+void Firework::FireworkKernel::Pci::write(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value) {
     internal_write(0, bus, slot, function, offset, value);
 }
 
-void Firework::Pci::write(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value) {
+void Firework::FireworkKernel::Pci::write(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value) {
     internal_write(segment, bus, slot, function, offset, value);
 }
 
-void Firework::Pci::init() {
+void Firework::FireworkKernel::Pci::init() {
     Acpi::McfgHeader* mcfg = (Acpi::McfgHeader*)Acpi::get_table("MCFG");
 
     if (mcfg != nullptr) {
@@ -130,5 +131,5 @@ void Firework::Pci::init() {
         internal_read = mmap_read;
         internal_write = mmap_write;
     } else
-        Terminal::write_line("[DEVMGR] No PCI Express support", 0xFFFFFF);
+        Terminal::write_line("[DEVMGR] No PCI(E) Memory-Mapped support", 0xFFFFFF);
 }

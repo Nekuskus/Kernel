@@ -1,14 +1,14 @@
 #include <cpuid.h>
 #include <hardware/cpu/cpu.hpp>
 
-bool Firework::Cpu::check_msr(uint32_t flag) {
+bool Firework::FireworkKernel::Cpu::check_msr(uint32_t flag) {
     uint32_t a, b, c, d;
     __cpuid(1, a, b, c, d);
 
     return d & flag;
 }
 
-void Firework::Cpu::halt_forever() {
+void Firework::FireworkKernel::Cpu::halt_forever() {
     asm volatile(
         "cli\n"
         "1:\n"
@@ -19,7 +19,7 @@ void Firework::Cpu::halt_forever() {
         : "memory");
 }
 
-void Firework::Cpu::atomic_set(volatile int* var) {
+void Firework::FireworkKernel::Cpu::atomic_set(volatile int* var) {
     asm volatile(
         "1:\n\t"
         "lock bts $0, %0\n\t"
@@ -32,7 +32,7 @@ void Firework::Cpu::atomic_set(volatile int* var) {
         : "memory", "cc");
 }
 
-void Firework::Cpu::atomic_unset(volatile int* var) {
+void Firework::FireworkKernel::Cpu::atomic_unset(volatile int* var) {
     asm volatile("lock btr $0, %0\n\t"
                  : "+m"(*var)
                  :

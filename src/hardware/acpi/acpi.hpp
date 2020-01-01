@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-namespace Firework::Acpi {
+namespace Firework::FireworkKernel::Acpi {
     struct [[gnu::packed]] RsdpDescriptor {
         char signature[8];
         uint8_t checksum;
@@ -164,6 +164,6 @@ namespace Firework::Acpi {
         GenericAddress x_gpe1_block;
     };
 
-    Firework::Acpi::SdtHeader* get_table(const char* signature);
+    Firework::FireworkKernel::Acpi::SdtHeader* get_table(const char* signature);
     void init();
-};  // namespace Firework::Acpi
+};  // namespace Firework::FireworkKernel::Acpi

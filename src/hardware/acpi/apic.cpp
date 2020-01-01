@@ -3,24 +3,24 @@
 #include <hardware/acpi/apic.hpp>
 #include <hardware/cpu/smp/smp.hpp>
 #include <hardware/mm/mm.hpp>
-#include <hardware/mm/paging.hpp>
+#include <hardware/mm/vmm.hpp>
 #include <hardware/msr.hpp>
 
-Firework::Acpi::MadtHeader* madt;
+Firework::FireworkKernel::Acpi::MadtHeader* madt;
 uint64_t lapic_base;
 
-uint32_t Firework::Apic::LocalApic::read(uint32_t reg) {
+uint32_t Firework::FireworkKernel::Apic::LocalApic::read(uint32_t reg) {
     uint32_t* value = (uint32_t*)(lapic_base + reg);
 
     return *value;
 }
 
-void Firework::Apic::LocalApic::write(uint32_t reg, uint32_t data) {
+void Firework::FireworkKernel::Apic::LocalApic::write(uint32_t reg, uint32_t data) {
     uint32_t* value = (uint32_t*)(lapic_base + reg);
     *value = data;
 }
 
-void Firework::Apic::LocalApic::init() {
+void Firework::FireworkKernel::Apic::LocalApic::init() {
     uint64_t apic_msr_base = Msr::read(apic_base);
     lapic_base = (apic_base & 0xFFFFFFFFFFFFF000) + virtual_kernel_base;
     apic_msr_base |= 1 << 11;
@@ -29,7 +29,7 @@ void Firework::Apic::LocalApic::init() {
     Msr::write(apic_base, apic_msr_base);
 }
 
-void Firework::Apic::LocalApic::send_ipi(uint32_t target, uint32_t flags) {
+void Firework::FireworkKernel::Apic::LocalApic::send_ipi(uint32_t target, uint32_t flags) {
     write(icr_high, target << 24);
     write(icr_low, flags);
 
@@ -37,8 +37,8 @@ void Firework::Apic::LocalApic::send_ipi(uint32_t target, uint32_t flags) {
         ;
 }
 
-void Firework::Apic::init() {
-    madt = (Firework::Acpi::MadtHeader*)Acpi::get_table("APIC");
+void Firework::FireworkKernel::Apic::init() {
+    madt = (Firework::FireworkKernel::Acpi::MadtHeader*)Acpi::get_table("APIC");
     size_t table_size = madt->header.length - sizeof(Acpi::MadtHeader);
     uint64_t list = (uint64_t)madt + sizeof(Acpi::MadtHeader), offset = 0;
 

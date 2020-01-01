@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Firework::Graphics {
+namespace Firework::FireworkKernel::Graphics {
     static constexpr unsigned char __font_bitmap__[] = {
         0x00,
         0x00,

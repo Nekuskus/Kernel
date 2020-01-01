@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Firework {
+namespace Firework::FireworkKernel {
     class Spinlock {
         volatile int locked;
 

@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace Firework::Graphics {
+namespace Firework::FireworkKernel::Graphics {
     struct ModeInfo {
         uint32_t* framebuffer;
         uint32_t pitch;
@@ -19,4 +19,4 @@ namespace Firework::Graphics {
     void write_text(const char* str, uint16_t x, uint16_t y, uint32_t foreground, uint32_t background);
     inline void set_pixel(uint16_t x, uint16_t y, uint32_t color);
     ModeInfo get_mode_info();
-};  // namespace Firework::Graphics
+};  // namespace Firework::FireworkKernel::Graphics

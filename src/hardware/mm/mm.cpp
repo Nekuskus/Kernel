@@ -1,10 +1,10 @@
 #include <hardware/mm/mm.hpp>
 #include <hardware/mm/pmm.hpp>
-#include <hardware/mm/paging.hpp>
+#include <hardware/mm/vmm.hpp>
 #include <lib/lib.hpp>
 #include <lib/spinlock.hpp>
 
-Firework::Spinlock mm_lock{};
+Firework::FireworkKernel::Spinlock mm_lock{};
 uintptr_t top = memory_base;
 
 extern "C" void* malloc(size_t bytes) {
@@ -12,7 +12,7 @@ extern "C" void* malloc(size_t bytes) {
 
     bytes = (((bytes + 7) / 8) * 8) + 16;
     size_t pages = (bytes + page_size - 1) / page_size + 1;
-    void *out = (void*)top, *p = Firework::Pmm::alloc(pages);
+    void *out = (void*)top, *p = Firework::FireworkKernel::Pmm::alloc(pages);
 
     if (!p) {
         mm_lock.release();
@@ -20,7 +20,7 @@ extern "C" void* malloc(size_t bytes) {
         return nullptr;
     }
 
-    Firework::Vmm::map_pages(Firework::Vmm::get_current_context(), top, (uint64_t)p, pages, Firework::Vmm::VirtualMemoryFlags::VMM_PRESENT | Firework::Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Firework::FireworkKernel::Vmm::map_pages(Firework::FireworkKernel::Vmm::get_current_context(), top, (uint64_t)p, pages, Firework::FireworkKernel::Vmm::VirtualMemoryFlags::VMM_PRESENT | Firework::FireworkKernel::Vmm::VirtualMemoryFlags::VMM_WRITE);
 
     top += page_size * pages;
     out = (void*)((uintptr_t)out + (pages * page_size - bytes));
@@ -65,10 +65,10 @@ extern "C" void free(void* memory) {
     if (pages != (uint64_t)memory - 8)
         return;
 
-    void *p = (void*)Firework::Vmm::get_entry(Firework::Vmm::get_current_context(), start);
+    void* p = (void*)Firework::FireworkKernel::Vmm::get_entry(Firework::FireworkKernel::Vmm::get_current_context(), start);
 
-    Firework::Vmm::unmap_pages(Firework::Vmm::get_current_context(), start, pages);
-    Firework::Pmm::free((size_t)p, pages);
+    Firework::FireworkKernel::Vmm::unmap_pages(Firework::FireworkKernel::Vmm::get_current_context(), start, pages);
+    Firework::FireworkKernel::Pmm::free((size_t)p, pages);
     mm_lock.release();
 }
 

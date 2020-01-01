@@ -4,7 +4,7 @@
 
 constexpr size_t address_mask = ~(0xFFF | (1ull << 63));
 
-namespace Firework::Vmm {
+namespace Firework::FireworkKernel::Vmm {
     enum VirtualMemoryFlags {
         VMM_PRESENT = 1 << 0,
         VMM_WRITE = 1 << 1,
@@ -43,4 +43,4 @@ namespace Firework::Vmm {
     void drop_context();
     void set_context(PageTable* ctx);
     PageTable* get_current_context();
-};  // namespace Firework::Vmm
+};  // namespace Firework::FireworkKernel::Vmm

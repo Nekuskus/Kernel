@@ -5,16 +5,16 @@
 #include <hardware/cpu/smp/smp.hpp>
 #include <hardware/devices/pci.hpp>
 #include <hardware/devices/vbe.hpp>
+#include <hardware/exceptions.hpp>
 #include <hardware/idt.hpp>
 #include <hardware/mm/mm.hpp>
+#include <hardware/mm/vmm.hpp>
 #include <hardware/mm/pmm.hpp>
-#include <hardware/mm/paging.hpp>
 #include <hardware/terminal.hpp>
 #include <lib/lib.hpp>
 #include <multiboot.hpp>
-#include <hardware/exceptions.hpp>
 
-namespace Firework {
+namespace Firework::FireworkKernel {
     extern "C" void kernel_main(void* mb_info_ptr, uint32_t multiboot_magic) {
         if (multiboot_magic == 0x2BADB002 && mb_info_ptr) {
             Multiboot::Info* mb_info = (Multiboot::Info*)((uint64_t)mb_info_ptr + virtual_kernel_base);

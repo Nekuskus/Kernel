@@ -14,6 +14,7 @@ template <class InputIt, class OutputIt>
 OutputIt copy(InputIt first, InputIt last, OutputIt d_first) {
     for (; first != last; first++)
         *d_first++ = *first++;
+
     return d_first;
 }
 
@@ -22,5 +23,6 @@ OutputIt copy_if(InputIt first, InputIt last, OutputIt d_first, UnaryPredicate p
     for (; first != last; first++)
         if (pred(*first))
             *d_first++ = *first;
+            
     return d_first;
 }
