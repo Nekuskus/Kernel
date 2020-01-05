@@ -65,10 +65,10 @@ extern "C" void free(void* memory) {
     if (pages != (uint64_t)memory - 8)
         return;
 
-    void* p = (void*)Firework::FireworkKernel::Vmm::get_entry(Firework::FireworkKernel::Vmm::get_current_context(), start);
+    uintptr_t p = Firework::FireworkKernel::Vmm::get_entry(Firework::FireworkKernel::Vmm::get_current_context(), start);
 
     Firework::FireworkKernel::Vmm::unmap_pages(Firework::FireworkKernel::Vmm::get_current_context(), start, pages);
-    Firework::FireworkKernel::Pmm::free((size_t)p, pages);
+    Firework::FireworkKernel::Pmm::free(p, pages);
     mm_lock.release();
 }
 

@@ -2051,4 +2051,4 @@ namespace Firework::FireworkKernel::Graphics {
         0x00,
         0x00,
     };
-}
+}  // namespace Firework::FireworkKernel::Graphics

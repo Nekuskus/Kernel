@@ -8,4 +8,4 @@ namespace Firework::FireworkKernel {
         void lock();
         void release();
     };
-}  // namespace Firework
+}  // namespace Firework::FireworkKernel

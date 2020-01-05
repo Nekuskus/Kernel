@@ -8,8 +8,8 @@
 #include <hardware/exceptions.hpp>
 #include <hardware/idt.hpp>
 #include <hardware/mm/mm.hpp>
-#include <hardware/mm/vmm.hpp>
 #include <hardware/mm/pmm.hpp>
+#include <hardware/mm/vmm.hpp>
 #include <hardware/terminal.hpp>
 #include <lib/lib.hpp>
 #include <multiboot.hpp>
@@ -54,4 +54,4 @@ namespace Firework::FireworkKernel {
         while (1)
             asm volatile("hlt");
     }
-}  // namespace Firework
+}  // namespace Firework::FireworkKernel

@@ -26,6 +26,7 @@ bool Firework::FireworkKernel::Terminal::handle_special_characters(const char c)
     }
 
     set_cursor(x, y);
+
     return ret;
 }
 
@@ -58,6 +59,7 @@ void Firework::FireworkKernel::Terminal::write(const char c, uint32_t foreground
         x = 0;
         y++;
     }
+
     if (y * 16 >= mode_info.height) {
         x = 0;
         y = mode_info.height / 16 - 1;
@@ -72,10 +74,12 @@ void Firework::FireworkKernel::Terminal::write(const char c, uint32_t foreground
         return;
 
     Graphics::ModeInfo mode_info = Graphics::get_mode_info();
+    
     if (x * 8 >= mode_info.width) {
         x = 0;
         y++;
     }
+
     if (y * 16 >= mode_info.height) {
         x = 0;
         y = mode_info.height / 16 - 1;

@@ -1,7 +1,7 @@
 #include <hardware/cpu/cpu.hpp>
 #include <hardware/mm/mm.hpp>
-#include <hardware/mm/vmm.hpp>
 #include <hardware/mm/pmm.hpp>
+#include <hardware/mm/vmm.hpp>
 #include <lib/math.hpp>
 
 extern "C" Firework::FireworkKernel::Vmm::PageTable* kernel_pml4;

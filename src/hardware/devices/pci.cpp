@@ -8,9 +8,6 @@
 
 auto mcfg_entries = LinkedList<Firework::FireworkKernel::Acpi::McfgEntry>();
 
-using read_function = uint32_t (*)(uint16_t, uint8_t, uint8_t, uint8_t, uint8_t);
-using write_function = void (*)(uint16_t, uint8_t, uint8_t, uint8_t, uint8_t, uint32_t);
-
 uint32_t iomap_read([[maybe_unused]] uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
     Firework::FireworkKernel::Port::outd(0xCF8, ((uint32_t)bus << 16) | ((uint32_t)slot << 11) | ((uint32_t)function << 8) | (offset & 0xFC) | (1u << 31));
 
@@ -22,8 +19,8 @@ void iomap_write([[maybe_unused]] uint16_t segment, uint8_t bus, uint8_t slot, u
     Firework::FireworkKernel::Port::outd(0xCFC + (offset % 4), value);
 }
 
-read_function internal_read = iomap_read;
-write_function internal_write = iomap_write;
+uint32_t (*internal_read)(uint16_t, uint8_t, uint8_t, uint8_t, uint8_t) = iomap_read;
+void (*internal_write)(uint16_t, uint8_t, uint8_t, uint8_t, uint8_t, uint32_t) = iomap_write;
 
 uint32_t mmap_read(uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
     for (const auto& entry : mcfg_entries) {
@@ -94,9 +91,10 @@ const char* Firework::FireworkKernel::Pci::class_code_to_str(uint8_t class_code)
 
         case 255:
             return "Unassigned Class (Vendor specific)";
-    }
 
-    return "Unknown";
+        default:
+            return "Unknown";
+    }
 }
 
 uint32_t Firework::FireworkKernel::Pci::read(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
@@ -120,10 +118,14 @@ void Firework::FireworkKernel::Pci::init() {
 
     if (mcfg != nullptr) {
         size_t entry_len = (mcfg->header.length - (sizeof(Acpi::SdtHeader) + sizeof(uint64_t))) / sizeof(Acpi::McfgEntry);
+
         for (uint64_t i = 0; i < entry_len; i++) {
             Acpi::McfgEntry& entry = mcfg->entries[i];
+
             mcfg_entries.push_back(entry);
+
             char text[255] = "";
+
             sprintf(text, "[DEVMGR] MCFG entry #%d %p: %d:%d:0:0 - %d:%d:0:0", i, entry.ecm_base, entry.segment, entry.start_bus_number, entry.segment, entry.end_bus_number);
             Terminal::write_line(text, 0xFFFFFF);
         }

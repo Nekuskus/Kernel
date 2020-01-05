@@ -166,4 +166,5 @@ namespace Firework::FireworkKernel::Acpi {
 
     Firework::FireworkKernel::Acpi::SdtHeader* get_table(const char* signature);
     void init();
+    void init(XsdpDescriptor* param_xsdp);
 };  // namespace Firework::FireworkKernel::Acpi

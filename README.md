@@ -2,16 +2,16 @@
 The kernel for Firework.
 
 ## Features
-- VBE Framebuffer graphics with lean-and-mean text drawing
-- Bitmap physical memory management
-- 4-level paging
-- Interrupts
-- Panic
-- Terminal
+- VBE Framebuffer graphics with lean-and-mean font rendering
+- Bitmap Physical Memory Management
+- 4-level Paging (Virtual Memory Management)
+- Interrupt handling
+- Kernel panics
+- In-Kernel terminal
 - Symmetric Multiprocessing (SMP)
-- PCI
 
 ## Planned features
+- PCI
 - ACPI
 - (U)EFI
 - VFS
@@ -21,13 +21,3 @@ The kernel for Firework.
 - API
 - Userspace
 - Multitasking
-
-
-## Compiling the kernel
-### Compiling the kernel - the dependencies
-- CLang
-- CMake
-- Nasm
-
-
-Building is easy, just use CMake like you would with any other project.

@@ -128,3 +128,68 @@ void Firework::FireworkKernel::Acpi::init() {
         }
     }
 }
+
+void Firework::FireworkKernel::Acpi::init(XsdpDescriptor* param_xsdp) {
+    rsdp_info = {
+        .version = param_xsdp->rsdp.revision + 1,
+        .rsdp_address = (uint64_t)param_xsdp->rsdp.revision,
+        .address = param_xsdp->rsdp.revision == 0 ? param_xsdp->rsdp.rsdt_address : param_xsdp->xsdt_address,
+        .oem_id = "",
+    };
+
+    for (size_t i = 0; i < 6; i++)
+        rsdp_info.oem_id[i] = param_xsdp->rsdp.oem_id[i];
+
+    rsdp_info.oem_id[6] = '\0';
+
+    char text[255] = "";
+
+    sprintf(text, "[ACPI] Detected ACPI with OEM ID %s and version %d", rsdp_info.oem_id, rsdp_info.version);
+    Terminal::write_line(text, 0xFFFFFF);
+
+    if (rsdp_info.version >= 2) {
+        Firework::FireworkKernel::Acpi::XsdtHeader* xsdt = (Firework::FireworkKernel::Acpi::XsdtHeader*)rsdp_info.address;
+        size_t entries = (xsdt->header.length - sizeof(xsdt->header)) / 8;
+
+        for (size_t i = 0; i < entries; i++) {
+            if ((SdtHeader*)xsdt->tables[i] == nullptr)
+                continue;
+
+            Vmm::map_pages(Vmm::get_current_context(), xsdt->tables[i] + virtual_physical_base, xsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+
+            Firework::FireworkKernel::Acpi::SdtHeader* h = (Firework::FireworkKernel::Acpi::SdtHeader*)(xsdt->tables[i] + virtual_physical_base);
+
+            Vmm::map_pages(Vmm::get_current_context(), xsdt->tables[i] + virtual_physical_base, xsdt->tables[i], (h->length + page_size - 1) / page_size + 2, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+
+            if (calculate_checksum(h, h->length) == 0) {
+                char text[255] = "";
+
+                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c", (uint64_t)h, h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
+                Terminal::write_line(text, 0xFFFFFF);
+                acpi_tables.push_back(h);
+            }
+        }
+    } else {
+        Firework::FireworkKernel::Acpi::RsdtHeader* rsdt = (Firework::FireworkKernel::Acpi::RsdtHeader*)rsdp_info.address;
+        size_t entries = (rsdt->header.length - sizeof(rsdt->header)) / 4;
+
+        for (size_t i = 0; i < entries; i++) {
+            if ((SdtHeader*)(uint64_t)rsdt->tables[i] == nullptr)
+                continue;
+
+            Vmm::map_pages(Vmm::get_current_context(), (uint64_t)rsdt->tables[i] + virtual_physical_base, (uint64_t)rsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+
+            Firework::FireworkKernel::Acpi::SdtHeader* h = (Firework::FireworkKernel::Acpi::SdtHeader*)((uint64_t)rsdt->tables[i] + virtual_physical_base);
+
+            Vmm::map_pages(Vmm::get_current_context(), (uint64_t)rsdt->tables[i] + virtual_physical_base, (uint64_t)rsdt->tables[i], (h->length + page_size - 1) / page_size + 2, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+
+            if (calculate_checksum(h, h->length) == 0) {
+                char text[255] = "";
+
+                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c", (uint64_t)h, h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
+                Terminal::write_line(text, 0xFFFFFF);
+                acpi_tables.push_back(h);
+            }
+        }
+    }
+}

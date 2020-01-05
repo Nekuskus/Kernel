@@ -315,8 +315,8 @@ extern "C" void isr_handler(Firework::FireworkKernel::Idt::InterruptRegisters* r
         Firework::FireworkKernel::Terminal::write_line(text, 0xFFFFFF, 0xe50000);
     }
 
-    if (handler.handler)
-        interrupt_handlers[n].handler(registers);
+    if (handler.function)
+        interrupt_handlers[n].function(registers);
 
     //if (handler.is_irq)
 
@@ -325,43 +325,34 @@ extern "C" void isr_handler(Firework::FireworkKernel::Idt::InterruptRegisters* r
             ;
 }
 
-void Firework::FireworkKernel::Idt::register_interrupt_handler(uint16_t n, idt_function function, bool is_irq, bool should_iret) {
-    interrupt_handlers[n].handler = function;
-    interrupt_handlers[n].is_irq = is_irq;
-    interrupt_handlers[n].should_iret = should_iret;
+void Firework::FireworkKernel::Idt::register_interrupt_handler(uint16_t n, void (*function)(const InterruptRegisters*), bool is_irq, bool should_iret) {
+    interrupt_handlers[n] = {
+        .function = function,
+        .is_irq = is_irq,
+        .should_iret = should_iret,
+    };
 }
 
 void set_entry(uint8_t vec, uintptr_t function, uint16_t selector, uint8_t ist) {
-    uint16_t flags = 0;
-    flags |= ist & 0x7;
-    flags |= 1ULL << 9;
-    flags |= 1ULL << 10;
-    flags |= 1ULL << 11;
-    flags |= 1ULL << 15;
-
-    idt_entries[vec].offset_low = function & 0xFFFF;
-    idt_entries[vec].selector = selector;
-    idt_entries[vec].flags = flags;
-    idt_entries[vec].offset_mid = (function >> 16) & 0xFFFF;
-    idt_entries[vec].offset_high = (function >> 32) & 0xFFFFFFFF;
-    idt_entries[vec].reserved = 0;
+    idt_entries[vec] = {
+        .offset_low = function & 0xFFFF,
+        .selector = selector,
+        .flags = (ist & 0x7) | (1ULL << 9) | (1ULL << 10) | (1ULL << 11) | (1ULL << 15),
+        .offset_mid = (function >> 16) & 0xFFFF,
+        .offset_high = (function >> 32) & 0xFFFFFFFF,
+        .reserved = 0,
+    };
 }
 
 void set_entry(uint8_t vec, uintptr_t function, uint16_t selector, uint8_t ist, uint8_t dpl) {
-    uint16_t flags = 0;
-    flags |= ist & 0x7;
-    flags |= 1ULL << 9;
-    flags |= 1ULL << 10;
-    flags |= 1ULL << 11;
-    flags |= (dpl & 0x3) << 13;
-    flags |= 1ULL << 15;
-
-    idt_entries[vec].offset_low = function & 0xFFFF;
-    idt_entries[vec].selector = selector;
-    idt_entries[vec].flags = flags;
-    idt_entries[vec].offset_mid = (function >> 16) & 0xFFFF;
-    idt_entries[vec].offset_high = (function >> 32) & 0xFFFFFFFF;
-    idt_entries[vec].reserved = 0;
+    idt_entries[vec] = {
+        .offset_low = function & 0xFFFF,
+        .selector = selector,
+        .flags = (ist & 0x7) | (1ULL << 9) | (1ULL << 10) | (1ULL << 11) | ((dpl & 0x3) << 13) | (1ULL << 15),
+        .offset_mid = (function >> 16) & 0xFFFF,
+        .offset_high = (function >> 32) & 0xFFFFFFFF,
+        .reserved = 0,
+    };
 }
 
 void Firework::FireworkKernel::Idt::init() {

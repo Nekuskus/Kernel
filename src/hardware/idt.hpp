@@ -23,14 +23,12 @@ namespace Firework::FireworkKernel::Idt {
         uint64_t base;
     };
 
-    using idt_function = void (*)(InterruptRegisters*);
-
     struct InterruptHandler {
-        idt_function handler;
+        void (*function)(const InterruptRegisters*);
         bool is_irq;
         bool should_iret;
     };
 
     void init();
-    void register_interrupt_handler(uint16_t n, idt_function function, bool is_irq, bool should_iret);
+    void register_interrupt_handler(uint16_t n, void (*function)(const InterruptRegisters*), bool is_irq, bool should_iret);
 };  // namespace Firework::FireworkKernel::Idt

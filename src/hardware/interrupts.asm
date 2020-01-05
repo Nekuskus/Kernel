@@ -1,7 +1,7 @@
 extern isr_handler
 
 %macro ISR_NOERROR 1
-[global isr%1]
+global isr%1
 isr%1:
     cli
     push 0
@@ -10,7 +10,7 @@ isr%1:
 %endmacro
 
 %macro ISR_ERROR 1
-[global isr%1]
+global isr%1
 isr%1:
     cli
     push %1
