@@ -306,7 +306,7 @@ extern "C" void isr255();
 
 extern "C" void isr_handler(Firework::FireworkKernel::Idt::InterruptRegisters* registers) {
     uint8_t n = registers->int_num & 0xFF;
-    Firework::FireworkKernel::Idt::InterruptHandler& handler = interrupt_handlers[n];
+    Firework::FireworkKernel::Idt::InterruptHandler* handler = &interrupt_handlers[n];
 
     if (n < 32) {
         char text[8192] = "";
@@ -315,14 +315,16 @@ extern "C" void isr_handler(Firework::FireworkKernel::Idt::InterruptRegisters* r
         Firework::FireworkKernel::Terminal::write_line(text, 0xFFFFFF, 0xe50000);
     }
 
-    if (handler.function)
-        interrupt_handlers[n].function(registers);
+    if (handler) {
+        if (handler->function)
+            interrupt_handlers[n].function(registers);
 
-    //if (handler.is_irq)
+        //if (handler->is_irq)
 
-    if (!handler.should_iret)
-        while (1)
-            ;
+        if (!handler->should_iret)
+            while (1)
+                ;
+    }
 }
 
 void Firework::FireworkKernel::Idt::register_interrupt_handler(uint16_t n, void (*function)(const InterruptRegisters*), bool is_irq, bool should_iret) {
@@ -335,22 +337,22 @@ void Firework::FireworkKernel::Idt::register_interrupt_handler(uint16_t n, void 
 
 void set_entry(uint8_t vec, uintptr_t function, uint16_t selector, uint8_t ist) {
     idt_entries[vec] = {
-        .offset_low = function & 0xFFFF,
+        .offset_low = (uint16_t)(function & 0xFFFF),
         .selector = selector,
-        .flags = (ist & 0x7) | (1ULL << 9) | (1ULL << 10) | (1ULL << 11) | (1ULL << 15),
-        .offset_mid = (function >> 16) & 0xFFFF,
-        .offset_high = (function >> 32) & 0xFFFFFFFF,
+        .flags = (uint16_t)((ist & 0x7) | (1ULL << 9) | (1ULL << 10) | (1ULL << 11) | (1ULL << 15)),
+        .offset_mid = (uint16_t)((function >> 16) & 0xFFFF),
+        .offset_high = (uint32_t)((function >> 32) & 0xFFFFFFFF),
         .reserved = 0,
     };
 }
 
 void set_entry(uint8_t vec, uintptr_t function, uint16_t selector, uint8_t ist, uint8_t dpl) {
     idt_entries[vec] = {
-        .offset_low = function & 0xFFFF,
+        .offset_low = (uint16_t)(function & 0xFFFF),
         .selector = selector,
-        .flags = (ist & 0x7) | (1ULL << 9) | (1ULL << 10) | (1ULL << 11) | ((dpl & 0x3) << 13) | (1ULL << 15),
-        .offset_mid = (function >> 16) & 0xFFFF,
-        .offset_high = (function >> 32) & 0xFFFFFFFF,
+        .flags = (uint16_t)((ist & 0x7) | (1ULL << 9) | (1ULL << 10) | (1ULL << 11) | ((dpl & 0x3) << 13) | (1ULL << 15)),
+        .offset_mid = (uint16_t)((function >> 16) & 0xFFFF),
+        .offset_high = (uint32_t)((function >> 32) & 0xFFFFFFFF),
         .reserved = 0,
     };
 }
