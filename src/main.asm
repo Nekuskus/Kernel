@@ -1,10 +1,3 @@
-MODULEALIGN equ  1 << 0
-MEMINFO equ  1 << 1
-VIDEO equ  1 << 2
-FLAGS equ MODULEALIGN | MEMINFO | VIDEO
-MAGIC equ 0x1BADB002
-CHECKSUM equ -(MAGIC + FLAGS)
-
 KERNEL_VMA equ 0xFFFFFFFF80000000
 
 bits 32
@@ -12,9 +5,9 @@ bits 32
 section .multiboot
 align 64
 mb_header:
-    dd MAGIC
-    dd FLAGS
-    dd CHECKSUM
+    dd 0x1BADB002
+    dd 1 << 0 | 1 << 1 | 1 << 2
+    dd -0x1BADB002 - (1 << 0 | 1 << 1 | 1 << 2)
     dd 0
     dd 0
     dd 0
