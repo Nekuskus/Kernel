@@ -22,7 +22,7 @@ void Firework::FireworkKernel::Apic::LocalApic::write(uint32_t reg, uint32_t dat
 
 void Firework::FireworkKernel::Apic::LocalApic::init() {
     uint64_t apic_msr_base = Msr::read(apic_base);
-    lapic_base = (apic_base & 0xFFFFFFFFFFFFF000) + virtual_kernel_base;
+    lapic_base = (apic_msr_base & 0xFFFFFFFFFFFFF000) + virtual_kernel_base;
     apic_msr_base |= 1 << 11;
 
     Vmm::map_pages(Vmm::get_current_context(), lapic_base, apic_msr_base & 0xFFFFFFFFFFFFF000, 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
