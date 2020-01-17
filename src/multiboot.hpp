@@ -2,47 +2,12 @@
 #include <stdint.h>
 
 namespace Firework::FireworkKernel::Multiboot {
-    enum FramebufferType {
-        INDEXED = 0,
-        RBG = 1,
-        EGA_TEXT = 2,
-    };
-
     enum MemoryState {
         AVAILABLE = 1,
         RESERVED = 2,
         ACPI_RECLAIMABLE = 3,
         NVS = 4,
         BADRAM = 5,
-    };
-
-    struct Header {
-        uint32_t magic;
-        uint32_t flags;
-        uint32_t checksum;
-        uint32_t header_addr;
-        uint32_t load_addr;
-        uint32_t load_end_addr;
-        uint32_t bss_end_addr;
-        uint32_t entry_addr;
-        uint32_t mode_type;
-        uint32_t width;
-        uint32_t height;
-        uint32_t depth;
-    };
-
-    struct AoutSymbolTable {
-        uint32_t tabsize;
-        uint32_t strsize;
-        uint32_t addr;
-        uint32_t reserved;
-    };
-
-    struct ElfSectionHeaderTable {
-        uint32_t num;
-        uint32_t size;
-        uint32_t addr;
-        uint32_t shndx;
     };
 
     struct Info {
@@ -54,8 +19,18 @@ namespace Firework::FireworkKernel::Multiboot {
         uint32_t mods_count;
         uint32_t mods_addr;
         union {
-            AoutSymbolTable aout_sym;
-            ElfSectionHeaderTable elf_sec;
+            struct AoutSymbolTable {
+                uint32_t tabsize;
+                uint32_t strsize;
+                uint32_t addr;
+                uint32_t reserved;
+            } aout_sym;
+            struct ElfSectionHeaderTable {
+                uint32_t num;
+                uint32_t size;
+                uint32_t addr;
+                uint32_t shndx;
+            } elf_sec;
         } u;
         uint32_t mmap_length;
         uint32_t mmap_addr;
