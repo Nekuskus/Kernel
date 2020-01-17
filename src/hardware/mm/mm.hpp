@@ -1,6 +1,7 @@
 #pragma once
 #include <stddef.h>
 #include <stdint.h>
+
 constexpr size_t virtual_kernel_base = 0xFFFFFFFF80000000;
 constexpr size_t virtual_physical_base = 0xFFFF800000000000;
 constexpr size_t page_size = 0x1000;

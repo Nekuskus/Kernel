@@ -1,5 +1,5 @@
 #pragma once
-#include <hardware/idt.hpp>
+#include "idt.hpp"
 
 namespace Firework::FireworkKernel {
     void panic(const char* message);

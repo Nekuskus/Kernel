@@ -1,4 +1,4 @@
-#include <hardware/msr.hpp>
+#include "msr.hpp"
 
 uint64_t Firework::FireworkKernel::Msr::read(uint32_t msr) {
     uint64_t value_low = 0, value_high = 0;

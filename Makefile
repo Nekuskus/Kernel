@@ -3,7 +3,7 @@ NASMPARAMS := -felf64 -F dwarf
 LINKERPARAMS := -nostdlib -Wl,--build-id=none -Wl,-z,max-page-size=0x1000,-n,-T,src/linker.ld -fuse-ld=lld
 OBJECTS := $(patsubst src/%.cpp, ${OUTPUTDIR}/objects/%.cpp.o, $(shell find src -name *.cpp))
 OBJECTS += $(patsubst src/%.asm, ${OUTPUTDIR}/objects/%.asm.o, $(shell find src -name *.asm))
-TARGET := DEBUG
+TARGET ?= DEBUG
 
 ifeq (${TARGET}, RELEASE)
 	CLANGPARAMS += -O3

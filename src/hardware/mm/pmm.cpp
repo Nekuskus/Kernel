@@ -1,7 +1,6 @@
-#include <hardware/cpu/smp/smp.hpp>
-#include <hardware/mm/mm.hpp>
-#include <hardware/mm/pmm.hpp>
+#include "pmm.hpp"
 #include <lib/math.hpp>
+#include "mm.hpp"
 
 uint64_t* bitmap;
 size_t free_pages = 0;

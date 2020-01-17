@@ -1,6 +1,6 @@
-#include <hardware/devices/vbe.hpp>
-#include <hardware/terminal.hpp>
+#include "terminal.hpp"
 #include <lib/lib.hpp>
+#include "devices/vbe.hpp"
 
 uint16_t x = 0, y = 0;
 
@@ -74,7 +74,7 @@ void Firework::FireworkKernel::Terminal::write(const char c, uint32_t foreground
         return;
 
     Graphics::ModeInfo mode_info = Graphics::get_mode_info();
-    
+
     if (x * 8 >= mode_info.width) {
         x = 0;
         y++;

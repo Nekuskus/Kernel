@@ -1,4 +1,4 @@
-#include <lib/math.hpp>
+#include "math.hpp"
 
 size_t Firework::FireworkKernel::Math::round_up(size_t n, size_t s) {
     return n + s - 1;

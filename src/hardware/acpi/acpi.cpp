@@ -1,4 +1,4 @@
-#include <hardware/acpi/acpi.hpp>
+#include "acpi.hpp"
 #include <hardware/mm/mm.hpp>
 #include <hardware/mm/vmm.hpp>
 #include <hardware/panic.hpp>

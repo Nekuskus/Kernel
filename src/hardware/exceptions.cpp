@@ -1,8 +1,8 @@
+#include "exceptions.hpp"
 #include <stdint.h>
-#include <hardware/exceptions.hpp>
-#include <hardware/idt.hpp>
-#include <hardware/terminal.hpp>
 #include <lib/lib.hpp>
+#include "idt.hpp"
+#include "terminal.hpp"
 
 void page_fault_handler(const Firework::FireworkKernel::Idt::InterruptRegisters* registers) {
     uint64_t cr2;

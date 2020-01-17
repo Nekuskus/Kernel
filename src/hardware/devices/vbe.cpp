@@ -1,8 +1,8 @@
-#include <hardware/devices/font.hpp>
-#include <hardware/devices/vbe.hpp>
+#include "vbe.hpp"
 #include <hardware/mm/mm.hpp>
 #include <hardware/terminal.hpp>
 #include <lib/lib.hpp>
+#include "vgafont.hpp"
 
 Firework::FireworkKernel::Graphics::ModeInfo mode_info;
 bool is_working = false;

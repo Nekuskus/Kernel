@@ -1,7 +1,7 @@
-#include <hardware/cpu/cpu.hpp>
-#include <hardware/panic.hpp>
-#include <hardware/terminal.hpp>
+#include "panic.hpp"
 #include <lib/lib.hpp>
+#include "cpu/cpu.hpp"
+#include "terminal.hpp"
 
 void Firework::FireworkKernel::panic(const char* message) {
     char text[8192] = "";

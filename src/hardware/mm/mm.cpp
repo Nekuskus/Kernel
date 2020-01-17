@@ -1,8 +1,8 @@
-#include <hardware/mm/mm.hpp>
-#include <hardware/mm/pmm.hpp>
-#include <hardware/mm/vmm.hpp>
+#include "mm.hpp"
 #include <lib/lib.hpp>
 #include <lib/spinlock.hpp>
+#include "pmm.hpp"
+#include "vmm.hpp"
 
 Firework::FireworkKernel::Spinlock mm_lock{};
 uintptr_t top = memory_base;

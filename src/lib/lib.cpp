@@ -1,5 +1,5 @@
-#include <lib/ctype.hpp>
-#include <lib/lib.hpp>
+#include "ctype.hpp"
+#include "lib.hpp"
 
 int sprintf(char* text, const char* format, ...) {
     va_list parameters;

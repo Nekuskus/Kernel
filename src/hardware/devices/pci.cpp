@@ -1,5 +1,5 @@
 #include <hardware/acpi/acpi.hpp>
-#include <hardware/devices/pci.hpp>
+#include "pci.hpp"
 #include <hardware/mm/vmm.hpp>
 #include <hardware/port.hpp>
 #include <hardware/terminal.hpp>

@@ -1,8 +1,7 @@
-#include <hardware/devices/vbe.hpp>
-#include <hardware/idt.hpp>
-#include <hardware/port.hpp>
-#include <hardware/terminal.hpp>
+#include "idt.hpp"
 #include <lib/lib.hpp>
+#include "port.hpp"
+#include "terminal.hpp"
 
 Firework::FireworkKernel::Idt::Entry idt_entries[256] = {};
 Firework::FireworkKernel::Idt::InterruptHandler interrupt_handlers[256] = {};

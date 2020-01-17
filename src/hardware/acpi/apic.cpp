@@ -1,10 +1,10 @@
+#include "apic.hpp"
 #include <cpuid.h>
-#include <hardware/acpi/acpi.hpp>
-#include <hardware/acpi/apic.hpp>
 #include <hardware/cpu/smp/smp.hpp>
 #include <hardware/mm/mm.hpp>
 #include <hardware/mm/vmm.hpp>
 #include <hardware/msr.hpp>
+#include "acpi.hpp"
 
 Firework::FireworkKernel::Acpi::MadtHeader* madt;
 uint64_t lapic_base;
@@ -38,7 +38,7 @@ void Firework::FireworkKernel::Apic::LocalApic::send_ipi(uint32_t target, uint32
 }
 
 void Firework::FireworkKernel::Apic::init() {
-    madt = (Firework::FireworkKernel::Acpi::MadtHeader*)Acpi::get_table("APIC");
+    madt = (Acpi::MadtHeader*)Acpi::get_table("APIC");
     size_t table_size = madt->header.length - sizeof(Acpi::MadtHeader);
     uint64_t list = (uint64_t)madt + sizeof(Acpi::MadtHeader), offset = 0;
 
@@ -57,6 +57,7 @@ void Firework::FireworkKernel::Apic::init() {
 
                 if (cpu->flags & 1 && ((b >> 24) & 0xFF) != cpu->id)
                     Cpu::Smp::boot_cpu(cpu->id);
+
                 break;
             }
         }

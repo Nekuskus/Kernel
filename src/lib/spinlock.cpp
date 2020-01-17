@@ -1,5 +1,5 @@
+#include "spinlock.hpp"
 #include <hardware/cpu/cpu.hpp>
-#include <lib/spinlock.hpp>
 
 void Firework::FireworkKernel::Spinlock::lock() {
     Cpu::atomic_set(&locked);

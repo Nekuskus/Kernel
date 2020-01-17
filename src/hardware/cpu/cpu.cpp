@@ -1,5 +1,5 @@
 #include <cpuid.h>
-#include <hardware/cpu/cpu.hpp>
+#include "cpu.hpp"
 
 bool Firework::FireworkKernel::Cpu::check_msr(uint32_t flag) {
     uint32_t a, b, c, d;

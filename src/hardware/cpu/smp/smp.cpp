@@ -1,5 +1,5 @@
+#include "smp.hpp"
 #include <hardware/acpi/apic.hpp>
-#include <hardware/cpu/smp/smp.hpp>
 #include <hardware/mm/mm.hpp>
 #include <hardware/mm/pmm.hpp>
 #include <hardware/mm/vmm.hpp>
