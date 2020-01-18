@@ -79,7 +79,7 @@ void Firework::FireworkKernel::Acpi::init() {
 
     char text[255] = "";
 
-    sprintf(text, "[ACPI] Detected ACPI with OEM ID '%c%c%c%c%c%c%c' and version %d", rsdp_info.oem_id[0], rsdp_info.oem_id[1], rsdp_info.oem_id[2], rsdp_info.oem_id[3], rsdp_info.oem_id[4], rsdp_info.oem_id[5], rsdp_info.oem_id[6], rsdp_info.version);
+    sprintf(text, "[ACPI] Detected ACPI with OEM ID '%s' and version %d", rsdp_info.oem_id, rsdp_info.version);
     Terminal::write_line(text, 0xFFFFFF);
 
     if (rsdp_info.version >= 2) {
