@@ -6,13 +6,14 @@ OBJECTS += $(patsubst src/%.asm, ${OUTPUTDIR}/objects/%.asm.o, $(shell find src 
 TARGET ?= DEBUG
 
 ifeq (${TARGET}, RELEASE)
-	CLANGPARAMS += -O3
-	LDPARAMS += -O3
+	CXXPARAMS += -O3
+	LINKERPARAMS += -O3
 endif
 
 ifeq (${TARGET}, DEBUG)
-	CLANGPARAMS += -g
+	CXXPARAMS += -g
 	NASMPARAMS += -g
+	LINKERPARAMS += -g
 endif
 
 .PHONY: all mkdirs bin
