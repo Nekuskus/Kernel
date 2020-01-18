@@ -1,5 +1,5 @@
-#include "ctype.hpp"
 #include "lib.hpp"
+#include "ctype.hpp"
 
 int sprintf(char* text, const char* format, ...) {
     va_list parameters;
@@ -41,8 +41,9 @@ int sprintf(char* text, const char* format, ...) {
                 return -1;
             }
 
-            *text++ = c;
-            written++;
+            *text = c;
+            text += c != 0;
+            written += c != 0;
         } else if (*format == 's') {
             format++;
             const char* str = va_arg(parameters, const char*);
