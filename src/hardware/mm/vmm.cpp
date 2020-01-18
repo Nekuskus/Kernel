@@ -6,7 +6,7 @@
 extern "C" Firework::FireworkKernel::Vmm::PageTable* kernel_pml4;
 
 Firework::FireworkKernel::Vmm::PageTableEntries Firework::FireworkKernel::Vmm::virtual_to_entries(uint64_t virt) {
-    Vmm::PageTableEntries off = {
+    PageTableEntries off = {
         .pml4 = (virt >> 39) & 0x1ff,
         .pdp = (virt >> 30) & 0x1ff,
         .pd = (virt >> 21) & 0x1ff,

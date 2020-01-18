@@ -12,7 +12,7 @@ void Firework::FireworkKernel::Graphics::init(ModeInfo gfx_mode_info) {
     mode_info = gfx_mode_info;
     is_working = true;
 
-    Firework::FireworkKernel::Graphics::clear(0x000000);
+    clear(0x000000);
 }
 
 void Firework::FireworkKernel::Graphics::clear(uint32_t color) {

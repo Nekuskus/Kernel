@@ -7,7 +7,7 @@
 #include <lib/linked_list.hpp>
 
 Firework::FireworkKernel::Acpi::RsdpInfo rsdp_info;
-auto acpi_tables = LinkedList<Firework::FireworkKernel::Acpi::SdtHeader*>();
+auto acpi_tables = Firework::FireworkKernel::LinkedList<Firework::FireworkKernel::Acpi::SdtHeader*>();
 
 uint8_t calculate_checksum(void* ptr, size_t size) {
     uint8_t sum = 0;

@@ -6,7 +6,7 @@
 #include <lib/lib.hpp>
 #include <lib/linked_list.hpp>
 
-auto mcfg_entries = LinkedList<Firework::FireworkKernel::Acpi::McfgEntry>();
+auto mcfg_entries = Firework::FireworkKernel::LinkedList<Firework::FireworkKernel::Acpi::McfgEntry>();
 
 uint32_t iomap_read([[maybe_unused]] uint16_t segment, uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
     Firework::FireworkKernel::Port::outd(0xCF8, ((uint32_t)bus << 16) | ((uint32_t)slot << 11) | ((uint32_t)function << 8) | (offset & 0xFC) | (1u << 31));
