@@ -8,4 +8,4 @@ namespace Firework::FireworkKernel::Port {
     uint16_t inw(uint16_t port);
     void outd(uint16_t port, uint32_t value);
     uint32_t ind(uint16_t port);
-};  // namespace Firework::FireworkKernel::Port
+}  // namespace Firework::FireworkKernel::Port

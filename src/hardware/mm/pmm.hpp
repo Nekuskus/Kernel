@@ -8,4 +8,4 @@ namespace Firework::FireworkKernel::Pmm {
     void* alloc(size_t count, size_t alignment, uintptr_t upper);
     void* alloc(size_t count);
     void free(size_t mem, size_t count);
-};  // namespace Firework::FireworkKernel::Pmm
+}  // namespace Firework::FireworkKernel::Pmm

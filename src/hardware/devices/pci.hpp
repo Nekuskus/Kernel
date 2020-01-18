@@ -104,4 +104,4 @@ namespace Firework::FireworkKernel::Pci {
     const char* class_code_to_str(uint8_t class_code);
     void scan_all_buses();
     void init();
-};  // namespace Firework::FireworkKernel::Pci
+}  // namespace Firework::FireworkKernel::Pci

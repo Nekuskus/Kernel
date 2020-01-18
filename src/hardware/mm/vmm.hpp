@@ -43,4 +43,4 @@ namespace Firework::FireworkKernel::Vmm {
     void drop_context();
     void set_context(PageTable* ctx);
     PageTable* get_current_context();
-};  // namespace Firework::FireworkKernel::Vmm
+}  // namespace Firework::FireworkKernel::Vmm

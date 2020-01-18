@@ -10,4 +10,4 @@ namespace Firework::FireworkKernel::Terminal {
     void write_line(const char* str, uint32_t foreground, uint32_t background);
     void write_line(const char* str, uint32_t foreground);
     void set_cursor(uint16_t x, uint16_t y);
-};  // namespace Firework::FireworkKernel::Terminal
+}  // namespace Firework::FireworkKernel::Terminal
