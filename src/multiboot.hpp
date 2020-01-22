@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-namespace Firework::FireworkKernel::Multiboot {
+namespace Multiboot {
     enum MemoryState {
         AVAILABLE = 1,
         RESERVED = 2,
@@ -10,7 +10,7 @@ namespace Firework::FireworkKernel::Multiboot {
         BADRAM = 5,
     };
 
-    struct Info {
+    struct MultibootInfo {
         uint32_t flags;
         uint32_t mem_lower;
         uint32_t mem_upper;
@@ -19,13 +19,13 @@ namespace Firework::FireworkKernel::Multiboot {
         uint32_t mods_count;
         uint32_t mods_addr;
         union {
-            struct AoutSymbolTable {
+            struct {
                 uint32_t tabsize;
                 uint32_t strsize;
                 uint32_t addr;
                 uint32_t reserved;
             } aout_sym;
-            struct ElfSectionHeaderTable {
+            struct {
                 uint32_t num;
                 uint32_t size;
                 uint32_t addr;
@@ -69,35 +69,10 @@ namespace Firework::FireworkKernel::Multiboot {
         };
     };
 
-    struct Color {
-        uint8_t red;
-        uint8_t green;
-        uint8_t blue;
-    };
-
     struct [[gnu::packed]] MemoryMap {
         uint32_t size;
         uint64_t addr;
         uint64_t len;
         uint32_t type;
     };
-
-    struct Module {
-        uint32_t mod_start;
-        uint32_t mod_end;
-        uint32_t cmdline;
-        uint32_t pad;
-    };
-
-    struct ApmInfo {
-        uint16_t version;
-        uint16_t cseg;
-        uint32_t offset;
-        uint16_t cseg_16;
-        uint16_t dseg;
-        uint16_t flags;
-        uint16_t cseg_len;
-        uint16_t cseg_16_len;
-        uint16_t dseg_len;
-    };
-}  // namespace Firework::FireworkKernel::Multiboot
+}  // namespace Multiboot

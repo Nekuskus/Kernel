@@ -23,10 +23,10 @@ all: mkdirs bin
 mkdirs:
 	mkdir -p ${OUTPUTDIR}/objects/userland
 	mkdir -p ${OUTPUTDIR}/objects/lib
-	mkdir -p ${OUTPUTDIR}/objects/hardware/acpi
-	mkdir -p ${OUTPUTDIR}/objects/hardware/cpu/smp
-	mkdir -p ${OUTPUTDIR}/objects/hardware/devices
-	mkdir -p ${OUTPUTDIR}/objects/hardware/mm
+	mkdir -p ${OUTPUTDIR}/objects/system/acpi
+	mkdir -p ${OUTPUTDIR}/objects/system/cpu/smp
+	mkdir -p ${OUTPUTDIR}/objects/system/devices
+	mkdir -p ${OUTPUTDIR}/objects/system/mm
 
 ${OUTPUTDIR}/objects/%.cpp.o: src/%.cpp
 	clang++ ${CXXPARAMS} -o $@ -c $<

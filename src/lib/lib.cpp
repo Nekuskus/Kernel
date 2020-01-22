@@ -21,12 +21,14 @@ int sprintf(char* text, const char* format, ...) {
 
             if (maxrem < amount) {
                 va_end(parameters);
+
                 return -1;
             }
 
             text += amount;
             format += amount;
             written += amount;
+
             continue;
         }
 
@@ -38,6 +40,7 @@ int sprintf(char* text, const char* format, ...) {
 
             if (!maxrem) {
                 va_end(parameters);
+
                 return -1;
             }
 
@@ -51,6 +54,7 @@ int sprintf(char* text, const char* format, ...) {
 
             if (maxrem < len) {
                 va_end(parameters);
+
                 return -1;
             }
 
@@ -66,10 +70,12 @@ int sprintf(char* text, const char* format, ...) {
             char str[32] = "";
 
             itoa(item, str, 10);
+
             size_t len = strlen(str);
 
             if (maxrem < len) {
                 va_end(parameters);
+
                 return -1;
             }
 
@@ -84,6 +90,7 @@ int sprintf(char* text, const char* format, ...) {
             char str[32] = "";
 
             htoa(item, str, *format == 'X');
+
             size_t len = strlen(str);
 
             format++;
@@ -105,12 +112,14 @@ int sprintf(char* text, const char* format, ...) {
             char str[32] = "";
 
             htoa((uintptr_t)item, str, false);
+
             size_t len = strlen(str);
 
             format++;
 
             if (maxrem < len) {
                 va_end(parameters);
+
                 return -1;
             }
 
@@ -125,6 +134,7 @@ int sprintf(char* text, const char* format, ...) {
 
             if (maxrem < len) {
                 va_end(parameters);
+
                 return -1;
             }
 
@@ -135,19 +145,22 @@ int sprintf(char* text, const char* format, ...) {
             format += len;
         }
     }
+
     text[0] = '\0';
+
     va_end(parameters);
+
     return written;
 }
 
 int strncmp(const char* s1, const char* s2, size_t n) {
-    while (n && *s1 && (*s1 == *s2)) {
+    while (n && *s1 && *s1 == *s2) {
         ++s1;
         ++s2;
         --n;
     }
 
-    return !n ? 0 : s1 - s2;
+    return !n ? 0 : *s1 - *s2;
 }
 
 size_t strlen(const char* chr) {
@@ -162,7 +175,7 @@ size_t strlen(const char* chr) {
 size_t strnlen(const char* chr, size_t max_len) {
     size_t size = 0;
 
-    while ((size < max_len) && chr[size])
+    while (size < max_len && chr[size])
         ++size;
 
     return size;
@@ -171,6 +184,7 @@ size_t strnlen(const char* chr, size_t max_len) {
 char* itoa(int value, char* result, int base) {
     if (base < 2 || base > 36) {
         *result = '\0';
+
         return result;
     }
 
@@ -189,8 +203,9 @@ char* itoa(int value, char* result, int base) {
 
     *ptr-- = '\0';
 
-    char tmp = *low;
     while (low < ptr) {
+        char tmp = *low;
+        
         *low++ = *ptr;
         *ptr-- = tmp;
     }
@@ -217,6 +232,25 @@ void htoa(uint64_t n, char* str, bool caps) {
 
     tmp = n & 0xF;
     *str++ = tmp >= 0xA ? tmp - 0xA + (caps ? 'A' : 'a') : tmp + '0';
+}
+
+extern "C" void* memset(void* s, int c, size_t n) {
+    unsigned char* p = (unsigned char*)s;
+    unsigned char fill = (unsigned char)c;
+
+    while (n--)
+        *p++ = fill;
+
+    return s;
+}
+
+extern "C" void* memcpy(void* dest, const void* src, size_t len) {
+    char *d = (char*)dest, *s = (char*)src;
+
+    while (len--)
+        *d++ = *s++;
+
+    return dest;
 }
 
 // fuck off clang

@@ -3,11 +3,14 @@ KERNEL_VMA equ 0xFFFFFFFF80000000
 bits 32
 
 section .multiboot
+
+mb_flags equ (1 << 0) | (1 << 1) | (1 << 2)
+
 align 64
 mb_header:
     dd 0x1BADB002
-    dd 1 << 0 | 1 << 1 | 1 << 2
-    dd -0x1BADB002 - (1 << 0 | 1 << 1 | 1 << 2)
+    dd mb_flags
+    dd -0x1BADB002 - mb_flags
     dd 0
     dd 0
     dd 0
@@ -19,6 +22,7 @@ mb_header:
     dd 32
 
 section .data
+
 global kernel_pml4
 align 0x1000
 kernel_pml4:
@@ -80,12 +84,13 @@ init_gdt_ptr_high:
     dq init_gdt
 
 section .text
+
 global loader
 loader:
     cli
     lgdt [init_gdt_ptr - KERNEL_VMA]
     mov esp, stack_end - KERNEL_VMA
-	push 0
+    push 0
     push eax
     push 0
     push ebx 
@@ -111,9 +116,9 @@ loader:
     mov cr0, eax
 
     mov ecx, 0x277
-	mov eax, 0x05010406
-	xor edx, edx
-	wrmsr
+    mov eax, 0x05010406
+    xor edx, edx
+    wrmsr
     jmp 0x08:higher_half_entry - KERNEL_VMA
 
 bits 64
@@ -122,7 +127,7 @@ higher_half_entry:
     mov rax, entry
     jmp rax
 
-extern kernel_main
+extern kmain
 entry:
     lgdt [init_gdt_ptr_high]
     mov ax, 0x0
@@ -132,9 +137,10 @@ entry:
     mov gs, ax
     mov ss, ax
     add rsp, KERNEL_VMA
+    cld
     pop rdi
     pop rsi
-    call kernel_main
+    call kmain
     cli
     hlt
 

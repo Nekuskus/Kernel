@@ -1,102 +1,112 @@
 #pragma once
-#include <hardware/mm/mm.hpp>
+#include <stddef.h>
+#include "spinlock.hpp"
 
-namespace Firework::FireworkKernel {
-    template <typename T>
-    class LinkedList {
-        size_t length;
+template <typename T>
+class LinkedList {
+    size_t _length;
+    Spinlock lock;
 
+public:
+    template <typename entry_T>
+    class LinkedListEntry {
     public:
-        template <typename entry_T>
-        class LinkedListEntry {
-        public:
-            entry_T item;
-            LinkedListEntry<entry_T>* next;
-            LinkedListEntry<entry_T>* prev;
+        entry_T item;
+        LinkedListEntry<entry_T>* next;
+        LinkedListEntry<entry_T>* prev;
 
-            LinkedListEntry()
-                : item(entry_T()), prev(nullptr), next(nullptr) {
-            }
-        };
+        LinkedListEntry()
+            : item(entry_T()), next(nullptr), prev(nullptr) {
+        }
+    };
 
-        template <typename iterator_T>
-        class LinkedListIterator {
-        public:
-            explicit LinkedListIterator(LinkedListEntry<iterator_T>* entry)
-                : entry(entry) {
-            }
+    template <typename iterator_T>
+    class LinkedListIterator {
+    public:
+        LinkedListEntry<iterator_T>* entry;
 
-            iterator_T& operator*() {
-                return entry->item;
-            }
-
-            void operator++() {
-                if (entry)
-                    entry = entry->next;
-            }
-
-            bool operator!=(LinkedListIterator it) {
-                return entry != it.entry;
-            }
-
-            LinkedListEntry<iterator_T>* entry;
-        };
-
-        LinkedListEntry<T>* head;
-        LinkedListEntry<T>* tail;
-
-        constexpr LinkedList() noexcept
-            : length(0), head(nullptr), tail(nullptr) {
+        explicit LinkedListIterator(LinkedListEntry<iterator_T>* entry)
+            : entry(entry) {
         }
 
-        ~LinkedList() {
-            if (head != nullptr && tail != nullptr && length != 0)
-                for (T& e : *this)
-                    free((void*)&e);
+        iterator_T& operator*() {
+            return entry->item;
         }
 
-        T* push_back(T entry) {
-            LinkedListEntry<T>* new_entry = (LinkedListEntry<T>*)calloc(sizeof(LinkedListEntry<T>));
-            new_entry->item = entry;
-            new_entry->next = nullptr;
+        void operator++() {
+            if (entry)
+                entry = entry->next;
+        }
 
-            if (length == 0) {
-                head = new_entry;
-                tail = new_entry;
-                new_entry->prev = nullptr;
-                length++;
+        bool operator!=(LinkedListIterator it) {
+            return entry != it.entry;
+        }
+    };
 
-                return &new_entry->item;
-            }
+    LinkedListEntry<T>* head;
+    LinkedListEntry<T>* tail;
 
-            tail->next = new_entry;
-            new_entry->prev = tail;
+    constexpr LinkedList() noexcept
+        : _length(0), lock(Spinlock()), head(nullptr), tail(nullptr) {
+    }
+
+    ~LinkedList() {
+        if (head != nullptr && tail != nullptr && _length != 0)
+            for (T& e : *this)
+                delete &e;
+    }
+
+    T* push_back(T entry) {
+        lock.lock();
+
+        LinkedListEntry<T>* new_entry = new LinkedListEntry<T>;
+        new_entry->item = entry;
+        new_entry->next = nullptr;
+
+        if (_length == 0) {
+            head = new_entry;
             tail = new_entry;
-            length++;
+            new_entry->prev = nullptr;
+            _length++;
+
+            lock.release();
 
             return &new_entry->item;
         }
 
-        LinkedListEntry<T>* get_entry_for_item(T* entry) {
-            for (LinkedListEntry<T>* item = head; item != nullptr; item = item->next)
-                if (item->item == entry)
-                    return item;
+        tail->next = new_entry;
+        new_entry->prev = tail;
+        tail = new_entry;
+        _length++;
 
-            return nullptr;
-        }
+        lock.release();
 
-        LinkedListIterator<T> get_iterator_for_item(T* item) {
-            LinkedListEntry<T>* entry = get_entry_for_item(item);
+        return &new_entry->item;
+    }
 
-            return LinkedListIterator<T>(entry);
-        }
+    LinkedListEntry<T>* get_entry_for_item(T* entry) {
+        for (LinkedListEntry<T>* item = head; item != nullptr; item = item->next)
+            if (&item->item == entry)
+                return item;
 
-        LinkedListIterator<T> begin() {
-            return LinkedListIterator<T>(head);
-        }
+        return nullptr;
+    }
 
-        LinkedListIterator<T> end() {
-            return LinkedListIterator<T>(nullptr);
-        }
-    };
-}  // namespace Firework::FireworkKernel
+    LinkedListIterator<T> get_iterator_for_item(T* item) {
+        LinkedListEntry<T>* entry = get_entry_for_item(item);
+
+        return LinkedListIterator<T>(entry);
+    }
+
+    LinkedListIterator<T> begin() {
+        return LinkedListIterator<T>(head);
+    }
+
+    LinkedListIterator<T> end() {
+        return LinkedListIterator<T>(nullptr);
+    }
+
+    size_t length() {
+        return _length;
+    }
+};

@@ -1,11 +1,11 @@
 #pragma once
 
-namespace Firework::FireworkKernel {
-    class Spinlock {
-        volatile int locked;
+class Spinlock {
+    volatile int locked;
 
-    public:
-        void lock();
-        void release();
-    };
-}  // namespace Firework::FireworkKernel
+public:
+    Spinlock();
+    ~Spinlock();
+    void lock();
+    void release();
+};

@@ -1,7 +1,0 @@
-#pragma once
-#include "idt.hpp"
-
-namespace Firework::FireworkKernel {
-    void panic(const char* message);
-    void panic(const char* message, Firework::FireworkKernel::Idt::InterruptRegisters* registers);
-}  // namespace Firework::FireworkKernel

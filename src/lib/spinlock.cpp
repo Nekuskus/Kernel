@@ -1,10 +1,18 @@
 #include "spinlock.hpp"
-#include <hardware/cpu/cpu.hpp>
+#include <system/cpu/cpu.hpp>
 
-void Firework::FireworkKernel::Spinlock::lock() {
+Spinlock::Spinlock() {
+    release();
+}
+
+Spinlock::~Spinlock() {
+    release();
+}
+
+void Spinlock::lock() {
     Cpu::atomic_set(&locked);
 }
 
-void Firework::FireworkKernel::Spinlock::release() {
+void Spinlock::release() {
     Cpu::atomic_unset(&locked);
 }
