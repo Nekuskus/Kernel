@@ -51,7 +51,7 @@ public:
     }
 
     ~LinkedList() {
-        if (head != nullptr && tail != nullptr && _length != 0)
+        if (head && tail && _length)
             for (T& e : *this)
                 delete &e;
     }
@@ -59,7 +59,7 @@ public:
     T* push_back(T entry) {
         lock.lock();
 
-        LinkedListEntry<T>* new_entry = new LinkedListEntry<T>;
+        auto* new_entry = new LinkedListEntry<T>;
         new_entry->item = entry;
         new_entry->next = nullptr;
 

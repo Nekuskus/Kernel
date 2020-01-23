@@ -1,6 +1,7 @@
 #include "mm.hpp"
 #include <lib/lib.hpp>
 #include <lib/spinlock.hpp>
+#include <system/terminal.hpp>
 #include "pmm.hpp"
 #include "vmm.hpp"
 
@@ -23,7 +24,7 @@ extern "C" void* malloc(size_t bytes) {
             return nullptr;
         }
 
-        Vmm::map_pages(Vmm::get_current_context(), out, p, pages, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+        Vmm::map_pages(Vmm::get_current_context(), (void*)top, p, 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
 
         top += page_size;
     }
