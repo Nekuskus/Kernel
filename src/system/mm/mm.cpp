@@ -1,7 +1,6 @@
 #include "mm.hpp"
 #include <lib/lib.hpp>
 #include <lib/spinlock.hpp>
-#include <system/terminal.hpp>
 #include "pmm.hpp"
 #include "vmm.hpp"
 
