@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
+
 #include <lib/linked_list.hpp>
+
 #include "acpi.hpp"
 
 namespace Madt {

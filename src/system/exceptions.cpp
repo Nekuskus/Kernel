@@ -1,6 +1,9 @@
 #include "exceptions.hpp"
+
 #include <stdint.h>
+
 #include <lib/lib.hpp>
+
 #include "idt.hpp"
 #include "terminal.hpp"
 

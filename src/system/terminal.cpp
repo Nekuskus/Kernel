@@ -1,5 +1,7 @@
 #include "terminal.hpp"
+
 #include <lib/lib.hpp>
+
 #include "devices/vbe.hpp"
 
 static uint16_t x = 0, y = 0;

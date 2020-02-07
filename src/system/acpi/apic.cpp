@@ -1,14 +1,17 @@
 #include "apic.hpp"
+
 #include <cpuid.h>
+
 #include <system/cpu/cpu.hpp>
 #include <system/cpu/smp/smp.hpp>
 #include <system/idt.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
 #include <system/msr.hpp>
+#include <system/terminal.hpp>
+
 #include "acpi.hpp"
 #include "madt.hpp"
-#include <system/terminal.hpp>
 
 static uint64_t lapic_base = 0;
 

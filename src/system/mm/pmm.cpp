@@ -4,9 +4,9 @@
 #include "mm.hpp"
 
 static uint64_t* bitmap;
-static size_t free_pages = 0;
-static size_t total_pages = 0;
 static size_t bitmap_len = 64;
+size_t free_pages = 0;
+size_t total_pages = 0;
 
 bool bit_read(size_t idx) {
     size_t off = idx / 64, mask = 1UL << (idx % 64UL);

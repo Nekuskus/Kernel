@@ -1,5 +1,8 @@
 #include "smp.hpp"
+
 #include <cpuid.h>
+
+#include <lib/lib.hpp>
 #include <system/acpi/apic.hpp>
 #include <system/acpi/madt.hpp>
 #include <system/cpu/cpu.hpp>
@@ -7,7 +10,6 @@
 #include <system/mm/pmm.hpp>
 #include <system/mm/vmm.hpp>
 #include <system/terminal.hpp>
-#include <lib/lib.hpp>
 
 extern "C" void* smp_entry;
 extern "C" void* _trampoline_start;
@@ -61,7 +63,7 @@ void Cpu::Smp::set_booted() {
 void Cpu::Smp::init() {
     uint64_t len = (uint64_t)&_trampoline_end - (uint64_t)&_trampoline_start;
 
-    Vmm::map_pages(Vmm::get_current_context(), _trampoline_start, _trampoline_start, (len + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Vmm::map_pages(Vmm::get_current_context(), &_trampoline_start, &_trampoline_start, (len + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
     memcpy(&_trampoline_start, (void*)(0x400000 + virtual_physical_base), len);
 
     uint32_t current_lapic = Cpu::get_current_cpu();

@@ -1,4 +1,5 @@
 #include "spinlock.hpp"
+
 #include <system/cpu/cpu.hpp>
 
 Spinlock::Spinlock() {

@@ -1,5 +1,7 @@
 #include "panic.hpp"
+
 #include <lib/lib.hpp>
+
 #include "cpu/cpu.hpp"
 #include "terminal.hpp"
 

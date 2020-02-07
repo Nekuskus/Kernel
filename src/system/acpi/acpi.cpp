@@ -1,10 +1,11 @@
 #include "acpi.hpp"
+
+#include <lib/lib.hpp>
+#include <lib/linked_list.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
 #include <system/panic.hpp>
 #include <system/terminal.hpp>
-#include <lib/lib.hpp>
-#include <lib/linked_list.hpp>
 
 static Acpi::RsdpInfo rsdp_info{};
 static auto acpi_tables = LinkedList<Acpi::SdtHeader*>();

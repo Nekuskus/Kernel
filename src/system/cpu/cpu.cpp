@@ -1,5 +1,6 @@
-#include <cpuid.h>
 #include "cpu.hpp"
+
+#include <cpuid.h>
 
 uint32_t Cpu::get_current_cpu() {
     uint32_t a, b, c, d;

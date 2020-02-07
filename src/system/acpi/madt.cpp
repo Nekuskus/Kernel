@@ -1,9 +1,12 @@
 #include "madt.hpp"
+
 #include <stddef.h>
+
+#include <lib/lib.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
 #include <system/terminal.hpp>
-#include <lib/lib.hpp>
+
 #include "apic.hpp"
 
 static auto lapics = LinkedList<Madt::LocalApic*>();

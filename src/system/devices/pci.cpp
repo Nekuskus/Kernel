@@ -1,11 +1,12 @@
 #include "pci.hpp"
+
+#include <lib/lib.hpp>
+#include <lib/linked_list.hpp>
 #include <system/acpi/acpi.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
 #include <system/port.hpp>
 #include <system/terminal.hpp>
-#include <lib/lib.hpp>
-#include <lib/linked_list.hpp>
 
 static auto mcfg_entries = LinkedList<Acpi::McfgEntry>();
 

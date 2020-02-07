@@ -1,7 +1,9 @@
 #include "vbe.hpp"
+
+#include <lib/lib.hpp>
 #include <system/mm/mm.hpp>
 #include <system/terminal.hpp>
-#include <lib/lib.hpp>
+
 #include "vgafont.hpp"
 
 static Graphics::ModeInfo mode_info;

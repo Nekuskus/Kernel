@@ -1,4 +1,6 @@
 #include <stdint.h>
+
+#include <multiboot.hpp>
 #include <system/acpi/acpi.hpp>
 #include <system/acpi/apic.hpp>
 #include <system/acpi/madt.hpp>
@@ -11,14 +13,15 @@
 #include <system/mm/mm.hpp>
 #include <system/mm/pmm.hpp>
 #include <system/mm/vmm.hpp>
-#include <multiboot.hpp>
 
 extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
     if (multiboot_magic == 0x2BADB002 && mb_info_ptr) {
         Multiboot::MultibootInfo* mb_info = (Multiboot::MultibootInfo*)((uint64_t)mb_info_ptr + virtual_kernel_base);
         Multiboot::MemoryMap* memory_map = (Multiboot::MemoryMap*)((uint64_t)mb_info->mmap_addr + virtual_kernel_base);
+
         Pmm::init(memory_map, mb_info->mmap_length / sizeof(*memory_map));
         Vmm::init();
+
         uintptr_t virtual_fb = mb_info->framebuffer_addr + virtual_kernel_base;
 
         if (Vmm::map_pages(Vmm::get_current_context(), (void*)virtual_fb, (void*)mb_info->framebuffer_addr, (mb_info->framebuffer_width * mb_info->framebuffer_pitch + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE)) {

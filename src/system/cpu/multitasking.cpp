@@ -1,4 +1,5 @@
 #include "multitasking.hpp"
+
 #include <system/acpi/apic.hpp>
 #include <system/idt.hpp>
 #include <system/port.hpp>
@@ -23,7 +24,7 @@ void Cpu::Multitasking::init() {
     Port::outb(0x21, Port::inb(0x21) & ~1);
 
     //while (!pit_ticked)
-        //;
+    //;
 
     Idt::register_interrupt_handler(32, schedule, true, true);
 

@@ -1,4 +1,5 @@
 #include "lib.hpp"
+
 #include "ctype.hpp"
 
 int sprintf(char* text, const char* format, ...) {
@@ -34,115 +35,133 @@ int sprintf(char* text, const char* format, ...) {
 
         const char* format_begun_at = format++;
 
-        if (*format == 'c') {
-            format++;
-            char c = (char)va_arg(parameters, int);
+        switch (*format) {
+            case 'c': {
+                format++;
+                char c = (char)va_arg(parameters, int);
 
-            if (!maxrem) {
-                va_end(parameters);
+                if (!maxrem) {
+                    va_end(parameters);
 
-                return -1;
+                    return -1;
+                }
+
+                *text = c;
+                text += c != 0;
+                written += c != 0;
+                break;
             }
 
-            *text = c;
-            text += c != 0;
-            written += c != 0;
-        } else if (*format == 's') {
-            format++;
-            const char* str = va_arg(parameters, const char*);
-            size_t len = strlen(str);
+            case 's': {
+                format++;
+                const char* str = va_arg(parameters, const char*);
+                size_t len = strlen(str);
 
-            if (maxrem < len) {
-                va_end(parameters);
+                if (maxrem < len) {
+                    va_end(parameters);
 
-                return -1;
+                    return -1;
+                }
+
+                for (size_t i = 0; i < len; i++)
+                    text[i] = str[i];
+
+                text += len;
+                written += len;
+                break;
             }
 
-            for (size_t i = 0; i < len; i++)
-                text[i] = str[i];
+            case 'i':
+            case 'd': {
+                format++;
+                int item = va_arg(parameters, int);
 
-            text += len;
-            written += len;
-        } else if (*format == 'i' || *format == 'd') {
-            format++;
-            int item = va_arg(parameters, int);
+                char str[32] = "";
 
-            char str[32] = "";
+                itoa(item, str, 10);
 
-            itoa(item, str, 10);
+                size_t len = strlen(str);
 
-            size_t len = strlen(str);
+                if (maxrem < len) {
+                    va_end(parameters);
 
-            if (maxrem < len) {
-                va_end(parameters);
+                    return -1;
+                }
 
-                return -1;
+                for (size_t i = 0; i < len; i++)
+                    text[i] = str[i];
+
+                text += len;
+                written += len;
+                break;
             }
 
-            for (size_t i = 0; i < len; i++)
-                text[i] = str[i];
+            case 'x':
+            case 'X': {
+                uint64_t item = va_arg(parameters, uint64_t);
 
-            text += len;
-            written += len;
-        } else if (*format == 'x' || *format == 'X') {
-            uint64_t item = va_arg(parameters, uint64_t);
+                char str[32] = "";
 
-            char str[32] = "";
+                htoa(item, str, *format == 'X');
 
-            htoa(item, str, *format == 'X');
+                size_t len = strlen(str);
 
-            size_t len = strlen(str);
+                format++;
 
-            format++;
+                if (maxrem < len) {
+                    va_end(parameters);
+                    return -1;
+                }
 
-            if (maxrem < len) {
-                va_end(parameters);
-                return -1;
+                for (size_t i = 0; i < len; i++)
+                    text[i] = str[i];
+
+                text += len;
+                written += len;
+                break;
             }
+            case 'p': {
+                format++;
+                void* item = va_arg(parameters, void*);
 
-            for (size_t i = 0; i < len; i++)
-                text[i] = str[i];
+                char str[32] = "";
 
-            text += len;
-            written += len;
-        } else if (*format == 'p') {
-            format++;
-            void* item = va_arg(parameters, void*);
+                htoa((uintptr_t)item, str, false);
 
-            char str[32] = "";
+                size_t len = strlen(str);
 
-            htoa((uintptr_t)item, str, false);
+                format++;
 
-            size_t len = strlen(str);
+                if (maxrem < len) {
+                    va_end(parameters);
 
-            format++;
+                    return -1;
+                }
 
-            if (maxrem < len) {
-                va_end(parameters);
+                for (size_t i = 0; i < len; i++)
+                    text[i] = str[i];
 
-                return -1;
+                text += len;
+                written += len;
+                break;
             }
+            default: {
+                format = format_begun_at;
+                size_t len = strlen(format);
 
-            for (size_t i = 0; i < len; i++)
-                text[i] = str[i];
+                if (maxrem < len) {
+                    va_end(parameters);
 
-            text += len;
-            written += len;
-        } else {
-            format = format_begun_at;
-            size_t len = strlen(format);
+                    return -1;
+                }
 
-            if (maxrem < len) {
-                va_end(parameters);
+                for (size_t i = 0; i < len; i++)
+                    text[i] = format[i];
 
-                return -1;
+                written += len;
+                format += len;
+                break;
             }
-
-            for (size_t i = 0; i < len; i++)
-                text[i] = format[i];
-
-            written += len;
-            format += len;
         }
     }
 
@@ -205,7 +224,7 @@ char* itoa(int value, char* result, int base) {
 
     while (low < ptr) {
         char tmp = *low;
-        
+
         *low++ = *ptr;
         *ptr-- = tmp;
     }

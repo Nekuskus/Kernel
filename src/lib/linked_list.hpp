@@ -51,9 +51,14 @@ public:
     }
 
     ~LinkedList() {
-        if (head && tail && _length)
-            for (T& e : *this)
-                delete &e;
+        auto current = head;
+
+        while (current) {
+            auto prev = current;
+            current = current->next;
+
+            delete prev;
+        }
     }
 
     T* push_back(T entry) {

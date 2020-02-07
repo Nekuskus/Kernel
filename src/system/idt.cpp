@@ -1,5 +1,7 @@
 #include "idt.hpp"
+
 #include <lib/lib.hpp>
+
 #include "acpi/apic.hpp"
 #include "port.hpp"
 #include "terminal.hpp"
