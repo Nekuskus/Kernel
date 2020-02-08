@@ -34,7 +34,7 @@ void Cpu::Smp::boot_cpu(uint32_t lapic_id) {
     trampoline_stack = (void*)((uint64_t)Pmm::alloc(0x10000 / page_size) + virtual_physical_base);
     char debug[255] = "";
 
-    if (trampoline_stack == nullptr) {
+    if (!trampoline_stack) {
         sprintf(debug, "[SMP] Failed to allocate stack for CPU with lapic ID %d", lapic_id);
         Terminal::write_line(debug, 0xFFFFFF);
         return;

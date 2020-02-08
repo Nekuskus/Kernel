@@ -24,27 +24,26 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
         uintptr_t virtual_fb = mb_info->framebuffer_addr + virtual_kernel_base;
 
-        if (Vmm::map_pages(Vmm::get_current_context(), (void*)virtual_fb, (void*)mb_info->framebuffer_addr, (mb_info->framebuffer_width * mb_info->framebuffer_pitch + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE)) {
-            Graphics::ModeInfo mode_info = {
-                .framebuffer = (uint32_t*)virtual_fb,
-                .pitch = mb_info->framebuffer_pitch,
-                .width = mb_info->framebuffer_width,
-                .height = mb_info->framebuffer_height,
-                .bpp = mb_info->framebuffer_bpp,
-            };
+        Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)virtual_fb, (void*)mb_info->framebuffer_addr, (mb_info->framebuffer_width * mb_info->framebuffer_pitch + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
 
-            Graphics::init(mode_info);
-            Idt::init();
-            Exceptions::init();
-            Acpi::init();
-            Madt::init();
-            Apic::IoApic::init();
-            Apic::LocalApic::init();
-            Cpu::Smp::init();
-            Pci::init();
-            Cpu::Multitasking::init();
-        } else
-            return;
+        Graphics::ModeInfo mode_info = {
+            .framebuffer = (uint32_t*)virtual_fb,
+            .pitch = mb_info->framebuffer_pitch,
+            .width = mb_info->framebuffer_width,
+            .height = mb_info->framebuffer_height,
+            .bpp = mb_info->framebuffer_bpp,
+        };
+
+        Graphics::init(mode_info);
+        Idt::init();
+        Exceptions::init();
+        Acpi::init();
+        Madt::init();
+        Apic::IoApic::init();
+        Apic::LocalApic::init();
+        //Cpu::Smp::init();
+        Pci::init();
+        Cpu::Multitasking::init();
     } else
         return;
 

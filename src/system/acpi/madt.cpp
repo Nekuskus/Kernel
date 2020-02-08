@@ -9,16 +9,16 @@
 
 #include "apic.hpp"
 
-static auto lapics = LinkedList<Madt::LocalApic*>();
-static auto ioapics = LinkedList<Madt::IoApic*>();
-static auto isos = LinkedList<Madt::InterruptSourceOverride*>();
+auto lapics = LinkedList<Madt::LocalApic*>();
+auto ioapics = LinkedList<Madt::IoApic*>();
+auto isos = LinkedList<Madt::InterruptSourceOverride*>();
 
-static bool legacy_pic = false;
+bool legacy_pic = false;
 
 LinkedList<Madt::LocalApic*> Madt::get_lapics() {
     auto result = LinkedList<Madt::LocalApic*>();
 
-    for (auto& lapic : lapics)
+    for (auto lapic : lapics)
         result.push_back(lapic);
 
     return result;
@@ -27,7 +27,7 @@ LinkedList<Madt::LocalApic*> Madt::get_lapics() {
 LinkedList<Madt::IoApic*> Madt::get_ioapics() {
     auto result = LinkedList<Madt::IoApic*>();
 
-    for (auto& ioapic : ioapics)
+    for (auto ioapic : ioapics)
         result.push_back(ioapic);
 
     return result;
@@ -36,7 +36,7 @@ LinkedList<Madt::IoApic*> Madt::get_ioapics() {
 LinkedList<Madt::InterruptSourceOverride*> Madt::get_isos() {
     auto result = LinkedList<Madt::InterruptSourceOverride*>();
 
-    for (auto& iso : isos)
+    for (auto iso : isos)
         result.push_back(iso);
 
     return result;
@@ -61,6 +61,11 @@ void Madt::init() {
             case InterruptControllerType::LAPIC: {
                 LocalApic* lapic = (LocalApic*)interrupt_controller;
 
+                char text[255] = "";
+
+                sprintf(text, "[MADT] lapic id %d", lapic->id);
+                Terminal::write_line(text, 0xFFFFFF);
+
                 lapics.push_back(lapic);
 
                 break;
@@ -69,7 +74,7 @@ void Madt::init() {
             case InterruptControllerType::IOAPIC: {
                 IoApic* ioapic = (IoApic*)interrupt_controller;
 
-                Vmm::map_pages(Vmm::get_current_context(), (void*)((uint64_t)ioapic->ioapic_base + virtual_kernel_base), (void*)(uint64_t)ioapic->ioapic_base, 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+                Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)((uint64_t)ioapic->ioapic_base + virtual_kernel_base), (void*)(uint64_t)ioapic->ioapic_base, 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
                 ioapics.push_back(ioapic);
 
                 break;

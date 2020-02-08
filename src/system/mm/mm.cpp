@@ -7,37 +7,33 @@
 #include "vmm.hpp"
 
 static Spinlock mm_lock{};
-static uintptr_t top = heap_base;
+static uint64_t top = heap_base;
 
 extern "C" void* malloc(size_t bytes) {
     mm_lock.lock();
 
-    bytes = (bytes + 7) / 8 * 8 + 16;
-    size_t pages = (bytes + page_size - 1) / page_size + 1;
-    void* out = (void*)top;
+    bytes = (bytes + 7) / 8 * 8;  // Round up size to a multiple of 8
+    uint64_t size = bytes + sizeof(HeapHeader), pages = (size + page_size - 1) / page_size + 1;
+    uint64_t out = top;
+    void* p = Pmm::alloc(pages);
 
-    for (size_t i = 0; i < pages; i++) {
-        void* p = Pmm::alloc(1);
+    if (!p) {
+        mm_lock.release();
 
-        if (!p) {
-            mm_lock.release();
-
-            return nullptr;
-        }
-
-        Vmm::map_pages(Vmm::get_current_context(), (void*)top, p, 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
-
-        top += page_size;
+        return nullptr;
     }
 
-    top += page_size;
-    out = (void*)((uintptr_t)out + (pages * page_size - bytes));
-    ((uint64_t*)out)[0] = bytes - 16;
-    ((uint64_t*)out)[1] = pages;
+    Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)top, p, pages, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+
+    top += page_size * (pages + 1);
+    out = out + (page_size * pages - size);
+    HeapHeader* header = (HeapHeader*)out;
+    header->size = bytes;
+    header->pages = pages;
 
     mm_lock.release();
 
-    return (void*)((uintptr_t)out + 16);
+    return (void*)(out + sizeof(HeapHeader));
 }
 
 extern "C" void* calloc(size_t bytes, size_t elem) {
@@ -46,6 +42,28 @@ extern "C" void* calloc(size_t bytes, size_t elem) {
     memset(out, 0, bytes * elem);
 
     return out;
+}
+
+extern "C" void free(void* ptr) {
+    mm_lock.lock();
+
+    HeapHeader* header = (HeapHeader*)((uint64_t)ptr - 16);
+    uintptr_t start = (uintptr_t)ptr & ~(page_size - 1);
+
+    size_t pages = (header->size + page_size - 1) / page_size + 1;
+
+    if (header->pages != pages)
+        return;
+
+    for (size_t i = 0; i < pages; i++) {
+        uint64_t curr = (uintptr_t)start + i * page_size;
+        uintptr_t p = Vmm::get_entry(Vmm::get_current_context(), (void*)curr);
+
+        Vmm::unmap_pages(Vmm::get_current_context(), (void*)curr, 1);
+        Pmm::free((void*)p, 1);
+    }
+
+    mm_lock.release();
 }
 
 extern "C" void* realloc(void* old, size_t s) {
@@ -62,28 +80,6 @@ extern "C" void* realloc(void* old, size_t s) {
     }
 
     return newp;
-}
-
-extern "C" void free(void* ptr) {
-    mm_lock.lock();
-
-    size_t size = *(uint64_t*)((uintptr_t)ptr - 16), req_pages = *(uint64_t*)((uintptr_t)ptr - 8);
-    uintptr_t start = (uintptr_t)ptr & ~(page_size - 1);
-
-    size_t pages = (size + page_size - 1) / page_size + 1;
-
-    if (req_pages != pages)
-        return;
-
-    for (size_t i = 0; i < pages; i++) {
-        uint64_t curr = (uintptr_t)start + i * page_size;
-        uintptr_t p = Vmm::get_entry(Vmm::get_current_context(), (void*)curr);
-
-        Vmm::unmap_pages(Vmm::get_current_context(), (void*)curr, 1);
-        Pmm::free((void*)p, 1);
-    }
-
-    mm_lock.release();
 }
 
 void* operator new(size_t size) {
