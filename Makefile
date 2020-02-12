@@ -6,14 +6,14 @@ OBJECTS += ${patsubst src/%.asm, ${OUTPUTDIR}/objects/%.asm.o, ${shell find src 
 TARGET ?= DEBUG
 
 ifeq (${TARGET}, RELEASE)
-    CXXPARAMS += -O3
-    LINKERPARAMS += -O3
+	CXXPARAMS += -O3
+	LINKERPARAMS += -O3
 endif
 
 ifeq (${TARGET}, DEBUG)
-    CXXPARAMS += -g
-    NASMPARAMS += -g
-    LINKERPARAMS += -g
+	CXXPARAMS += -g
+	NASMPARAMS += -g
+	LINKERPARAMS += -g
 endif
 
 .PHONY: all mkdirs bin
@@ -21,18 +21,18 @@ endif
 all: mkdirs bin
 
 mkdirs:
-    mkdir -p ${OUTPUTDIR}/objects/userland
-    mkdir -p ${OUTPUTDIR}/objects/lib
-    mkdir -p ${OUTPUTDIR}/objects/system/acpi
-    mkdir -p ${OUTPUTDIR}/objects/system/cpu/smp
-    mkdir -p ${OUTPUTDIR}/objects/system/devices
-    mkdir -p ${OUTPUTDIR}/objects/system/mm
+	mkdir -p ${OUTPUTDIR}/objects/userland
+	mkdir -p ${OUTPUTDIR}/objects/lib
+	mkdir -p ${OUTPUTDIR}/objects/system/acpi
+	mkdir -p ${OUTPUTDIR}/objects/system/cpu/smp
+	mkdir -p ${OUTPUTDIR}/objects/system/devices
+	mkdir -p ${OUTPUTDIR}/objects/system/mm
 
 ${OUTPUTDIR}/objects/%.cpp.o: src/%.cpp
-    clang++ ${CXXPARAMS} -o $@ -c $<
+	clang++ ${CXXPARAMS} -o $@ -c $<
 
 ${OUTPUTDIR}/objects/%.asm.o: src/%.asm
-    nasm ${NASMPARAMS} $< -o $@
+	nasm ${NASMPARAMS} $< -o $@
 
 bin: ${OBJECTS}
-    clang++ ${patsubst x86_64-unknown-elf, x86_64-linux-elf, ${CXXPARAMS}} ${LINKERPARAMS} -o ${OUTPUTDIR}/Kernel.bin $^
+	clang++ ${patsubst x86_64-unknown-elf, x86_64-linux-elf, ${CXXPARAMS}} ${LINKERPARAMS} -o ${OUTPUTDIR}/Kernel.bin $^
