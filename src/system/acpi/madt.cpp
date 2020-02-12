@@ -15,31 +15,16 @@ auto isos = LinkedList<Madt::InterruptSourceOverride*>();
 
 bool legacy_pic = false;
 
-LinkedList<Madt::LocalApic*> Madt::get_lapics() {
-    auto result = LinkedList<Madt::LocalApic*>();
-
-    for (auto lapic : lapics)
-        result.push_back(lapic);
-
-    return result;
+LinkedList<Madt::LocalApic*>& Madt::get_lapics() {
+   return lapics;
 }
 
-LinkedList<Madt::IoApic*> Madt::get_ioapics() {
-    auto result = LinkedList<Madt::IoApic*>();
-
-    for (auto ioapic : ioapics)
-        result.push_back(ioapic);
-
-    return result;
+LinkedList<Madt::IoApic*>& Madt::get_ioapics() {
+    return ioapics;
 }
 
-LinkedList<Madt::InterruptSourceOverride*> Madt::get_isos() {
-    auto result = LinkedList<Madt::InterruptSourceOverride*>();
-
-    for (auto iso : isos)
-        result.push_back(iso);
-
-    return result;
+LinkedList<Madt::InterruptSourceOverride*>& Madt::get_isos() {
+    return isos;
 }
 
 bool Madt::has_legacy_pic() {

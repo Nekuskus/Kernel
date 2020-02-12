@@ -41,7 +41,7 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
         Madt::init();
         Apic::IoApic::init();
         Apic::LocalApic::init();
-        //Cpu::Smp::init();
+        Cpu::Smp::init();
         Pci::init();
         Cpu::Multitasking::init();
     } else
