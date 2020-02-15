@@ -4,7 +4,7 @@
 
 #include "cpu/apic.hpp"
 #include "debugging.hpp"
-#include "port.hpp"
+#include "drivers/port.hpp"
 #include "terminal.hpp"
 
 static Idt::Entry idt_entries[256] = {};

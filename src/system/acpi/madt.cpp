@@ -7,8 +7,6 @@
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
 
-#include "apic.hpp"
-
 auto lapics = LinkedList<Madt::LocalApic*>();
 auto ioapics = LinkedList<Madt::IoApic*>();
 auto isos = LinkedList<Madt::InterruptSourceOverride*>();

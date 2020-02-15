@@ -25,7 +25,7 @@ mkdirs:
 	mkdir -p ${OUTPUTDIR}/objects/lib
 	mkdir -p ${OUTPUTDIR}/objects/system/acpi
 	mkdir -p ${OUTPUTDIR}/objects/system/cpu/smp
-	mkdir -p ${OUTPUTDIR}/objects/system/devices
+	mkdir -p ${OUTPUTDIR}/objects/system/drivers
 	mkdir -p ${OUTPUTDIR}/objects/system/mm
 
 ${OUTPUTDIR}/objects/%.cpp.o: src/%.cpp
