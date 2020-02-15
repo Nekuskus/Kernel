@@ -1,9 +1,10 @@
 #include "multitasking.hpp"
 
-#include <system/acpi/apic.hpp>
+#include <system/drivers/port.hpp>
 #include <system/idt.hpp>
-#include <system/port.hpp>
 #include <system/terminal.hpp>
+
+#include "apic.hpp"
 
 void schedule([[maybe_unused]] const Idt::InterruptRegisters* registers) {
     Terminal::write('.', 0xFFFFFF);

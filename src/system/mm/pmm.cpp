@@ -1,6 +1,8 @@
 #include "pmm.hpp"
+
 #include <lib/lib.hpp>
 #include <lib/math.hpp>
+
 #include "mm.hpp"
 
 static uint64_t* bitmap;

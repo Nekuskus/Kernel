@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-namespace Apic {
+namespace Cpu::Apic {
     namespace LocalApic {
         constexpr uint64_t icr_low = 0x300;
         constexpr uint64_t icr_high = 0x310;

@@ -4,6 +4,7 @@
 
 #include <lib/lib.hpp>
 
+#include "debugging.hpp"
 #include "idt.hpp"
 #include "terminal.hpp"
 
@@ -29,4 +30,6 @@ void general_protection_fault_handler(const Idt::InterruptRegisters* registers) 
 void Exceptions::init() {
     Idt::register_interrupt_handler(13, general_protection_fault_handler, false, false);
     Idt::register_interrupt_handler(14, page_fault_handler, false, false);
+
+    Debug::print("[CPUEXCP] Initialized exception handlers.\n");
 }

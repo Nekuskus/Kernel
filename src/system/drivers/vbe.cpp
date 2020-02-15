@@ -1,8 +1,8 @@
 #include "vbe.hpp"
 
 #include <lib/lib.hpp>
+#include <system/debugging.hpp>
 #include <system/mm/mm.hpp>
-#include <system/terminal.hpp>
 
 #include "vgafont.hpp"
 
@@ -15,6 +15,7 @@ void Graphics::init(ModeInfo gfx_mode_info) {
     is_working = true;
 
     clear(0x000000);
+    Debug::print("[VBE] Initialized display.\n");
 }
 
 void Graphics::clear(uint32_t color) {
@@ -42,10 +43,8 @@ void Graphics::write_text(const char* str, uint16_t x, uint16_t y, uint32_t fore
     if (!is_working)
         return;
 
-    uint32_t ln = strlen(str);
-
-    for (uint32_t idx = 0; idx < ln; idx++, x += 8)
-        write_text(str[idx], x, y, foreground);
+    for (; *str; str++, x += 8)
+        write_text(*str, x, y, foreground);
 }
 
 void Graphics::write_text(const char c, uint16_t x, uint16_t y, uint32_t foreground, uint32_t background) {
@@ -63,19 +62,17 @@ void Graphics::write_text(const char* str, uint16_t x, uint16_t y, uint32_t fore
     if (!is_working)
         return;
 
-    uint32_t ln = strlen(str);
-
-    for (uint32_t idx = 0; idx < ln; idx++, x += 8)
-        write_text(str[idx], x, y, foreground, background);
+    for (; *str; str++, x += 8)
+        write_text(*str, x, y, foreground, background);
 }
 
-inline void Graphics::set_pixel(uint16_t x, uint16_t y, uint32_t color) {
+void Graphics::set_pixel(uint16_t x, uint16_t y, uint32_t color) {
     if (!is_working)
         return;
 
     mode_info.framebuffer[(x * 4 + y * mode_info.pitch) / (mode_info.bpp / 8)] = color;
 }
 
-Graphics::ModeInfo Graphics::get_mode_info() {
+Graphics::ModeInfo& Graphics::get_mode_info() {
     return mode_info;
 }

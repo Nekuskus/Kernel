@@ -2,7 +2,8 @@
 
 #include <lib/lib.hpp>
 
-#include "acpi/apic.hpp"
+#include "cpu/apic.hpp"
+#include "debugging.hpp"
 #include "port.hpp"
 #include "terminal.hpp"
 
@@ -310,10 +311,13 @@ extern "C" void isr_handler(const Idt::InterruptRegisters* registers) {
     uint8_t n = registers->int_num & 0xFF;
     Idt::InterruptHandler* handler = &interrupt_handlers[n];
 
-    if (n < 32) {
-        char text[2048] = "";
+    char text[2048] = "";
 
-        sprintf(text, "Received Exception #%s (%s),\n\rCPU registers: RIP: %x, RSP: %x\n\r    RAX: %x, RBX: %x, RCX: %x, RDX : %x\n\r    RSI: %x, RDI: %x, RSP: %x, RBP: %x\n\r    R8: %x, R9: %x, R10: %x, R11: %x\n\r    R12: %x, R12: %x, R13: %x, R14: %x\n\r    R15: %x", exceptions[n].mnemonic, exceptions[n].message, registers->rip, registers->rsp, registers->rax, registers->rbx, registers->rcx, registers->rbx, registers->rsi, registers->rdi, registers->rsp, registers->rbp, registers->r8, registers->r9, registers->r10, registers->r11, registers->r12, registers->r13, registers->r13, registers->r14, registers->r15);
+    sprintf(text, "Received Interrupt #%d:\n\rCPU registers: RIP: %x, RSP: %x\n\r    RAX: %x, RBX: %x, RCX: %x, RDX : %x\n\r    RSI: %x, RDI: %x, RSP: %x, RBP: %x\n\r    R8: %x, R9: %x, R10: %x, R11: %x\n\r    R12: %x, R12: %x, R13: %x, R14: %x\n\r    R15: %x", n, registers->rip, registers->rsp, registers->rax, registers->rbx, registers->rcx, registers->rbx, registers->rsi, registers->rdi, registers->rsp, registers->rbp, registers->r8, registers->r9, registers->r10, registers->r11, registers->r12, registers->r13, registers->r13, registers->r14, registers->r15);
+    Debug::print(text);
+
+    if (n < 32) {
+        sprintf(text, "Received Exception #%s (%s):\n\rCPU registers: RIP: %x, RSP: %x\n\r    RAX: %x, RBX: %x, RCX: %x, RDX : %x\n\r    RSI: %x, RDI: %x, RSP: %x, RBP: %x\n\r    R8: %x, R9: %x, R10: %x, R11: %x\n\r    R12: %x, R12: %x, R13: %x, R14: %x\n\r    R15: %x", exceptions[n].mnemonic, exceptions[n].message, registers->rip, registers->rsp, registers->rax, registers->rbx, registers->rcx, registers->rbx, registers->rsi, registers->rdi, registers->rsp, registers->rbp, registers->r8, registers->r9, registers->r10, registers->r11, registers->r12, registers->r13, registers->r13, registers->r14, registers->r15);
         Terminal::write_line(text, 0xFFFFFF, 0xe50000);
     }
 
@@ -321,9 +325,9 @@ extern "C" void isr_handler(const Idt::InterruptRegisters* registers) {
         interrupt_handlers[n].function(registers);
 
     if (handler->is_irq)
-        Apic::LocalApic::send_eoi();
+        Cpu::Apic::LocalApic::send_eoi();
 
-    if (!handler->should_iret)
+    if (!handler->should_iret && !handler->is_irq)
         while (1)
             ;
 }
@@ -632,6 +636,5 @@ void Idt::init() {
     set_entry(255, (uintptr_t)isr255, 0x08, 0);
 
     idt_pointer = { .limit = 256 * sizeof(Entry) - 1, .base = (uint64_t)&idt_entries };
-    asm volatile("lidt %0" ::"m"(idt_pointer));
-    asm volatile("sti");
+    asm volatile("lidt %0\n\t" ::"m"(idt_pointer));
 }

@@ -3,10 +3,11 @@
 #include <lib/lib.hpp>
 #include <lib/linked_list.hpp>
 #include <system/acpi/acpi.hpp>
+#include <system/debugging.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
-#include <system/port.hpp>
-#include <system/terminal.hpp>
+
+#include "port.hpp"
 
 static auto mcfg_entries = LinkedList<Acpi::McfgEntry>();
 
@@ -128,12 +129,12 @@ void Pci::init() {
 
             char text[255] = "";
 
-            sprintf(text, "[DEVMGR] MCFG entry #%d %p: %d:%d:0:0 - %d:%d:0:0", i, entry.ecm_base, entry.segment, entry.start_bus_number, entry.segment, entry.end_bus_number);
-            Terminal::write_line(text, 0xFFFFFF);
+            sprintf(text, "[DEVMGR] MCFG entry #%d %p: %d:%d:0:0 - %d:%d:0:0\n", i, entry.ecm_base, entry.segment, entry.start_bus_number, entry.segment, entry.end_bus_number);
+            Debug::print(text);
         }
 
         internal_read = mmap_read;
         internal_write = mmap_write;
     } else
-        Terminal::write_line("[DEVMGR] No PCI(E) Memory-Mapped support", 0xFFFFFF);
+        Debug::print("[DEVMGR] No PCI(E) Memory-Mapped support!\n");
 }

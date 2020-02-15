@@ -2,6 +2,7 @@
 
 #include <lib/lib.hpp>
 #include <lib/linked_list.hpp>
+#include <system/debugging.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
 #include <system/panic.hpp>
@@ -80,8 +81,8 @@ void Acpi::init() {
 
     char text[255] = "";
 
-    sprintf(text, "[ACPI] Detected ACPI with OEM ID '%s' and version %d", rsdp_info.oem_id, rsdp_info.version);
-    Terminal::write_line(text, 0xFFFFFF);
+    sprintf(text, "[ACPI] Detected ACPI with OEM ID '%s' and version %d.\n", rsdp_info.oem_id, rsdp_info.version);
+    Debug::print(text);
 
     if (rsdp_info.version >= 2) {
         XsdtHeader* xsdt = (XsdtHeader*)rsdp_info.address;
@@ -97,8 +98,8 @@ void Acpi::init() {
             if (!calculate_checksum(h, h->length)) {
                 char text[255] = "";
 
-                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c", (uint64_t)h - virtual_physical_base, h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
-                Terminal::write_line(text, 0xFFFFFF);
+                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c\n", (uint64_t)h - virtual_physical_base, h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
+                Debug::print(text);
                 acpi_tables.push_back(h);
             }
         }
@@ -116,8 +117,8 @@ void Acpi::init() {
             if (!calculate_checksum(h, h->length)) {
                 char text[255] = "";
 
-                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c", (uint64_t)h - virtual_physical_base, h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
-                Terminal::write_line(text, 0xFFFFFF);
+                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c\n", (uint64_t)h - virtual_physical_base, h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
+                Debug::print(text);
                 acpi_tables.push_back(h);
             }
         }

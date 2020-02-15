@@ -3,13 +3,13 @@
 #include <cpuid.h>
 
 #include <lib/lib.hpp>
-#include <system/acpi/apic.hpp>
 #include <system/acpi/madt.hpp>
+#include <system/cpu/apic.hpp>
 #include <system/cpu/cpu.hpp>
+#include <system/debugging.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/pmm.hpp>
 #include <system/mm/vmm.hpp>
-#include <system/terminal.hpp>
 
 extern "C" void* smp_entry;
 extern "C" void* _trampoline_start;
@@ -35,8 +35,8 @@ void Cpu::Smp::boot_cpu(uint32_t lapic_id) {
     char debug[255] = "";
 
     if (!trampoline_stack) {
-        sprintf(debug, "[SMP] Failed to allocate stack for CPU with lapic ID %d", lapic_id);
-        Terminal::write_line(debug, 0xFFFFFF);
+        sprintf(debug, "[SMP] Failed to allocate stack for CPU with lapic ID %d\n", lapic_id);
+        Debug::print(debug);
         return;
     }
 
@@ -46,11 +46,11 @@ void Cpu::Smp::boot_cpu(uint32_t lapic_id) {
     if (!wait_for_boot()) Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uintptr_t)&smp_entry >> 12) & 0xFF));
 
     if (wait_for_boot()) {
-        sprintf(debug, "[SMP] Sucessfully booted CPU with lapic ID %d", lapic_id);
-        Terminal::write_line(debug, 0xFFFFFF);
+        sprintf(debug, "[SMP] Sucessfully booted CPU with lapic ID %d\n", lapic_id);
+        Debug::print(debug);
     } else {
-        sprintf(debug, "[SMP] Failed to boot CPU with lapic ID %d", lapic_id);
-        Terminal::write_line(debug, 0xFFFFFF);
+        sprintf(debug, "[SMP] Failed to boot CPU with lapic ID %d\n", lapic_id);
+        Debug::print(debug);
     }
 
     trampoline_booted = false;
@@ -71,4 +71,6 @@ void Cpu::Smp::init() {
     for (auto& lapic : Madt::get_lapics())
         if ((lapic->flags & 1) && lapic->id != current_lapic)
             Cpu::Smp::boot_cpu(lapic->id);
+
+    Debug::print("[SMP] Finished setting up.\n");
 }

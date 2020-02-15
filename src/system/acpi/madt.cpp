@@ -3,9 +3,9 @@
 #include <stddef.h>
 
 #include <lib/lib.hpp>
+#include <system/debugging.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
-#include <system/terminal.hpp>
 
 #include "apic.hpp"
 
@@ -16,7 +16,7 @@ auto isos = LinkedList<Madt::InterruptSourceOverride*>();
 bool legacy_pic = false;
 
 LinkedList<Madt::LocalApic*>& Madt::get_lapics() {
-   return lapics;
+    return lapics;
 }
 
 LinkedList<Madt::IoApic*>& Madt::get_ioapics() {
@@ -46,11 +46,6 @@ void Madt::init() {
             case InterruptControllerType::LAPIC: {
                 LocalApic* lapic = (LocalApic*)interrupt_controller;
 
-                char text[255] = "";
-
-                sprintf(text, "[MADT] lapic id %d", lapic->id);
-                Terminal::write_line(text, 0xFFFFFF);
-
                 lapics.push_back(lapic);
 
                 break;
@@ -76,4 +71,6 @@ void Madt::init() {
 
         offset += interrupt_controller->length;
     }
+
+    Debug::print("[MADT] Finished setting up.\n");
 }

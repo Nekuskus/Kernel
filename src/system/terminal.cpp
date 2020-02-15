@@ -2,7 +2,7 @@
 
 #include <lib/lib.hpp>
 
-#include "devices/vbe.hpp"
+#include "drivers/vbe.hpp"
 
 static uint16_t x = 0, y = 0;
 
@@ -41,17 +41,17 @@ void Terminal::set_cursor(uint16_t nx, uint16_t ny) {
 }
 
 void Terminal::write(const char* str, uint32_t foreground, uint32_t background) {
-    uint32_t ln = strlen(str);
-
-    for (uint32_t idx = 0; idx < ln; idx++)
-        write(str[idx], foreground, background);
+    while (*str) {
+        write(*str, foreground, background);
+        str++;
+    }
 }
 
 void Terminal::write(const char* str, uint32_t foreground) {
-    uint32_t ln = strlen(str);
-
-    for (uint32_t idx = 0; idx < ln; idx++)
-        write(str[idx], foreground);
+    while (*str) {
+        write(*str, foreground);
+        str++;
+    }
 }
 
 void Terminal::write(const char c, uint32_t foreground, uint32_t background) {
