@@ -218,33 +218,8 @@ Vmm::PageTable* Vmm::new_address_space() {
     return new_pml4;
 }
 
-Vmm::PageTable** Vmm::get_ctx_ptr() {
-    return (PageTable**)kernel_pml4;
-}
-
 Vmm::PageTable* Vmm::get_ctx_kernel() {
     return kernel_pml4;
-}
-
-void Vmm::save_context() {
-    PageTable** ctx = get_ctx_ptr();
-    *ctx = get_current_context();
-}
-
-Vmm::PageTable* get_saved_context() {
-    Vmm::PageTable** ctx = Vmm::get_ctx_ptr();
-    return *ctx;
-}
-
-void Vmm::restore_context() {
-    PageTable** ctx = get_ctx_ptr();
-    set_context(*ctx);
-    *ctx = nullptr;
-}
-
-void Vmm::drop_context() {
-    PageTable** ctx = get_ctx_ptr();
-    *ctx = nullptr;
 }
 
 void Vmm::set_context(PageTable* ctx) {

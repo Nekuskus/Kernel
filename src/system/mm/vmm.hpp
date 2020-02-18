@@ -37,11 +37,7 @@ namespace Vmm {
     bool update_huge_perms(PageTable* pml4, void* virt, size_t count, int perms);
     uintptr_t get_entry(PageTable* pml4, void* virt);
     PageTable* new_address_space();
-    void save_context();
-    PageTable** get_ctx_ptr();
     PageTable* get_ctx_kernel();
-    void restore_context();
-    void drop_context();
     void set_context(PageTable* ctx);
     PageTable* get_current_context();
 }  // namespace Vmm

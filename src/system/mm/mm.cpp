@@ -13,8 +13,7 @@ extern "C" void* malloc(size_t bytes) {
     mm_lock.lock();
 
     bytes = (bytes + 7) / 8 * 8;  // Round up size to a multiple of 8
-    uint64_t size = bytes + sizeof(HeapHeader), pages = (size + page_size - 1) / page_size + 1;
-    uint64_t out = top;
+    uint64_t size = bytes + sizeof(HeapHeader), pages = (size + page_size - 1) / page_size + 1, out = top;
     void* p = Pmm::alloc(pages);
 
     if (!p) {
@@ -49,15 +48,13 @@ extern "C" void free(void* ptr) {
 
     HeapHeader* header = (HeapHeader*)((uint64_t)ptr - 16);
     uintptr_t start = (uintptr_t)ptr & ~(page_size - 1);
-
     size_t pages = (header->size + page_size - 1) / page_size + 1;
 
     if (header->pages != pages)
         return;
 
     for (size_t i = 0; i < pages; i++) {
-        uint64_t curr = (uintptr_t)start + i * page_size;
-        uintptr_t p = Vmm::get_entry(Vmm::get_current_context(), (void*)curr);
+        uint64_t curr = (uintptr_t)start + i * page_size, p = Vmm::get_entry(Vmm::get_current_context(), (void*)curr);
 
         Vmm::unmap_pages(Vmm::get_current_context(), (void*)curr, 1);
         Pmm::free((void*)p, 1);

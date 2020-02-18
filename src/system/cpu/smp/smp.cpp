@@ -69,7 +69,7 @@ void Cpu::Smp::init() {
     uint32_t current_lapic = Cpu::get_current_cpu();
 
     for (auto& lapic : Madt::get_lapics())
-        if ((lapic->flags & 1) && lapic->id != current_lapic)
+        if (((lapic->flags & 1) || (lapic->flags & 2)) && lapic->id != current_lapic)
             Cpu::Smp::boot_cpu(lapic->id);
 
     Debug::print("[SMP] Finished setting up.\n");

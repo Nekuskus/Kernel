@@ -32,7 +32,7 @@ bool Madt::has_legacy_pic() {
 void Madt::init() {
     MadtHeader* madt = (MadtHeader*)Acpi::get_table("APIC");
 
-    legacy_pic = (madt->flags & 1ULL) == 1;
+    legacy_pic = madt->flags & 1ULL;
 
     size_t table_size = madt->header.length - sizeof(MadtHeader);
     uint64_t list = (uint64_t)madt + sizeof(MadtHeader), offset = 0;
