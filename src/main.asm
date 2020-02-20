@@ -137,7 +137,6 @@ entry:
     mov gs, ax
     mov ss, ax
     add rsp, KERNEL_VMA
-    cld
     pop rdi
     pop rsi
     call kmain
@@ -146,7 +145,6 @@ entry:
 
 global stop
 stop:
-
     cli
     hlt
 

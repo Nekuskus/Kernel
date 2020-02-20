@@ -8,6 +8,7 @@
 #include "system/cpu/multitasking.hpp"
 #include "system/cpu/smp/smp.hpp"
 #include "system/debugging.hpp"
+#include "system/drivers/ahci.hpp"
 #include "system/drivers/pci.hpp"
 #include "system/drivers/port.hpp"
 #include "system/drivers/vbe.hpp"
@@ -70,38 +71,37 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
         Graphics::init(mode_info);
 
-        progress_increase = mode_info.width / 8;
+        progress_increase = mode_info.width / 10;
         progress_bar += 10;
 
         progress();
-
         Idt::init();
         progress();
         Exceptions::init();
         progress();
 
         uint16_t start_of_img_x = mode_info.width / 2 - 128, start_of_img_y = mode_info.height / 2 - 128;
+        const char* rgb = firework_icon;
 
-        for (size_t y = 0; y < 256; y++) {
+        union {
+            struct {
+                char r;
+                char g;
+                char b;
+                char a;
+            } color;
+            uint32_t int_color;
+        } color;
+
+        for (size_t y = 0; y < 256; y++)
             for (size_t x = 0; x < 256; x++) {
-                uint8_t* rgb = (uint8_t*)firework_icon + (256 * y + x) * 3;
-                union {
-                    struct {
-                        char r;
-                        char g;
-                        char b;
-                        char a;
-                    } color;
-                    uint32_t int_color;
-                } color;
-
                 color.color.r = rgb[0];
                 color.color.g = rgb[1];
                 color.color.b = rgb[2];
 
                 Graphics::set_pixel(start_of_img_x + x, start_of_img_y + y, color.int_color);
+                rgb = (const char*)((uint64_t)firework_icon + (256 * y + x) * 3);
             }
-        }
 
         Acpi::init();
         progress();
@@ -115,6 +115,8 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
         Cpu::Smp::init();
         progress();
         Pci::init();
+        progress();
+        Ahci::init();
         progress();
         //Cpu::Multitasking::init();
     } else {
