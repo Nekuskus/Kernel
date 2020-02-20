@@ -1,117 +1,250 @@
 #pragma once
 #include <stddef.h>
+
 #include "spinlock.hpp"
 
 template <typename T>
+struct NodeLink {
+    T data;
+    NodeLink<T>* next;
+    int index;
+};
+
+template <typename T>
+class NodeLinkIterator {
+public:
+    NodeLink<T>* link;
+
+    explicit NodeLinkIterator(NodeLink<T>* link)
+        : link(link) {
+    }
+
+    T& operator*() {
+        return link->data;
+    }
+
+    void operator++() {
+        if (link)
+            link = link->next;
+    }
+
+    bool operator!=(NodeLinkIterator it) {
+        return link != it.link;
+    }
+};
+
+template <typename T>
 class LinkedList {
-    size_t _length;
-    Spinlock lock;
+    void update() {
+        if (list == nullptr)
+            return;
+
+        NodeLink<T>* last = list;
+        int idx = 0;
+
+        while (last != nullptr) {
+            last->index = idx++;
+            last = last->next;
+        }
+    }
+    NodeLink<T>* list;
 
 public:
-    template <typename entry_T>
-    class LinkedListEntry {
-    public:
-        entry_T item;
-        LinkedListEntry<entry_T>* next;
-        LinkedListEntry<entry_T>* prev;
-
-        LinkedListEntry()
-            : item(entry_T()), next(nullptr), prev(nullptr) {
-        }
-    };
-
-    template <typename iterator_T>
-    class LinkedListIterator {
-    public:
-        LinkedListEntry<iterator_T>* entry;
-
-        explicit LinkedListIterator(LinkedListEntry<iterator_T>* entry)
-            : entry(entry) {
-        }
-
-        iterator_T& operator*() {
-            return entry->item;
-        }
-
-        void operator++() {
-            if (entry)
-                entry = entry->next;
-        }
-
-        bool operator!=(LinkedListIterator it) {
-            return entry != it.entry;
-        }
-    };
-
-    LinkedListEntry<T>* head;
-    LinkedListEntry<T>* tail;
-
-    constexpr LinkedList() noexcept
-        : _length(0), lock(Spinlock()), head(nullptr), tail(nullptr) {
+    LinkedList()
+        : list(nullptr) {
     }
 
     ~LinkedList() {
-        auto current = head;
+        clear();
+    }
 
-        while (current) {
-            auto prev = current;
-            current = current->next;
+    NodeLink<T>* find(int index) {
+        NodeLink<T>* temp = list;
 
-            delete prev;
+        while (temp && temp->index != index)
+            temp = temp->next;
+
+        return temp;
+    }
+
+    T* operator[](int index) {
+        NodeLink<T>* node = find(index);
+
+        return node ? &node->data : nullptr;
+    }
+
+    void push(T value) {
+        NodeLink<T>* node = new NodeLink<T>;
+        node->data = value;
+        node->next = list;
+        list = node;
+        update();
+    }
+
+    void push_back(T value) {
+        NodeLink<T>*node = new NodeLink<T>, *last = list;
+        node->data = value;
+        node->next = nullptr;
+
+        if (list != nullptr) {
+            while (last->next != nullptr)
+                last = last->next;
+
+            last->next = node;
+        } else
+            list = node;
+
+        update();
+    }
+
+    bool insert_before(int index, T value) {
+        NodeLink<T>*node = list, *last, *result = new NodeLink<T>;
+        bool found = false;
+
+        while (node != nullptr) {
+            if (node->index == index) {
+                found = true;
+                break;
+            }
+
+            last = node;
+            node = node->next;
         }
-    }
 
-    T* push_back(T entry) {
-        lock.lock();
+        if (found) {
+            if (node == list) {
+                push(value);
+                free(result);
+            } else {
+                result->data = value;
+                last->next = result;
+                result->next = node;
 
-        auto* new_entry = new LinkedListEntry<T>;
-        new_entry->item = entry;
-        new_entry->next = nullptr;
-
-        if (_length == 0) {
-            head = new_entry;
-            tail = new_entry;
-            new_entry->prev = nullptr;
-            _length++;
-
-            lock.release();
-
-            return &new_entry->item;
+                update();
+            }
+            return true;
         }
 
-        tail->next = new_entry;
-        new_entry->prev = tail;
-        tail = new_entry;
-        _length++;
+        free(result);
 
-        lock.release();
-
-        return &new_entry->item;
+        return false;
     }
 
-    LinkedListEntry<T>* get_entry_for_item(T* entry) {
-        for (LinkedListEntry<T>* item = head; item != nullptr; item = item->next)
-            if (&item->item == entry)
-                return item;
+    bool insert_after(int index, T value) {
+        NodeLink<T>*node = list, *last, *result = new NodeLink<T>;
+        bool found = false;
 
-        return nullptr;
+        while (node != nullptr) {
+            if (node->index == index) {
+                found = true;
+                break;
+            }
+
+            node = node->next;
+        }
+
+        if (found) {
+            if (node->next == nullptr) {
+                push_back(value);
+                free(result);
+            } else {
+                result->data = value;
+                last = node->next;
+                node->next = result;
+                result->next = last;
+
+                update();
+
+                return true;
+            }
+        }
+
+        free(result);
+
+        return false;
     }
 
-    LinkedListIterator<T> get_iterator_for_item(T* item) {
-        LinkedListEntry<T>* entry = get_entry_for_item(item);
+    bool pop() {
+        if (!list)
+            return false;
 
-        return LinkedListIterator<T>(entry);
+        NodeLink<T>* node = list;
+        list = list->next;
+        free(node);
+        update();
+
+        return true;
     }
 
-    LinkedListIterator<T> begin() {
-        return LinkedListIterator<T>(head);
+    bool pop(int index) {
+        if (!list)
+            return false;
+
+        NodeLink<T>*node = list, *last;
+        bool found = false;
+        while (node != nullptr) {
+            if (node->index == index) {
+                found = true;
+                break;
+            }
+            last = node;
+            node = node->next;
+        }
+
+        if (found) {
+            if (node == list)
+                return false;
+
+            if (node == list->next) {
+                list = node;
+                free(last);
+            } else {
+                find(last->index - 1)->next = node;
+                free(last);
+            }
+
+            update();
+            return true;
+        }
+
+        return false;
     }
 
-    LinkedListIterator<T> end() {
-        return LinkedListIterator<T>(nullptr);
+    bool pop_back() {
+        if (!list)
+            return false;
+
+        NodeLink<T>*node = list, *last = nullptr;
+
+        if (node == nullptr || !node->next) {
+            list = nullptr;
+            free(node);
+        } else {
+            while (node->next != nullptr) {
+                last = node;
+                node = node->next;
+            }
+            if (last == nullptr)
+                return false;
+
+            last->next = nullptr;
+            free(node);
+        }
+        return true;
     }
 
-    size_t length() {
-        return _length;
+    void clear() {
+        if (list == nullptr)
+            return;
+
+        while (list != nullptr)
+            pop_back();
+    }
+    NodeLinkIterator<T> begin() {
+        return NodeLinkIterator<T>(list);
+    }
+
+    NodeLinkIterator<T> end() {
+        return NodeLinkIterator<T>(nullptr);
     }
 };
