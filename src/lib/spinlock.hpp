@@ -1,7 +1,8 @@
 #pragma once
+#include <stdatomic.h>
 
 class Spinlock {
-    volatile int locked;
+    atomic_bool locked;
 
 public:
     Spinlock();

@@ -1,7 +1,5 @@
 #include "spinlock.hpp"
 
-#include <system/cpu/cpu.hpp>
-
 Spinlock::Spinlock() {
     release();
 }
@@ -11,9 +9,9 @@ Spinlock::~Spinlock() {
 }
 
 void Spinlock::lock() {
-    Cpu::atomic_set(&locked);
+    locked = true;
 }
 
 void Spinlock::release() {
-    Cpu::atomic_unset(&locked);
+    locked = false;
 }
