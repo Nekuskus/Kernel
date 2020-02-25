@@ -137,9 +137,20 @@ entry:
     mov gs, ax
     mov ss, ax
     add rsp, KERNEL_VMA
+    
+    extern _init
+    call _init
+
     pop rdi
     pop rsi
+
+    cld
+
     call kmain
+
+    extern _fini
+    call _fini
+
     cli
     hlt
 

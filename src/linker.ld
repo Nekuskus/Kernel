@@ -22,11 +22,12 @@ SECTIONS {
         _ebss = .;
     }
 
-    .init_array : {
-        _init_array_begin = .;
-        KEEP(*(SORT(.init_array.*)))
-        KEEP(*(.init_array*))
-        _init_array_end = .;
+    .init : AT(ADDR(.init) - KERNEL_VMA) {
+        *(.init)
+    }
+
+    .finit : AT(ADDR(.finit) - KERNEL_VMA) {
+        *(.finit)
     }
 
     . = 0x1000;

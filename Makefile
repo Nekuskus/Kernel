@@ -26,4 +26,4 @@ ${OUTPUTDIR}/objects/%.asm.o: src/%.asm
 	nasm ${NASMPARAMS} $< -o $@
 
 all: ${OBJECTS}
-	clang++ ${patsubst x86_64-unknown-elf, x86_64-linux-elf, ${CXXPARAMS}} ${LINKERPARAMS} -o ${OUTPUTDIR}/Kernel.bin $^
+	clang++ ${patsubst x86_64-unknown-elf, x86_64-linux-elf, ${CXXPARAMS}} ${LINKERPARAMS} -o ${OUTPUTDIR}/Kernel.bin ${OUTPUTDIR}/objects/crtbegin.asm.o ${patsubst ${OUTPUTDIR}/objects/crt%, ,$^} ${OUTPUTDIR}/objects/crtend.asm.o

@@ -35,7 +35,12 @@ public:
 
 template <typename T>
 class LinkedList {
+    NodeLink<T>* list;
+    size_t _length;
+
     void update() {
+        _length = 0;
+
         if (list == nullptr)
             return;
 
@@ -43,11 +48,11 @@ class LinkedList {
         int idx = 0;
 
         while (last != nullptr) {
+            _length++;
             last->index = idx++;
             last = last->next;
         }
     }
-    NodeLink<T>* list;
 
 public:
     LinkedList()
@@ -78,6 +83,7 @@ public:
         node->data = value;
         node->next = list;
         list = node;
+
         update();
     }
 
@@ -104,6 +110,7 @@ public:
         while (node != nullptr) {
             if (node->index == index) {
                 found = true;
+
                 break;
             }
 
@@ -114,7 +121,8 @@ public:
         if (found) {
             if (node == list) {
                 push(value);
-                free(result);
+
+                delete result;
             } else {
                 result->data = value;
                 last->next = result;
@@ -122,10 +130,11 @@ public:
 
                 update();
             }
+
             return true;
         }
 
-        free(result);
+        delete result;
 
         return false;
     }
@@ -146,7 +155,8 @@ public:
         if (found) {
             if (node->next == nullptr) {
                 push_back(value);
-                free(result);
+
+                delete result;
             } else {
                 result->data = value;
                 last = node->next;
@@ -159,7 +169,7 @@ public:
             }
         }
 
-        free(result);
+        delete result;
 
         return false;
     }
@@ -170,7 +180,9 @@ public:
 
         NodeLink<T>* node = list;
         list = list->next;
-        free(node);
+
+        delete node;
+
         update();
 
         return true;
@@ -182,11 +194,14 @@ public:
 
         NodeLink<T>*node = list, *last;
         bool found = false;
+
         while (node != nullptr) {
             if (node->index == index) {
                 found = true;
+
                 break;
             }
+
             last = node;
             node = node->next;
         }
@@ -197,13 +212,16 @@ public:
 
             if (node == list->next) {
                 list = node;
-                free(last);
+
+                delete last;
             } else {
                 find(last->index - 1)->next = node;
-                free(last);
+
+                delete last;
             }
 
             update();
+
             return true;
         }
 
@@ -218,17 +236,20 @@ public:
 
         if (node == nullptr || !node->next) {
             list = nullptr;
-            free(node);
+
+            delete node;
         } else {
             while (node->next != nullptr) {
                 last = node;
                 node = node->next;
             }
+
             if (last == nullptr)
                 return false;
 
             last->next = nullptr;
-            free(node);
+
+            delete node;
         }
         return true;
     }
@@ -240,11 +261,16 @@ public:
         while (list != nullptr)
             pop_back();
     }
+
     NodeLinkIterator<T> begin() {
         return NodeLinkIterator<T>(list);
     }
 
     NodeLinkIterator<T> end() {
         return NodeLinkIterator<T>(nullptr);
+    }
+
+    size_t length() {
+        return _length;
     }
 };

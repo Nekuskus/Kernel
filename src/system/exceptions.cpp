@@ -23,7 +23,7 @@ void page_fault_handler(const Idt::InterruptRegisters* registers) {
 void general_protection_fault_handler(const Idt::InterruptRegisters* registers) {
     char text[255] = "";
 
-    sprintf(text, "    Segment Selector Index: %i.", registers->error_code);
+    sprintf(text, "    Segment selector index: %i.", registers->error_code);
     Terminal::write_line(text, 0xFFFFFF, 0xe50000);
 }
 

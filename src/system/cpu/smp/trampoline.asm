@@ -72,6 +72,9 @@ bits 64
     mov ss, ax
 
     add rsp, KERNEL_VMA
+
+    cld
+    
     call smp_kernel_main
     hlt
 

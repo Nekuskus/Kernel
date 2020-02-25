@@ -20,14 +20,7 @@ Vmm::PageTableEntries Vmm::virtual_to_entries(void* virt) {
 }
 
 void* Vmm::entries_to_virtual(PageTableEntries offs) {
-    uintptr_t addr = 0;
-
-    addr |= offs.pml4 << 39;
-    addr |= offs.pdp << 30;
-    addr |= offs.pd << 21;
-    addr |= offs.pt << 12;
-
-    return (void*)addr;
+    return (void*)((offs.pml4 << 39) | (offs.pdp << 30) | (offs.pd << 21) | (offs.pt << 12));
 }
 
 void Vmm::init() {
@@ -57,10 +50,7 @@ Vmm::PageTable* get_or_alloc_ent(Vmm::PageTable* tab, size_t off, int flags) {
 Vmm::PageTable* get_or_null_ent(Vmm::PageTable* tab, size_t off) {
     uint64_t ent_addr = tab->ents[off] & address_mask;
 
-    if (!ent_addr)
-        return nullptr;
-
-    return (Vmm::PageTable*)(ent_addr + virtual_physical_base);
+    return !ent_addr ? nullptr : (Vmm::PageTable*)(ent_addr + virtual_physical_base);
 }
 
 bool Vmm::map_pages(PageTable* pml4, void* virt, void* phys, size_t count, int perms) {

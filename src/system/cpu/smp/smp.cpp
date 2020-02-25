@@ -20,11 +20,12 @@ bool trampoline_booted = false;
 
 bool Cpu::Smp::wait_for_boot() {
     for (uint64_t timeout = 100; timeout > 0; timeout--) {
-        if (trampoline_booted)
-            return true;
+        for (uint64_t i = 100000; i > 0; i--) {
+            if (trampoline_booted)
+                return true;
 
-        for (uint64_t i = 100000; i > 0; i--)
-            ;
+            asm("nop");
+        }
     }
 
     return false;

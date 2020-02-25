@@ -5,7 +5,6 @@
 #include <system/debugging.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
-#include <system/terminal.hpp>
 
 Ahci::HbaConfiguration controller{};
 Ahci::HbaMemory* memory_reg = nullptr;
@@ -74,14 +73,12 @@ bool Ahci::gain_ownership() {
             bohc.raw = memory_reg->host_control.bios_os_handoff_control_and_status.raw;
 
             if (!bohc.bits.os_owned_semaphore && (bohc.bits.bios_owned_semaphore || bohc.bits.bios_busy)) {
-                Terminal::write_line("[AHCI] Failed to acquire ownership of controller.", 0xFFFFFF, 0xe50000);
                 Debug::print("[AHCI] Failed to acquire ownership of controller.\n");
                 return false;
             }
 
             bohc.bits.os_ownership_change = false;
             memory_reg->host_control.bios_os_handoff_control_and_status.raw = bohc.raw;
-            Terminal::write_line("[AHCI] Acquired ownership of controller.", 0xFFFFFF);
             Debug::print("[AHCI] Acquired ownership of controller.\n");
         }
     }
@@ -90,18 +87,18 @@ bool Ahci::gain_ownership() {
 
 void Ahci::init() {
     auto devs = Pci::get_devices(0x01, 0x06, 0x01);
-    controller = { .device = devs[0] };
 
-    if (!controller.device) {
-        Terminal::write_line("[AHCI] No AHCI compatible controller found.\r\n", 0xFFFFFF);
+    if (!devs.length()) {
+        Debug::print("[AHCI] No AHCI compatible controller found.\n");
 
         return;
     }
 
+    controller = { .device = devs[0] };
+
     char text[2048] = "";
 
-    sprintf(text, "[AHCI] Found AHCI controller with Vendor ID %x, Device ID %x, and AHCI base %x.\r\n", controller.device->vendor_id(), controller.device->device_id(), controller.ahci_base());
-    Terminal::write(text, 0xFFFFFF, 0x008000);
+    sprintf(text, "[AHCI] Found AHCI controller with Vendor ID %x, Device ID %x, and AHCI base %x.\n", controller.device->vendor_id(), controller.device->device_id(), controller.ahci_base());
     Debug::print(text);
 
     memory_reg = (HbaMemory*)((uint64_t)controller.ahci_base() + virtual_physical_base);
@@ -114,12 +111,10 @@ void Ahci::init() {
     memory_reg->host_control.global_hba_control.raw = ghc.raw;
 
     if (!gain_ownership()) {
-        Terminal::write_line("[AHCI] Failed to initialize controller.", 0xFFFFFF, 0xe50000);
         Debug::print("[AHCI] Failed to initialize controller.\n");
 
         return;
     }
 
-    Terminal::write_line("[AHCI] Successfully initialized controller.", 0xFFFFFF, 0x008000);
     Debug::print("[AHCI] Successfully initialized controller.\n");
 }

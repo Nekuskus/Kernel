@@ -28,7 +28,7 @@ void Graphics::clear(uint32_t color) {
 }
 
 void Graphics::write_text(const char c, uint16_t x, uint16_t y, uint32_t foreground) {
-    if (!is_working || c == '\0')
+    if (!is_working || c == '\0' || c == '\n' || c == '\t' || c == '\r')
         return;
 
     size_t font_off = c * 16;
