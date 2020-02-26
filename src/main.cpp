@@ -108,7 +108,7 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
         Graphics::init(mode_info);
 
-        progress_increase = mode_info.width / 10;
+        progress_increase = mode_info.width / 9;
         progress_bar += 10;
 
         show_progress((char*)"Initializing display");
@@ -159,9 +159,6 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
         progress();
         show_progress((char*)"Initializing symmetric multiprocessing");
         Cpu::Smp::init();
-        progress();
-        show_progress((char*)"Initializing PCI");
-        Pci::init();
         progress();
         show_progress((char*)"Initializing AHCI");
         Ahci::init();
