@@ -6,55 +6,55 @@ namespace Ahci {
         Pci::Device* device;
 
         uint32_t bar0() {
-            return Pci::read(device->segment, device->bus, device->slot, device->function, 16, 4);
+            return Pci::read(device->bus, device->slot, device->function, 16, 4);
         }
 
         uint32_t bar1() {
-            return Pci::read(device->segment, device->bus, device->slot, device->function, 20, 4);
+            return Pci::read(device->bus, device->slot, device->function, 20, 4);
         }
 
         uint32_t bar2() {
-            return Pci::read(device->segment, device->bus, device->slot, device->function, 24, 4);
+            return Pci::read(device->bus, device->slot, device->function, 24, 4);
         }
 
         uint32_t bar3() {
-            return Pci::read(device->segment, device->bus, device->slot, device->function, 28, 4);
+            return Pci::read(device->bus, device->slot, device->function, 28, 4);
         }
 
         uint32_t bar4() {
-            return Pci::read(device->segment, device->bus, device->slot, device->function, 32, 4);
+            return Pci::read(device->bus, device->slot, device->function, 32, 4);
         }
 
         uint32_t ahci_base() {
-            return Pci::read(device->segment, device->bus, device->slot, device->function, 36, 4);
+            return Pci::read(device->bus, device->slot, device->function, 36, 4);
         }
 
         void ahci_base(uint32_t value) {
-            Pci::write(device->segment, device->bus, device->slot, device->function, 36, value, 4);
+            Pci::write(device->bus, device->slot, device->function, 36, value, 4);
         }
 
         uint16_t sub_system_id() {
-            return Pci::read(device->segment, device->bus, device->slot, device->function, 40, 2);
+            return Pci::read(device->bus, device->slot, device->function, 40, 2);
         }
 
         uint16_t sub_system_vendor_id() {
-            return Pci::read(device->segment, device->bus, device->slot, device->function, 42, 2);
+            return Pci::read(device->bus, device->slot, device->function, 42, 2);
         }
 
         uint32_t eprom() {
-            return Pci::read(device->segment, device->bus, device->slot, device->function, 44, 4);
+            return Pci::read(device->bus, device->slot, device->function, 44, 4);
         }
 
         void eprom(uint32_t value) {
-            Pci::write(device->segment, device->bus, device->slot, device->function, 44, value, 4);
+            Pci::write(device->bus, device->slot, device->function, 44, value, 4);
         }
 
         uint8_t min_grant() {
-            return Pci::read(device->segment, device->bus, device->slot, device->function, 62, 1);
+            return Pci::read(device->bus, device->slot, device->function, 62, 1);
         }
 
         uint8_t max_latency() {
-            return Pci::read(device->segment, device->bus, device->slot, device->function, 63, 1);
+            return Pci::read(device->bus, device->slot, device->function, 63, 1);
         }
     };
 
