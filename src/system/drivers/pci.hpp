@@ -11,6 +11,10 @@ namespace Pci {
     public:
         uint8_t bus, slot, function;
 
+        Device()
+            : bus(0), slot(0), function(0) {
+        }
+
         Device(uint8_t bus, uint8_t slot, uint8_t function)
             : bus(bus), slot(slot), function(function) {
         }

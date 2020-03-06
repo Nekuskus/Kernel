@@ -163,7 +163,7 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
         show_progress((char*)"Initializing AHCI");
         Ahci::init();
         progress();
-        show_progress((char*)" ");
+        show_progress((char*)"                                       ");
         //show_progress((char*)"Starting scheduler");
         //Cpu::Multitasking::init();
     } else {
