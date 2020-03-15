@@ -17,6 +17,7 @@
 #include <system/mm/mm.hpp>
 #include <system/mm/pmm.hpp>
 #include <system/mm/vmm.hpp>
+#include <system/drivers/timer.hpp>
 
 extern "C" void* _init_array_begin;
 extern "C" void* _init_array_end;
@@ -108,7 +109,7 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
         Graphics::init(mode_info);
 
-        progress_increase = mode_info.width / 9;
+        progress_increase = mode_info.width / 11;
         progress_bar += 10;
 
         show_progress((char*)"Initializing display");
@@ -163,9 +164,13 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
         show_progress((char*)"Initializing AHCI");
         Ahci::init();
         progress();
-        show_progress((char*)"                                       ");
-        //show_progress((char*)"Starting scheduler");
-        //Cpu::Multitasking::init();
+        show_progress((char*)"Initializing HPET");
+        Hpet::init();
+        progress();
+        show_progress((char*)"Initializing task scheduler");
+        Cpu::Multitasking::init();
+        progress();
+        show_progress((char*)"");
     } else {
         Debug::print("!! Unable to boot; Invalid multiboot1 magic or missing multiboot info !!\n");
 
