@@ -11,8 +11,9 @@
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
 #include <system/msr.hpp>
+#include <lib/lib.hpp>
 
-static uint64_t lapic_base = 0;
+uint64_t lapic_base = 0;
 
 uint32_t Cpu::Apic::LocalApic::read(uint32_t reg) {
     uint32_t* value = (uint32_t*)(lapic_base + reg);
@@ -64,7 +65,7 @@ void Cpu::Apic::IoApic::write(uint32_t ioapic_base, uint32_t reg, uint32_t data)
 }
 
 uint64_t Cpu::Apic::IoApic::read_entry(uint8_t gsi) {
-    for (auto& ioapic : Madt::get_ioapics()) {
+    for (auto ioapic : Madt::get_ioapics()) {
         if (ioapic->gsi_base > gsi && ((read(ioapic->ioapic_base, ioapic_ver) >> 16) & 0xFF) + 1 + ioapic->gsi_base <= gsi)
             continue;
 
@@ -77,14 +78,14 @@ uint64_t Cpu::Apic::IoApic::read_entry(uint8_t gsi) {
 }
 
 void Cpu::Apic::IoApic::set_entry(uint8_t gsi, uint64_t data) {
-    for (auto& ioapic : Madt::get_ioapics()) {
+    for (auto ioapic : Madt::get_ioapics()) {
         if (ioapic->gsi_base > gsi && ((read(ioapic->ioapic_base, ioapic_ver) >> 16) & 0xFF) + 1 + ioapic->gsi_base <= gsi)
             continue;
 
         uint8_t offset = 0x10 + gsi * 2;
 
         write(ioapic->ioapic_base, offset, data & 0xFFFFFFFF);
-        write(ioapic->ioapic_base, offset, (data >> 32) & 0xFFFFFFFF);
+        write(ioapic->ioapic_base, offset + 1, (data >> 32) & 0xFFFFFFFF);
 
         return;
     }
@@ -94,10 +95,10 @@ void Cpu::Apic::IoApic::set_entry(uint8_t gsi, uint8_t vector, DeliveryMode deli
     uint64_t data = vector | (delivery_mode << 8) | (destination_mode << 11);
 
     if (flags & 2)
-        data |= 1ULL << 13;
+        data |= 1 << 13;
 
     if (flags & 8)
-        data |= 1ULL << 15;
+        data |= 1 << 15;
 
     data |= (uint64_t)destination << 56;
 
@@ -105,7 +106,7 @@ void Cpu::Apic::IoApic::set_entry(uint8_t gsi, uint8_t vector, DeliveryMode deli
 }
 
 void Cpu::Apic::IoApic::mask_gsi(uint32_t gsi) {
-    for (auto& ioapic : Madt::get_ioapics()) {
+    for (auto ioapic : Madt::get_ioapics()) {
         if (ioapic->gsi_base > gsi && ((read(ioapic->ioapic_base, ioapic_ver) >> 16) & 0xFF) + 1 + ioapic->gsi_base <= gsi)
             continue;
 
@@ -116,7 +117,7 @@ void Cpu::Apic::IoApic::mask_gsi(uint32_t gsi) {
 }
 
 void Cpu::Apic::IoApic::unmask_gsi(uint32_t gsi) {
-    for (auto& ioapic : Madt::get_ioapics()) {
+    for (auto ioapic : Madt::get_ioapics()) {
         if (ioapic->gsi_base > gsi && ((read(ioapic->ioapic_base, ioapic_ver) >> 16) & 0xFF) + 1 + ioapic->gsi_base <= gsi)
             continue;
 
@@ -127,8 +128,11 @@ void Cpu::Apic::IoApic::unmask_gsi(uint32_t gsi) {
 }
 
 void Cpu::Apic::IoApic::mask_irq(uint32_t irq) {
-    for (auto& iso : Madt::get_isos()) {
+    for (auto iso : Madt::get_isos()) {
         if (iso->source == irq) {
+            char text[256] = "";
+            sprintf(text, "IRQ: %d, GSI: %d", irq, iso->gsi);
+            Debug::print(text);
             mask_gsi(iso->gsi);
 
             return;
@@ -139,8 +143,11 @@ void Cpu::Apic::IoApic::mask_irq(uint32_t irq) {
 }
 
 void Cpu::Apic::IoApic::unmask_irq(uint32_t irq) {
-    for (auto& iso : Madt::get_isos()) {
+    for (auto iso : Madt::get_isos()) {
         if (iso->source == irq) {
+            char text[256] = "";
+            sprintf(text, "IRQ: %d, GSI: %d", irq, iso->gsi);
+            Debug::print(text);
             unmask_gsi(iso->gsi);
 
             return;
@@ -160,7 +167,7 @@ void Cpu::Apic::IoApic::init() {
 
         bool found = false;
 
-        for (auto& iso : Madt::get_isos()) {
+        for (auto iso : Madt::get_isos()) {
             if (iso->source == i) {
                 set_entry(iso->gsi, iso->source + 0x20, DeliveryMode::FIXED, DestinationMode::PHYSICAL, iso->flags, Cpu::get_current_cpu());
                 mask_gsi(iso->gsi);

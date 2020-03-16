@@ -11,6 +11,7 @@
 #include <system/debugging.hpp>
 #include <system/drivers/ahci.hpp>
 #include <system/drivers/pci.hpp>
+#include <system/drivers/timer.hpp>
 #include <system/drivers/vbe.hpp>
 #include <system/exceptions.hpp>
 #include <system/idt.hpp>
@@ -41,35 +42,6 @@ void progress() {
 }
 
 size_t last_len = 0;
-
-void show_progress(char* text) {
-    size_t len = strlen(text), actual_len = len;
-
-    bool created_new_text = false;
-
-    if (last_len > len) {
-        actual_len = last_len;
-
-        created_new_text = true;
-        char* new_text = new char[last_len];
-
-        memcpy(new_text + (last_len - len) / 2, text, len);
-
-        text = new_text;
-
-        for (size_t i = 0; i < (last_len - len) / 2; i++)
-            text[i] = text[(last_len - len) / 2 + len + i] = ' ';
-
-        text[last_len] = '\0';
-    }
-
-    Graphics::write_text(text, mode_info.width / 2 - actual_len * 4, mode_info.height / 2 + 148, 0xFFFFFF, 0x000000);
-
-    if (created_new_text)
-        delete text;
-
-    last_len = len;
-}
 
 extern "C" void (*__CTOR_LIST__ [[gnu::visibility("hidden")]])();
 extern "C" void (*__CTOR_END__ [[gnu::visibility("hidden")]])();
@@ -109,15 +81,15 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
         Graphics::init(mode_info);
 
+<<<<<<< HEAD
+        progress_increase = mode_info.width / 10;
+=======
         progress_increase = mode_info.width / 11;
+>>>>>>> 45d0e676c08db042fb880108588fe4c3493b7054
         progress_bar += 10;
 
-        show_progress((char*)"Initializing display");
-        progress();
-        show_progress((char*)"Initializing IDT");
         Idt::init();
         progress();
-        show_progress((char*)"Initializing exception handlers");
         Exceptions::init();
         progress();
 
@@ -144,26 +116,25 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
                 rgb = (const char*)((uint64_t)firework_icon + (256 * y + x) * 3);
             }
 
-        show_progress((char*)"Initializing ACPI");
         Acpi::init();
         progress();
-        show_progress((char*)"Initializing MADT");
         Madt::init();
         progress();
-        show_progress((char*)"Initializing LAPIC");
-        Cpu::Apic::LocalApic::init();
-        progress();
-        show_progress((char*)"Initializing IOAPIC");
         Cpu::Apic::IoApic::init();
-        show_progress((char*)"Enabling interrupts");
+        progress();
+        Hpet::init();
+        progress();
+        Cpu::Apic::LocalApic::init();
         asm("sti");
         progress();
-        show_progress((char*)"Initializing symmetric multiprocessing");
         Cpu::Smp::init();
         progress();
-        show_progress((char*)"Initializing AHCI");
         Ahci::init();
         progress();
+<<<<<<< HEAD
+        Cpu::Multitasking::init();
+        progress();
+=======
         show_progress((char*)"Initializing HPET");
         Hpet::init();
         progress();
@@ -171,20 +142,22 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
         Cpu::Multitasking::init();
         progress();
         show_progress((char*)"");
+>>>>>>> 45d0e676c08db042fb880108588fe4c3493b7054
     } else {
         Debug::print("!! Unable to boot; Invalid multiboot1 magic or missing multiboot info !!\n");
 
         return;
     }
 
-    while (1)
+    for (;;)
         asm volatile("hlt");
 }
 
 extern "C" void smp_kernel_main() {
     Idt::init();
     Cpu::Smp::set_booted();
+    asm("sti");
 
-    while (1)
+    for (;;)
         asm volatile("hlt");
 }

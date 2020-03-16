@@ -10,6 +10,7 @@
 #include <system/mm/mm.hpp>
 #include <system/mm/pmm.hpp>
 #include <system/mm/vmm.hpp>
+#include <system/drivers/timer.hpp>
 
 extern "C" void* smp_entry;
 extern "C" void* _trampoline_start;
@@ -19,13 +20,11 @@ extern "C" void* trampoline_stack;
 bool trampoline_booted = false;
 
 bool Cpu::Smp::wait_for_boot() {
-    for (uint64_t timeout = 100; timeout > 0; timeout--) {
-        for (uint64_t i = 100000; i > 0; i--) {
-            if (trampoline_booted)
-                return true;
-
-            asm("nop");
-        }
+    for (int i = 0; i < 1000; i++) {
+        Time::ksleep(1);
+        
+        if (trampoline_booted)
+            return true;
     }
 
     return false;

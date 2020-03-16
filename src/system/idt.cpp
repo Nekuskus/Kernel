@@ -49,20 +49,15 @@ struct {
     { .mnemonic = "-", .message = "Reserved" },
 };
 
-#define ISR(i) extern "C" void isr##i();
-
 extern "C" void* isrs[256];
 
 extern "C" void isr_handler(const Idt::InterruptRegisters* registers) {
     uint8_t n = registers->int_num & 0xFF;
     Idt::InterruptHandler* handler = &interrupt_handlers[n];
 
-    char text[2048] = "";
-
-    sprintf(text, "Received Interrupt #%d:\n\rCPU registers: RIP: %x, RSP: %x\n\r    RAX: %x, RBX: %x, RCX: %x, RDX : %x\n\r    RSI: %x, RDI: %x, RSP: %x, RBP: %x\n\r    R8: %x, R9: %x, R10: %x, R11: %x\n\r    R12: %x, R12: %x, R13: %x, R14: %x\n\r    R15: %x", n, registers->rip, registers->rsp, registers->rax, registers->rbx, registers->rcx, registers->rbx, registers->rsi, registers->rdi, registers->rsp, registers->rbp, registers->r8, registers->r9, registers->r10, registers->r11, registers->r12, registers->r13, registers->r13, registers->r14, registers->r15);
-    Debug::print(text);
-
     if (n < 32) {
+        char text[2048] = "";
+
         sprintf(text, "Received Exception #%s (%s):\n\rCPU registers: RIP: %x, RSP: %x\n\r    RAX: %x, RBX: %x, RCX: %x, RDX : %x\n\r    RSI: %x, RDI: %x, RSP: %x, RBP: %x\n\r    R8: %x, R9: %x, R10: %x, R11: %x\n\r    R12: %x, R12: %x, R13: %x, R14: %x\n\r    R15: %x", exceptions[n].mnemonic, exceptions[n].message, registers->rip, registers->rsp, registers->rax, registers->rbx, registers->rcx, registers->rbx, registers->rsi, registers->rdi, registers->rsp, registers->rbp, registers->r8, registers->r9, registers->r10, registers->r11, registers->r12, registers->r13, registers->r13, registers->r14, registers->r15);
         Terminal::write_line(text, 0xFFFFFF, 0xe50000);
     }

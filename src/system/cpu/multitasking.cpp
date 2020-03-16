@@ -1,6 +1,7 @@
 #include "multitasking.hpp"
 
 #include <system/drivers/port.hpp>
+#include <system/drivers/timer.hpp>
 #include <system/idt.hpp>
 #include <system/terminal.hpp>
 
@@ -11,30 +12,15 @@ void schedule([[maybe_unused]] const Idt::InterruptRegisters* registers) {
 }
 
 void Cpu::Multitasking::init() {
-    Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_LVT, 32 | 1);
+    Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_LVT, 232 | (1 << 17));
     Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_DIV, 0x3);
-
-    uint32_t divider = 1193182 / 100;
-
-    Port::outb(0x43, 54);
-    Port::outb(0x40, (uint8_t)(divider & 0xFF));
-    Port::outb(0x40, (uint8_t)(divider >> 8));
-
     Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_INITCNT, 0xFFFFFFFF);
 
-    Port::outb(0x21, Port::inb(0x21) & ~1);
+    Time::ksleep(10);
 
-    //while (!pit_ticked)
-    //;
+    uint32_t ticks = 0xFFFFFFFF - Apic::LocalApic::read(Apic::LocalApic::TimerRegisters::TIMER_CURRCNT);
 
-    Idt::register_interrupt_handler(32, schedule, true, true);
+    Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_INITCNT, ticks / 10);
 
-    Port::outb(0x21, Port::inb(0x21) & 1);
-
-    Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_LVT, 16);
-
-    uint32_t ticks = read(Apic::LocalApic::TimerRegisters::TIMER_CURRCNT) - 0xFFFFFFFF;
-
-    Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_INITCNT, ticks);
-    Apic::IoApic::unmask_irq(0);
+    Idt::register_interrupt_handler(232, schedule, true, true);
 }
