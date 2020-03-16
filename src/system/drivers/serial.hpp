@@ -1,8 +1,11 @@
 #pragma once
 #include <stdint.h>
 
+#include <lib/spinlock.hpp>
+
 class Serial {
     uint16_t base;
+    Spinlock lock;
     bool transmit_empty();
     bool received();
 

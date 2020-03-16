@@ -1,13 +1,9 @@
 #pragma once
 #include <stdint.h>
+
 #include <system/acpi/acpi.hpp>
 
 namespace Hpet {
-    enum AddressSpaceId {
-        ADDR_SPACE_SYSTEM_MEMORY,
-        ADDR_SPACE_SYSTEM_IO
-    };
-
     struct [[gnu::packed]] HpetTable {
         Acpi::SdtHeader header;
         uint8_t hardware_rev_id;

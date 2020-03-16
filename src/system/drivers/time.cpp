@@ -1,4 +1,4 @@
-#include "timer.hpp"
+#include "time.hpp"
 
 #include <system/cpu/apic.hpp>
 #include <system/debugging.hpp>
@@ -48,4 +48,5 @@ void Hpet::init() {
 
     Idt::register_interrupt_handler(32, tick_handler, true, true);
     Cpu::Apic::IoApic::unmask_irq(0);
+    Debug::print("[HPET] Initialized scheduler.\n");
 }

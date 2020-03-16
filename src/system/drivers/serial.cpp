@@ -6,7 +6,8 @@
 
 #include "port.hpp"
 
-Serial::Serial(uint16_t com_port, uint32_t baud_rate) {
+Serial::Serial(uint16_t com_port, uint32_t baud_rate)
+    : lock() {
     base = com_port;
 
     Port::outb(base + 3, 0x03);
@@ -41,22 +42,26 @@ bool Serial::received() {
 }
 
 char Serial::read() {
-    while (!received()) {
-    }
+    while (!received())
+        ;
 
     return Port::inb(base);
 }
 
 void Serial::write(const char a) {
-    while (!transmit_empty()) {
-    }
+    while (!transmit_empty())
+        ;
 
     Port::outb(base, a);
 }
 
 void Serial::write(const char* a) {
+    lock.lock();
+
     while (*a) {
         write(*a);
         a++;
     }
+
+    lock.release();
 }

@@ -1,7 +1,7 @@
 #include "multitasking.hpp"
 
-#include <system/drivers/port.hpp>
-#include <system/drivers/timer.hpp>
+#include <system/debugging.hpp>
+#include <system/drivers/time.hpp>
 #include <system/idt.hpp>
 #include <system/terminal.hpp>
 
@@ -23,4 +23,5 @@ void Cpu::Multitasking::init() {
     Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_INITCNT, ticks / 10);
 
     Idt::register_interrupt_handler(232, schedule, true, true);
+    Debug::print("[MULTITASKING] Initialized scheduler.\n");
 }

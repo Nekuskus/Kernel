@@ -7,10 +7,10 @@
 #include <system/cpu/apic.hpp>
 #include <system/cpu/cpu.hpp>
 #include <system/debugging.hpp>
+#include <system/drivers/time.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/pmm.hpp>
 #include <system/mm/vmm.hpp>
-#include <system/drivers/timer.hpp>
 
 extern "C" void* smp_entry;
 extern "C" void* _trampoline_start;
@@ -22,7 +22,7 @@ bool trampoline_booted = false;
 bool Cpu::Smp::wait_for_boot() {
     for (int i = 0; i < 1000; i++) {
         Time::ksleep(1);
-        
+
         if (trampoline_booted)
             return true;
     }
@@ -68,7 +68,7 @@ void Cpu::Smp::init() {
 
     uint32_t current_lapic = Cpu::get_current_cpu();
 
-    for (auto& lapic : Madt::get_lapics())
+    for (auto lapic : Madt::get_lapics())
         if (((lapic->flags & 1) || (lapic->flags & 2)) && lapic->id != current_lapic)
             Cpu::Smp::boot_cpu(lapic->id);
 

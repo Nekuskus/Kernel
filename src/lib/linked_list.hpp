@@ -37,6 +37,7 @@ template <typename T>
 class LinkedList {
     NodeLink<T>* list;
     size_t _length;
+    Spinlock lock;
 
     void update() {
         _length = 0;
@@ -56,7 +57,7 @@ class LinkedList {
 
 public:
     LinkedList()
-        : list(nullptr) {
+        : list(nullptr), _length(0), lock() {
     }
 
     ~LinkedList() {
@@ -64,10 +65,14 @@ public:
     }
 
     NodeLink<T>* find(int index) {
+        lock.lock();
+
         NodeLink<T>* temp = list;
 
         while (temp && temp->index != index)
             temp = temp->next;
+
+        lock.release();
 
         return temp;
     }
@@ -79,15 +84,20 @@ public:
     }
 
     void push(T value) {
+        lock.lock();
+
         NodeLink<T>* node = new NodeLink<T>;
         node->data = value;
         node->next = list;
         list = node;
 
         update();
+        lock.release();
     }
 
     void push_back(T value) {
+        lock.lock();
+
         NodeLink<T>*node = new NodeLink<T>, *last = list;
         node->data = value;
         node->next = nullptr;
@@ -101,14 +111,19 @@ public:
             list = node;
 
         update();
+        lock.release();
     }
 
     bool insert_before(int index, T value) {
+        lock.lock();
+
         NodeLink<T>*node = list, *last, *result = new NodeLink<T>;
         bool found = false;
 
         while (node != nullptr) {
             if (node->index == index) {
+                lock.release();
+
                 found = true;
 
                 break;
@@ -131,21 +146,30 @@ public:
                 update();
             }
 
+            lock.release();
+
             return true;
         }
 
         delete result;
 
+        lock.release();
+
         return false;
     }
 
     bool insert_after(int index, T value) {
+        lock.lock();
+
         NodeLink<T>*node = list, *last, *result = new NodeLink<T>;
         bool found = false;
 
         while (node != nullptr) {
             if (node->index == index) {
+                lock.release();
+
                 found = true;
+
                 break;
             }
 
@@ -164,12 +188,15 @@ public:
                 result->next = last;
 
                 update();
+                lock.release();
 
                 return true;
             }
         }
 
         delete result;
+
+        lock.release();
 
         return false;
     }
@@ -178,12 +205,15 @@ public:
         if (!list)
             return false;
 
+        lock.lock();
+
         NodeLink<T>* node = list;
         list = list->next;
 
         delete node;
 
         update();
+        lock.release();
 
         return true;
     }
@@ -191,6 +221,8 @@ public:
     bool pop(int index) {
         if (!list)
             return false;
+
+        lock.lock();
 
         NodeLink<T>*node = list, *last;
         bool found = false;
@@ -207,23 +239,26 @@ public:
         }
 
         if (found) {
-            if (node == list)
+            if (node == list) {
+                lock.release();
+
                 return false;
-
-            if (node == list->next) {
-                list = node;
-
-                delete last;
-            } else {
-                find(last->index - 1)->next = node;
-
-                delete last;
             }
 
+            if (node == list->next)
+                list = node;
+            else
+                find(last->index - 1)->next = node;
+
+            delete last;
+
             update();
+            lock.release();
 
             return true;
         }
+
+        lock.release();
 
         return false;
     }
@@ -232,25 +267,29 @@ public:
         if (!list)
             return false;
 
+        lock.lock();
+
         NodeLink<T>*node = list, *last = nullptr;
 
-        if (node == nullptr || !node->next) {
+        if (node == nullptr || !node->next)
             list = nullptr;
-
-            delete node;
-        } else {
+        else {
             while (node->next != nullptr) {
                 last = node;
                 node = node->next;
             }
 
-            if (last == nullptr)
+            if (last == nullptr) {
+                lock.release();
+
                 return false;
+            }
 
             last->next = nullptr;
-
-            delete node;
         }
+
+        delete node;
+
         return true;
     }
 

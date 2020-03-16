@@ -6,12 +6,12 @@
 #include <system/debugging.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
+#include <system/panic.hpp>
 
 auto lapics = LinkedList<Madt::LocalApic*>();
 auto ioapics = LinkedList<Madt::IoApic*>();
 auto isos = LinkedList<Madt::InterruptSourceOverride*>();
-
-bool legacy_pic = false;
+bool legacy_pic;
 
 LinkedList<Madt::LocalApic*>& Madt::get_lapics() {
     return lapics;
@@ -31,6 +31,9 @@ bool Madt::has_legacy_pic() {
 
 void Madt::init() {
     MadtHeader* madt = (MadtHeader*)Acpi::get_table("APIC");
+
+    if (!madt)
+        panic("Is the system too old or has a memory corruption occurred?\n\rThe MADT ACPI table is missing from memory.");
 
     legacy_pic = madt->flags & 1ULL;
 

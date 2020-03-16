@@ -1,8 +1,11 @@
 #include "terminal.hpp"
 
 #include <lib/lib.hpp>
+#include <lib/spinlock.hpp>
 
 #include "drivers/vbe.hpp"
+
+Spinlock lock{};
 
 static uint16_t x = 0, y = 0;
 
@@ -41,17 +44,24 @@ void Terminal::set_cursor(uint16_t nx, uint16_t ny) {
 }
 
 void Terminal::write(const char* str, uint32_t foreground, uint32_t background) {
+    lock.lock();
+
     while (*str) {
         write(*str, foreground, background);
         str++;
     }
+
+    lock.release();
 }
 
 void Terminal::write(const char* str, uint32_t foreground) {
+    lock.lock();
+
     while (*str) {
         write(*str, foreground);
         str++;
     }
+    lock.release();
 }
 
 void Terminal::write(const char c, uint32_t foreground, uint32_t background) {

@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
 
+#include <system/acpi/madt.hpp>
+
 namespace Cpu::Apic {
     namespace LocalApic {
         constexpr uint64_t icr_low = 0x300;
@@ -47,8 +49,11 @@ namespace Cpu::Apic {
         };
 
         uint64_t read_entry(uint8_t gsi);
+        uint64_t read_entry(Madt::IoApic* ioapic, uint8_t gsi);
         void set_entry(uint8_t gsi, uint64_t data);
+        void set_entry(Madt::IoApic* ioapic, uint8_t gsi, uint64_t data);
         void set_entry(uint8_t gsi, uint8_t vector, DeliveryMode delivery_mode, DestinationMode destination_mode, uint16_t flags, uint32_t destination);
+        void set_entry(Madt::IoApic* ioapic, uint8_t gsi, uint8_t vector, DeliveryMode delivery_mode, DestinationMode destination_mode, uint16_t flags, uint32_t destination);
         uint32_t read(uint32_t ioapic_base, uint32_t reg);
         void write(uint32_t ioapic_base, uint32_t reg, uint32_t data);
         void mask_gsi(uint32_t gsi);
@@ -57,4 +62,4 @@ namespace Cpu::Apic {
         void unmask_irq(uint32_t irq);
         void init();
     }  // namespace IoApic
-}  // namespace Apic
+}  // namespace Cpu::Apic

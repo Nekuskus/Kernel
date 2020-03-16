@@ -4,6 +4,7 @@
 
 int sprintf(char* text, const char* format, ...) {
     va_list parameters;
+
     va_start(parameters, format);
 
     uint64_t written = 0;
@@ -49,6 +50,7 @@ int sprintf(char* text, const char* format, ...) {
                 *text = c;
                 text += c != 0;
                 written += c != 0;
+
                 break;
             }
 
@@ -68,19 +70,19 @@ int sprintf(char* text, const char* format, ...) {
 
                 text += len;
                 written += len;
+
                 break;
             }
 
             case 'i':
             case 'd': {
-                format++;
                 int item = va_arg(parameters, int);
-
                 char str[32] = "";
 
                 itoa(item, str, 10);
 
                 size_t len = strlen(str);
+                format++;
 
                 if (maxrem < len) {
                     va_end(parameters);
@@ -99,17 +101,16 @@ int sprintf(char* text, const char* format, ...) {
             case 'x':
             case 'X': {
                 uint64_t item = va_arg(parameters, uint64_t);
-
                 char str[32] = "";
 
                 htoa(item, str, *format == 'X');
 
                 size_t len = strlen(str);
-
                 format++;
 
                 if (maxrem < len) {
                     va_end(parameters);
+
                     return -1;
                 }
 
@@ -121,15 +122,12 @@ int sprintf(char* text, const char* format, ...) {
                 break;
             }
             case 'p': {
-                format++;
                 void* item = va_arg(parameters, void*);
-
                 char str[32] = "";
 
                 htoa((uintptr_t)item, str, false);
 
                 size_t len = strlen(str);
-
                 format++;
 
                 if (maxrem < len) {
@@ -143,6 +141,7 @@ int sprintf(char* text, const char* format, ...) {
 
                 text += len;
                 written += len;
+
                 break;
             }
             default: {
@@ -160,6 +159,7 @@ int sprintf(char* text, const char* format, ...) {
 
                 written += len;
                 format += len;
+
                 break;
             }
         }

@@ -11,14 +11,13 @@
 #include <system/debugging.hpp>
 #include <system/drivers/ahci.hpp>
 #include <system/drivers/pci.hpp>
-#include <system/drivers/timer.hpp>
+#include <system/drivers/time.hpp>
 #include <system/drivers/vbe.hpp>
 #include <system/exceptions.hpp>
 #include <system/idt.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/pmm.hpp>
 #include <system/mm/vmm.hpp>
-#include <system/drivers/timer.hpp>
 
 extern "C" void* _init_array_begin;
 extern "C" void* _init_array_end;

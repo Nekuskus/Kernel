@@ -1,10 +1,10 @@
 #include "vmm.hpp"
 
 #include <lib/lib.hpp>
+#include <system/msr.hpp>
 
 #include "mm.hpp"
 #include "pmm.hpp"
-#include <system/msr.hpp>
 
 extern "C" Vmm::PageTable* kernel_pml4;
 
