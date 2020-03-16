@@ -81,11 +81,7 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
         Graphics::init(mode_info);
 
-<<<<<<< HEAD
         progress_increase = mode_info.width / 10;
-=======
-        progress_increase = mode_info.width / 11;
->>>>>>> 45d0e676c08db042fb880108588fe4c3493b7054
         progress_bar += 10;
 
         Idt::init();
@@ -131,18 +127,8 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
         progress();
         Ahci::init();
         progress();
-<<<<<<< HEAD
         Cpu::Multitasking::init();
         progress();
-=======
-        show_progress((char*)"Initializing HPET");
-        Hpet::init();
-        progress();
-        show_progress((char*)"Initializing task scheduler");
-        Cpu::Multitasking::init();
-        progress();
-        show_progress((char*)"");
->>>>>>> 45d0e676c08db042fb880108588fe4c3493b7054
     } else {
         Debug::print("!! Unable to boot; Invalid multiboot1 magic or missing multiboot info !!\n");
 
