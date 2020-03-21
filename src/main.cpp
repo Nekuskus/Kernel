@@ -1,6 +1,5 @@
 #include <stdint.h>
 
-#include <firework_icon.hpp>
 #include <lib/lib.hpp>
 #include <multiboot.hpp>
 #include <system/acpi/acpi.hpp>
@@ -90,30 +89,6 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
         progress();
         Exceptions::init();
         progress();
-
-        uint16_t start_of_img_x = mode_info.width / 2 - 128, start_of_img_y = mode_info.height / 2 - 128;
-        const char* rgb = firework_icon;
-
-        union {
-            struct {
-                char r;
-                char g;
-                char b;
-                char a;
-            } color;
-            uint32_t int_color;
-        } color;
-
-        for (size_t y = 0; y < 256; y++)
-            for (size_t x = 0; x < 256; x++) {
-                color.color.r = rgb[0];
-                color.color.g = rgb[1];
-                color.color.b = rgb[2];
-
-                Graphics::set_pixel(start_of_img_x + x, start_of_img_y + y, color.int_color);
-                rgb = (const char*)((uint64_t)firework_icon + (256 * y + x) * 3);
-            }
-
         Acpi::init();
         progress();
         Madt::init();
