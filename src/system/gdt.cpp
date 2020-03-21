@@ -12,7 +12,7 @@ void Gdt::init() {
     Tss* tss = new Tss;
     tss->rsp[0] = stack_end;
 
-    uint32_t* gdt = (uint32_t*)calloc(sizeof(uint64_t) * 6);
+    uint32_t* gdt = (uint32_t*)calloc(sizeof(uint64_t) * 6, 1);
     gdt[0] = gdt[1] = gdt[2] = gdt[4] = gdt[6] = gdt[11] = 0;
     gdt[3] = 0xA09800;
     gdt[5] = 0xA0F800;
