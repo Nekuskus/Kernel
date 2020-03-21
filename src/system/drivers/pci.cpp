@@ -21,14 +21,8 @@ uint32_t Pci::read(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, 
         case 4:
             return Port::ind(0xCFC + (offset & 3));
 
-        default: {
-            char debug[512] = "";
-
-            sprintf(debug, "[PCI] Unknown access size %d\n", access_size);
-            Debug::print(debug);
-
+        default:
             return 0;
-        }
     }
 
     return 0;
@@ -46,15 +40,6 @@ void Pci::write(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uin
 
         case 4:
             Port::outd(0xCFC + (offset & 3), (uint32_t)value);
-
-        default: {
-            char debug[512] = "";
-
-            sprintf(debug, "[PCI] Unknown access size %d\n", access_size);
-            Debug::print(debug);
-
-            break;
-        }
     }
 }
 

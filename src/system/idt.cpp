@@ -132,6 +132,6 @@ void Idt::init() {
     asm volatile("lidt %0\n\t" ::"m"(idt_pointer));
 
     char debug[256] = "";
-    sprintf(debug, "[IDT] Successfully initialized IDT on CPU #%d\n", Cpu::get_current_cpu());
+    sprintf(debug, "[IDT] Successfully initialized IDT on CPU #%d.\n", Cpu::get_current_cpu());
     Debug::print(debug);
 }
