@@ -3,6 +3,7 @@
 #include <lib/lib.hpp>
 
 #include "cpu/apic.hpp"
+#include "cpu/cpu.hpp"
 #include "debugging.hpp"
 #include "drivers/port.hpp"
 #include "terminal.hpp"
@@ -58,7 +59,7 @@ extern "C" void isr_handler(const Idt::InterruptRegisters* registers) {
     if (n < 32) {
         char text[2048] = "";
 
-        sprintf(text, "Received Exception #%s (%s):\n\rCPU registers: RIP: %x, RSP: %x\n\r    RAX: %x, RBX: %x, RCX: %x, RDX : %x\n\r    RSI: %x, RDI: %x, RSP: %x, RBP: %x\n\r    R8: %x, R9: %x, R10: %x, R11: %x\n\r    R12: %x, R12: %x, R13: %x, R14: %x\n\r    R15: %x", exceptions[n].mnemonic, exceptions[n].message, registers->rip, registers->rsp, registers->rax, registers->rbx, registers->rcx, registers->rbx, registers->rsi, registers->rdi, registers->rsp, registers->rbp, registers->r8, registers->r9, registers->r10, registers->r11, registers->r12, registers->r13, registers->r13, registers->r14, registers->r15);
+        sprintf(text, "Received Exception #%s (%s) on CPU #%d:\n\rCPU registers: RIP: %x, RSP: %x\n\r    RAX: %x, RBX: %x, RCX: %x, RDX : %x\n\r    RSI: %x, RDI: %x, RSP: %x, RBP: %x\n\r    R8: %x, R9: %x, R10: %x, R11: %x\n\r    R12: %x, R12: %x, R13: %x, R14: %x\n\r    R15: %x", exceptions[n].mnemonic, exceptions[n].message, Cpu::get_current_cpu(), registers->rip, registers->rsp, registers->rax, registers->rbx, registers->rcx, registers->rbx, registers->rsi, registers->rdi, registers->rsp, registers->rbp, registers->r8, registers->r9, registers->r10, registers->r11, registers->r12, registers->r13, registers->r13, registers->r14, registers->r15);
         Terminal::write_line(text, 0xFFFFFF, 0xe50000);
     }
 
@@ -129,4 +130,8 @@ void Idt::init() {
 
     idt_pointer = { .limit = 256 * sizeof(Entry) - 1, .base = (uint64_t)&idt_entries };
     asm volatile("lidt %0\n\t" ::"m"(idt_pointer));
+
+    char debug[256] = "";
+    sprintf(debug, "[IDT] Successfully initialized IDT on CPU #%d\n", Cpu::get_current_cpu());
+    Debug::print(debug);
 }

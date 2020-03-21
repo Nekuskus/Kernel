@@ -2,7 +2,6 @@
 
 #include <cpuid.h>
 
-#include <lib/lib.hpp>
 #include <system/acpi/acpi.hpp>
 #include <system/cpu/cpu.hpp>
 #include <system/cpu/smp/smp.hpp>
@@ -162,9 +161,6 @@ void Cpu::Apic::IoApic::unmask_gsi(uint32_t gsi) {
 void Cpu::Apic::IoApic::mask_irq(uint32_t irq) {
     for (auto iso : Madt::get_isos()) {
         if (iso->source == irq) {
-            char text[256] = "";
-            sprintf(text, "IRQ: %d, GSI: %d", irq, iso->gsi);
-            Debug::print(text);
             mask_gsi(iso->gsi);
 
             return;
@@ -177,9 +173,6 @@ void Cpu::Apic::IoApic::mask_irq(uint32_t irq) {
 void Cpu::Apic::IoApic::unmask_irq(uint32_t irq) {
     for (auto iso : Madt::get_isos()) {
         if (iso->source == irq) {
-            char text[256] = "";
-            sprintf(text, "IRQ: %d, GSI: %d", irq, iso->gsi);
-            Debug::print(text);
             unmask_gsi(iso->gsi);
 
             return;

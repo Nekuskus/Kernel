@@ -4,6 +4,7 @@
 
 #include <lib/lib.hpp>
 
+#include "cpu/cpu.hpp"
 #include "debugging.hpp"
 #include "idt.hpp"
 #include "terminal.hpp"
@@ -31,5 +32,7 @@ void Exceptions::init() {
     Idt::register_interrupt_handler(13, general_protection_fault_handler, false, false);
     Idt::register_interrupt_handler(14, page_fault_handler, false, false);
 
-    Debug::print("[CPUEXCP] Initialized exception handlers.\n");
+    char debug[256] = "";
+    sprintf(debug, "[CPUEXCEPT] Successfully initialized exception handlers on CPU #%d\n", Cpu::get_current_cpu());
+    Debug::print(debug);
 }

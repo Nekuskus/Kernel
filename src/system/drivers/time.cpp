@@ -48,5 +48,5 @@ void Hpet::init() {
 
     Idt::register_interrupt_handler(32, tick_handler, true, true);
     Cpu::Apic::IoApic::unmask_irq(0);
-    Debug::print("[HPET] Initialized scheduler.\n");
+    Debug::print("[HPET] Successfully initialized.\n");
 }

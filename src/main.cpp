@@ -14,6 +14,7 @@
 #include <system/drivers/time.hpp>
 #include <system/drivers/vbe.hpp>
 #include <system/exceptions.hpp>
+#include <system/gdt.hpp>
 #include <system/idt.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/pmm.hpp>
@@ -53,7 +54,7 @@ extern "C" [[gnu::visibility("hidden")]] void __fw_ctors() {
 }
 
 extern "C" [[gnu::visibility("hidden")]] void __fw_dtors() {
-    Debug::print("__fw_dtors was called");
+    Debug::print("__fw_dtors was called\n");
 }
 
 extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
@@ -65,6 +66,8 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
         Pmm::init(memory_map, mb_info->mmap_length / sizeof(*memory_map));
         Vmm::init();
+
+        Gdt::init();
 
         uintptr_t virtual_fb = mb_info->framebuffer_addr + virtual_kernel_base;
 
@@ -140,6 +143,8 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
 extern "C" void smp_kernel_main() {
     Idt::init();
+    Exceptions::init();
+    Gdt::init();
     Cpu::Smp::set_booted();
     asm("sti");
 
