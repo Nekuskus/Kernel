@@ -53,12 +53,11 @@ extern "C" void free(void* ptr) {
     if (header->pages != pages)
         return;
 
-    for (size_t i = 0; i < pages; i++) {
-        uint64_t curr = (uintptr_t)start + i * page_size, p = Vmm::get_entry(Vmm::get_current_context(), (void*)curr);
+    Vmm::PageTable* current_ctx = Vmm::get_current_context();
+    uint64_t curr = (uintptr_t)start + pages * page_size, p = Vmm::get_entry(current_ctx, (void*)curr);
 
-        Vmm::unmap_pages(Vmm::get_current_context(), (void*)curr, 1);
-        Pmm::free((void*)p, 1);
-    }
+    Vmm::unmap_pages(current_ctx, (void*)curr, pages);
+    Pmm::free((void*)p, pages);
 
     mm_lock.release();
 }

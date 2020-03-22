@@ -117,9 +117,9 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 }
 
 extern "C" void smp_kernel_main() {
+    Gdt::init();
     Idt::init();
     Exceptions::init();
-    Gdt::init();
     Cpu::Smp::set_booted();
     asm("sti");
 
