@@ -1,5 +1,6 @@
-# FireworkKernel
-The kernel for Firework.
+# FireworkOS Kernel
+The Official FireworkOS Monolithic Kernel.
 
-
-Supports Grub Multiboot 1 only
+## Notes
+Supported by:
+- GRUB MultiBoot 1
