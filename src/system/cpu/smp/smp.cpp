@@ -3,6 +3,7 @@
 #include <cpuid.h>
 
 #include <lib/lib.hpp>
+#include <lib/linked_list.hpp>
 #include <system/acpi/madt.hpp>
 #include <system/cpu/apic.hpp>
 #include <system/cpu/cpu.hpp>
@@ -16,6 +17,10 @@ extern "C" void* smp_entry;
 extern "C" void* _trampoline_start;
 extern "C" void* _trampoline_end;
 extern "C" void* trampoline_stack;
+
+extern "C" uint64_t stack_end;
+
+extern "C" void load_tss(void* tss);
 
 bool trampoline_booted = false;
 
@@ -40,6 +45,11 @@ void Cpu::Smp::boot_cpu(uint32_t lapic_id) {
         return;
     }
 
+    Tss* tss = new Tss;
+    tss->rsp[0] = (uint64_t)trampoline_stack;
+
+    load_tss(tss);
+
     Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::TM_LEVEL | Apic::LocalApic::IcrFlags::LEVELASSERT | Apic::LocalApic::IcrFlags::DM_INIT);
     Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)&smp_entry >> 12) & 0xFF));
 
@@ -61,6 +71,11 @@ void Cpu::Smp::set_booted() {
 }
 
 void Cpu::Smp::init() {
+    Tss* bsp_tss = new Tss;
+    bsp_tss->rsp[0] = stack_end;
+
+    load_tss(bsp_tss);
+
     uint64_t len = (uint64_t)&_trampoline_end - (uint64_t)&_trampoline_start;
 
     Vmm::map_pages(Vmm::get_current_context(), &_trampoline_start, &_trampoline_start, (len + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);

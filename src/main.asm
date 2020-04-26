@@ -69,19 +69,85 @@ phys_pd:
 
 align 0x10
 init_gdt:
-    dq 0
-    dq 0x00209A0000000000
+.null_descriptor:
+    dw 0x0000
+    dw 0x0000
+    db 0x00
+    db 00000000b
+    db 00000000b
+    db 0x00
+
+.kernel_code_64:
+    dw 0x0000
+    dw 0x0000
+    db 0x00
+    db 10011010b
+    db 00100000b
+    db 0x00
+
+.kernel_data:
+    dw 0x0000
+    dw 0x0000
+    db 0x00
+    db 10010010b
+    db 00000000b
+    db 0x00
+
+.user_data_64:
+    dw 0x0000
+    dw 0x0000
+    db 0x00
+    db 11110010b
+    db 00000000b
+    db 0x00
+
+.user_code_64:
+    dw 0x0000
+    dw 0x0000
+    db 0x00
+    db 11111010b
+    db 00100000b
+    db 0x00
+
+.unreal_code:
+    dw 0xFFFF
+    dw 0x0000
+    db 0x00
+    db 10011010b
+    db 10001111b
+    db 0x00
+
+.unreal_data:
+    dw 0xFFFF
+    dw 0x0000
+    db 0x00
+    db 10010010b
+    db 10001111b
+    db 0x00
+
+.tss:
+    dw 104
+.tss_low:
+    dw 0
+.tss_mid:
+    db 0
+.tss_flags1:
+    db 10001001b
+.tss_flags2:
+    db 00000000b
+.tss_high:
+    db 0
+.tss_upper32:
+    dd 0
+.tss_reserved:
+    dd 0
+
 init_gdt_end:
 
 global init_gdt_ptr
 init_gdt_ptr:
     dw init_gdt_end - init_gdt - 1
     dq init_gdt - KERNEL_VMA
-
-global init_gdt_ptr_high
-init_gdt_ptr_high:
-    dw init_gdt_end - init_gdt - 1
-    dq init_gdt
 
 section .text
 
@@ -93,7 +159,7 @@ loader:
     push 0
     push eax
     push 0
-    push ebx 
+    push ebx
     mov eax, 0x80000000
     cpuid
     cmp eax, 0x80000001
@@ -101,7 +167,7 @@ loader:
     mov eax, 0x80000001
     cpuid
     test edx, 1 << 29
-    jz stop  
+    jz stop
     mov eax, cr4
     or eax, 0x000000A0
     mov cr4, eax
@@ -123,6 +189,39 @@ loader:
 
 bits 64
 
+global init_gdt_ptr_high
+init_gdt_ptr_high:
+    dw init_gdt_end - init_gdt - 1
+    dq init_gdt
+
+global load_tss
+
+load_tss:
+    push rbx
+    mov eax, edi
+    mov rbx, init_gdt.tss_low
+    mov word [rbx], ax
+    mov eax, edi
+    and eax, 0xff0000
+    shr eax, 16
+    mov rbx, init_gdt.tss_mid
+    mov byte [rbx], al
+    mov eax, edi
+    and eax, 0xff000000
+    shr eax, 24
+    mov rbx, init_gdt.tss_high
+    mov byte [rbx], al
+    mov rax, rdi
+    shr rax, 32
+    mov rbx, init_gdt.tss_upper32
+    mov dword [rbx], eax
+    mov rbx, init_gdt.tss_flags1
+    mov byte [rbx], 10001001b
+    mov rbx, init_gdt.tss_flags2
+    mov byte [rbx], 0
+    pop rbx
+    ret
+
 higher_half_entry:
     mov rax, entry
     jmp rax
@@ -137,7 +236,7 @@ entry:
     mov gs, ax
     mov ss, ax
     add rsp, KERNEL_VMA
-    
+
     extern _init
     call _init
 
@@ -163,6 +262,6 @@ section .bss
 align 0x1000
 stack:
     resb 0x10000
-    
+
 global stack_end
 stack_end:
