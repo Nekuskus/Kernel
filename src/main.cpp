@@ -40,8 +40,6 @@ void progress() {
     }
 }
 
-size_t last_len = 0;
-
 extern "C" void (*__CTOR_LIST__ [[gnu::visibility("hidden")]])();
 extern "C" void (*__CTOR_END__ [[gnu::visibility("hidden")]])();
 

@@ -42,18 +42,19 @@ void Cpu::Smp::boot_cpu(uint32_t lapic_id) {
     if (!trampoline_stack) {
         sprintf(debug, "[SMP] Failed to allocate stack for CPU with lapic ID %d\n", lapic_id);
         Debug::print(debug);
+
         return;
     }
 
     Tss* tss = new Tss;
-    tss->rsp[0] = (uint64_t)trampoline_stack;
+    tss->rsp[0] = (uint64_t)trampoline_stack + 0x10000;
 
     load_tss(tss);
 
     Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::TM_LEVEL | Apic::LocalApic::IcrFlags::LEVELASSERT | Apic::LocalApic::IcrFlags::DM_INIT);
     Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)&smp_entry >> 12) & 0xFF));
 
-    if (!wait_for_boot()) Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uintptr_t)&smp_entry >> 12) & 0xFF));
+    if (!wait_for_boot()) Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)&smp_entry >> 12) & 0xFF));
 
     if (wait_for_boot()) {
         sprintf(debug, "[SMP] Sucessfully booted CPU with lapic ID %d\n", lapic_id);
@@ -72,7 +73,7 @@ void Cpu::Smp::set_booted() {
 
 void Cpu::Smp::init() {
     Tss* bsp_tss = new Tss;
-    bsp_tss->rsp[0] = stack_end;
+    bsp_tss->rsp[0] = stack_end - 0x1000;
 
     load_tss(bsp_tss);
 

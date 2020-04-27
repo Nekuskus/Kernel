@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 namespace Cpu::Smp {
-	struct [[gnu::packed]] Tss {
+    struct [[gnu::packed]] Tss {
         uint32_t unused1;
         uint64_t rsp[4];
         uint64_t unused2;
