@@ -78,7 +78,7 @@ void Acpi::init() {
         rsdp_info = bios_detect_rsdp(0xE0000, 0x20000);
 
     if (!rsdp_info.version)
-        panic("ACPI not supported");
+        panic("ACPI_MISSING");
 
     char text[255] = "";
 

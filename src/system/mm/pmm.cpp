@@ -2,13 +2,15 @@
 
 #include <lib/lib.hpp>
 #include <lib/math.hpp>
+#include <system/panic.hpp>
 
 #include "mm.hpp"
 
 static uint64_t* bitmap;
 static size_t bitmap_len = 64;
-size_t free_pages = 0;
-size_t total_pages = 0;
+static size_t free_pages = 0;
+static size_t total_pages = 0;
+static size_t cur_idx = 0;
 
 bool bit_read(size_t idx) {
     size_t off = idx / 64, mask = 1UL << (idx % 64UL);
@@ -87,29 +89,28 @@ void Pmm::init(Multiboot::MemoryMap* mmap, size_t mmap_len) {
     alloc((bitmap_len / 8 + page_size - 1) / page_size);
 }
 
-void* Pmm::alloc(size_t count, size_t alignment, uintptr_t upper) {
-    size_t idx = memory_base / page_size, max_idx = !upper ? bitmap_len : bitmap_len < upper / page_size ? bitmap_len : upper / page_size;
+void* Pmm::alloc(size_t count) {
+    for (size_t i = 0; i < bitmap_len; i++) {
+        if (cur_idx == bitmap_len)
+            cur_idx = 0;
 
-    while (idx < max_idx) {
-        if (!bitmap_is_free(idx, count)) {
-            idx += alignment;
+        if (!bitmap_is_free(cur_idx, count)) {
+            cur_idx++;
 
             continue;
         }
 
-        bit_write(idx, 1, count);
+        bit_write(cur_idx, 1, count);
 
         if (total_pages)
             free_pages -= count;
 
-        return (void*)(idx * page_size);
+        return (void*)(cur_idx * page_size);
     }
 
-    return nullptr;
-}
+    panic("OUT_OF_MEMORY");
 
-void* Pmm::alloc(size_t count) {
-    return alloc(count, 1, 0);
+    return nullptr;
 }
 
 void Pmm::free(void* mem, size_t count) {

@@ -33,7 +33,7 @@ void Madt::init() {
     MadtHeader* madt = (MadtHeader*)Acpi::get_table("APIC");
 
     if (!madt)
-        panic("Is the system too old or has a memory corruption occurred?\n\rThe MADT ACPI table is missing from memory.");
+        panic("MADT_MISSING");
 
     legacy_pic = madt->flags & 1ULL;
 

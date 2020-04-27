@@ -29,10 +29,10 @@ void Hpet::init() {
     hpet = (Hpet*)(hpet_table->address + virtual_physical_base);
 
     if (!hpet_table)
-        panic("Unsupported hardware configuration; HPET is missing from your system.");
+        panic("UNSUPPORTED_HARDWARE_MISSING_HPET");
 
     if (!(hpet->general_capabilities & (1 << 15)))
-        panic("HPET is not capable of legacy replacement");
+        panic("HPET_LEGACY_REPLACEMENT_UNSUPPORTED");
 
     uint64_t counter_clk_period = hpet->general_capabilities >> 32, frequency = 1000000000000000 / counter_clk_period;
 
@@ -40,7 +40,7 @@ void Hpet::init() {
     hpet->main_counter_value = 0;
 
     if (!(hpet->timers[0].config_and_capabilities & (1 << 4)))
-        panic("HPET timer #0 does not support periodic mode");
+        panic("HPET_TIMER_0_PERIODIC_UNSUPPORTED");
 
     hpet->timers[0].config_and_capabilities |= (1 << 2) | (1 << 3) | (1 << 6);
     hpet->timers[0].comparator_value = frequency / 1000;

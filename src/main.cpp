@@ -13,7 +13,6 @@
 #include <system/drivers/time.hpp>
 #include <system/drivers/vbe.hpp>
 #include <system/exceptions.hpp>
-#include <system/gdt.hpp>
 #include <system/idt.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/pmm.hpp>
@@ -64,8 +63,6 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
         Pmm::init(memory_map, mb_info->mmap_length / sizeof(*memory_map));
         Vmm::init();
 
-        Gdt::init();
-
         uintptr_t virtual_fb = mb_info->framebuffer_addr + virtual_kernel_base;
 
         Vmm::map_huge_pages(Vmm::get_ctx_kernel(), (void*)virtual_fb, (void*)mb_info->framebuffer_addr, (mb_info->framebuffer_width * mb_info->framebuffer_pitch + huge_page_size - 1) / huge_page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
@@ -115,7 +112,6 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 }
 
 extern "C" void smp_kernel_main() {
-    Gdt::init();
     Idt::init();
     Exceptions::init();
     Cpu::Smp::set_booted();
