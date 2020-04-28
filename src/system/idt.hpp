@@ -1,14 +1,8 @@
 #pragma once
 #include <stdint.h>
+#include "cpu/cpu.hpp"
 
 namespace Idt {
-    struct [[gnu::packed]] InterruptRegisters {
-        uint64_t ds;
-        uint64_t r15, r14, r13, r12, r11, r10, r9, r8, rdi, rsi, rbp, useless, rbx, rdx, rcx, rax;
-        uint64_t int_num, error_code;
-        uint64_t rip, cs, rflags, rsp, ss;
-    };
-
     struct [[gnu::packed]] Entry {
         uint16_t offset_low;
         uint16_t selector;
@@ -24,12 +18,12 @@ namespace Idt {
     };
 
     struct InterruptHandler {
-        void (*function)(const InterruptRegisters*);
+        void (*function)(const Cpu::Registers*);
         bool is_irq;
         bool should_iret;
     };
 
-    void register_interrupt_handler(uint16_t n, void (*function)(const InterruptRegisters*), bool is_irq, bool should_iret);
+    void register_interrupt_handler(uint16_t n, void (*function)(const Cpu::Registers*), bool is_irq, bool should_iret);
     void set_irq(uint16_t n, bool is_irq);
     void init();
 }  // namespace Idt

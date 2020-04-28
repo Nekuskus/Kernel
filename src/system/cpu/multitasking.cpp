@@ -1,5 +1,6 @@
 #include "multitasking.hpp"
 
+#include <lib/linked_list.hpp>
 #include <system/debugging.hpp>
 #include <system/drivers/time.hpp>
 #include <system/idt.hpp>
@@ -7,8 +8,18 @@
 
 #include "apic.hpp"
 
-void schedule([[maybe_unused]] const Idt::InterruptRegisters* registers) {
-    Terminal::write('.', 0xFFFFFF);
+auto processes = LinkedList<Cpu::Multitasking::Process*>();
+
+Cpu::Multitasking::Thread* Cpu::Multitasking::find_next_thread() {
+    return nullptr;
+}
+
+void Cpu::Multitasking::switch_task() {
+    
+}
+
+void schedule([[maybe_unused]] const Cpu::Registers* registers) {
+    Cpu::Multitasking::switch_task();
 }
 
 void Cpu::Multitasking::init() {
@@ -16,7 +27,7 @@ void Cpu::Multitasking::init() {
     Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_DIV, 0x3);
     Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_INITCNT, 0xFFFFFFFF);
 
-    Time::ksleep(10);
+    Time::ksleep(20);
 
     uint32_t ticks = 0xFFFFFFFF - Apic::LocalApic::read(Apic::LocalApic::TimerRegisters::TIMER_CURRCNT);
 

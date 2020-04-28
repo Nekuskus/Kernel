@@ -9,7 +9,7 @@
 #include "idt.hpp"
 #include "terminal.hpp"
 
-void page_fault_handler(const Idt::InterruptRegisters* registers) {
+void page_fault_handler(const Cpu::Registers* registers) {
     uint64_t cr2;
 
     asm volatile("mov %%cr2, %0"
@@ -21,7 +21,7 @@ void page_fault_handler(const Idt::InterruptRegisters* registers) {
     Terminal::write_line(text, 0xFFFFFF, 0xe50000);
 }
 
-void general_protection_fault_handler(const Idt::InterruptRegisters* registers) {
+void general_protection_fault_handler(const Cpu::Registers* registers) {
     char text[255] = "";
 
     sprintf(text, "    Segment selector index: %i.", registers->error_code);

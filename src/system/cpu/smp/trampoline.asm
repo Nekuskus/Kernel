@@ -74,7 +74,7 @@ bits 64
     add rsp, KERNEL_VMA
 
     cld
-    
+
     call smp_kernel_main
     hlt
 

@@ -33,7 +33,7 @@ ISR_NOERROR i
 %assign i i + 1
 %endrep
 
-isr255: ; Spurious
+isr255:
     iretq
 
 %macro GET_ISR_ADDR 1
@@ -50,13 +50,12 @@ isrs:
 
 isr_stub:
     push rax
+    push rbx
     push rcx
     push rdx
-    push rbx
-    push rsp
-    push rbp
     push rsi
     push rdi
+    push rbp
     push r8
     push r9
     push r10
@@ -66,22 +65,11 @@ isr_stub:
     push r14
     push r15
 
-    xor rax, rax
-    mov ax, ds
-    push rax
-    mov ax, 0x0
-    mov ds, ax
-    mov es, ax
-
     cld
     mov rdi, rsp
 
     call isr_handler
 
-    pop rax
-    mov ds, ax
-    mov es, ax
-    
     pop r15
     pop r14
     pop r13
@@ -90,13 +78,12 @@ isr_stub:
     pop r10
     pop r9
     pop r8
+    pop rbp
     pop rdi
     pop rsi
-    pop rbp
-    pop rsp
-    pop rbx
     pop rdx
     pop rcx
+    pop rbx
     pop rax
 
     add rsp, 16

@@ -194,7 +194,7 @@ void Cpu::Apic::IoApic::init() {
 
         for (auto iso : Madt::get_isos()) {
             if (iso->source == i) {
-                set_entry(iso->gsi, iso->source + 0x20, DeliveryMode::FIXED, DestinationMode::PHYSICAL, iso->flags, Cpu::get_current_cpu());
+                set_entry(iso->gsi, iso->source + 0x20, DeliveryMode::FIXED, DestinationMode::PHYSICAL, iso->flags, Cpu::get_current_cpu()->id);
                 mask_gsi(iso->gsi);
 
                 found = true;
@@ -204,7 +204,7 @@ void Cpu::Apic::IoApic::init() {
         }
 
         if (!found) {
-            set_entry(i, i + 0x20, DeliveryMode::FIXED, DestinationMode::PHYSICAL, 0, Cpu::get_current_cpu());
+            set_entry(i, i + 0x20, DeliveryMode::FIXED, DestinationMode::PHYSICAL, 0, Cpu::get_current_cpu()->id);
             mask_gsi(i);
         }
 

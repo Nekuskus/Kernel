@@ -3,7 +3,6 @@
 #include <lib/lib.hpp>
 
 #include "cpu/apic.hpp"
-#include "cpu/cpu.hpp"
 #include "debugging.hpp"
 #include "drivers/port.hpp"
 #include "terminal.hpp"
@@ -52,7 +51,7 @@ struct {
 
 extern "C" void* isrs[256];
 
-extern "C" void isr_handler(const Idt::InterruptRegisters* registers) {
+extern "C" void isr_handler(const Cpu::Registers* registers) {
     uint8_t n = registers->int_num & 0xFF;
     Idt::InterruptHandler* handler = &interrupt_handlers[n];
 
@@ -74,7 +73,7 @@ extern "C" void isr_handler(const Idt::InterruptRegisters* registers) {
             ;
 }
 
-void Idt::register_interrupt_handler(uint16_t n, void (*function)(const InterruptRegisters*), bool is_irq, bool should_iret) {
+void Idt::register_interrupt_handler(uint16_t n, void (*function)(const Cpu::Registers*), bool is_irq, bool should_iret) {
     interrupt_handlers[n] = {
         .function = function,
         .is_irq = is_irq,

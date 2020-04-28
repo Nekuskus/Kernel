@@ -1,21 +1,23 @@
 #pragma once
+#include <stddef.h>
+#include <stdint.h>
+
 #include <lib/linked_list.hpp>
 #include <system/mm/vmm.hpp>
+
+#include "cpu.hpp"
 
 namespace Cpu::Multitasking {
     struct Thread {
         size_t id;
-        uint64_t rax, rbx, rcx, rdx, rsi, rdi, rsp, rbp;
-        uint64_t r8, r9, r10, r11, r12, r13, r14, r15;
-        uint64_t rip;
-        uint64_t ss, ds, cs;
+        Cpu::Registers regs;
         uint64_t fs_base, gs_base;
-        uint64_t rflags;
+        uint64_t user_rsp;
+        uint64_t kernel_rsp;
     };
 
     struct Process {
         size_t id;
-        char* title;
         char* path;
         char* cwd;
         Vmm::PageTable* cr3;
@@ -23,4 +25,6 @@ namespace Cpu::Multitasking {
     };
 
     void init();
+    Thread* find_next_thread();
+    void switch_task();
 }  // namespace Cpu::Multitasking

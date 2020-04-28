@@ -46,10 +46,19 @@ void Cpu::Smp::boot_cpu(uint32_t lapic_id) {
         return;
     }
 
+    auto cpu = new CpuState;
+    cpu->id = lapic_id;
+    cpu->thread = -1;
+    cpu->process = -1;
+
+    push(cpu);
+
     Tss* tss = new Tss;
     tss->rsp[0] = (uint64_t)trampoline_stack + 0x10000;
 
     load_tss(tss);
+
+    cpu->tss = tss;
 
     Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::TM_LEVEL | Apic::LocalApic::IcrFlags::LEVELASSERT | Apic::LocalApic::IcrFlags::DM_INIT);
     Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)&smp_entry >> 12) & 0xFF));
@@ -57,6 +66,8 @@ void Cpu::Smp::boot_cpu(uint32_t lapic_id) {
     if (!wait_for_boot()) Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)&smp_entry >> 12) & 0xFF));
 
     if (wait_for_boot()) {
+        cpu->booted = true;
+        
         sprintf(debug, "[SMP] Sucessfully booted CPU with lapic ID %d\n", lapic_id);
         Debug::print(debug);
     } else {
@@ -72,17 +83,21 @@ void Cpu::Smp::set_booted() {
 }
 
 void Cpu::Smp::init() {
+    Cpu::CpuState* current_cpu = Cpu::get_current_cpu();
+
     Tss* bsp_tss = new Tss;
     bsp_tss->rsp[0] = stack_end - 0x1000;
 
     load_tss(bsp_tss);
+
+    current_cpu->tss = bsp_tss;
 
     uint64_t len = (uint64_t)&_trampoline_end - (uint64_t)&_trampoline_start;
 
     Vmm::map_pages(Vmm::get_current_context(), &_trampoline_start, &_trampoline_start, (len + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
     memcpy(&_trampoline_start, (void*)(0x400000 + virtual_physical_base), len);
 
-    uint32_t current_lapic = Cpu::get_current_cpu();
+    uint32_t current_lapic = current_cpu->id;
 
     for (auto lapic : Madt::get_lapics())
         if (((lapic->flags & 1) || (lapic->flags & 2)) && lapic->id != current_lapic)

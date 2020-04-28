@@ -1,8 +1,8 @@
 #include "time.hpp"
 
 #include <system/cpu/apic.hpp>
+#include <system/cpu/cpu.hpp>
 #include <system/debugging.hpp>
-#include <system/idt.hpp>
 #include <system/mm/mm.hpp>
 #include <system/panic.hpp>
 
@@ -10,7 +10,7 @@ Hpet::Hpet* hpet;
 
 volatile uint64_t uptime_raw = 0, uptime_sec = 0, epoch = 0;
 
-void tick_handler([[maybe_unused]] const Idt::InterruptRegisters* registers) {
+void tick_handler([[maybe_unused]] const Cpu::Registers* registers) {
     if (!(++uptime_raw % 1000)) {
         uptime_sec++;
         epoch++;
