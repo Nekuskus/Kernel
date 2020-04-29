@@ -7,6 +7,7 @@
 #include <system/mm/vmm.hpp>
 #include <system/panic.hpp>
 #include <system/terminal.hpp>
+#include <stddef.h>
 
 static Acpi::RsdpInfo rsdp_info{};
 static auto acpi_tables = LinkedList<Acpi::SdtHeader*>();
@@ -60,7 +61,7 @@ Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
 }
 
 Acpi::SdtHeader* Acpi::get_table(const char* signature) {
-    for (auto& table : acpi_tables)
+    for (auto table : acpi_tables)
         if (!strncmp(table->signature, signature, 4))
             return table;
 
@@ -82,12 +83,12 @@ void Acpi::init() {
 
     char text[255] = "";
 
-    sprintf(text, "[ACPI] Detected ACPI with OEM ID '%s' and version %d.\n", rsdp_info.oem_id, rsdp_info.version);
+    sprintf(text, "[ACPI] Detected ACPI with OEM ID '%s' and version %d.\n\r", rsdp_info.oem_id, rsdp_info.version);
     Debug::print(text);
 
     if (rsdp_info.version >= 2) {
         XsdtHeader* xsdt = (XsdtHeader*)rsdp_info.address;
-        size_t entries = (xsdt->header.length - sizeof(xsdt->header)) / 8;
+        size_t entries = (xsdt->header.length - sizeof(SdtHeader)) / 8;
 
         for (size_t i = 0; i < entries; i++) {
             SdtHeader* h = (SdtHeader*)(xsdt->tables[i] + virtual_physical_base);
@@ -98,14 +99,15 @@ void Acpi::init() {
             if (!calculate_checksum(h, h->length)) {
                 char text[255] = "";
 
-                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c\n", xsdt->tables[i], h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
+                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c\n\r", xsdt->tables[i], h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
                 Debug::print(text);
+                Terminal::write(text, 0xFFFFFF);
                 acpi_tables.push_back(h);
             }
         }
     } else {
         RsdtHeader* rsdt = (RsdtHeader*)rsdp_info.address;
-        size_t entries = (rsdt->header.length - sizeof(rsdt->header)) / 4;
+        size_t entries = (rsdt->header.length - sizeof(SdtHeader)) / 4;
 
         for (size_t i = 0; i < entries; i++) {
             SdtHeader* h = (SdtHeader*)((uint64_t)rsdt->tables[i] + virtual_physical_base);
@@ -116,8 +118,9 @@ void Acpi::init() {
             if (!calculate_checksum(h, h->length)) {
                 char text[255] = "";
 
-                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c\n", (uint64_t)h - virtual_physical_base, h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
+                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c\n\r", (uint64_t)h - virtual_physical_base, h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
                 Debug::print(text);
+                Terminal::write(text, 0xFFFFFF);
                 acpi_tables.push_back(h);
             }
         }

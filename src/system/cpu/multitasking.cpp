@@ -34,5 +34,5 @@ void Cpu::Multitasking::init() {
     Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_INITCNT, ticks / 10);
 
     Idt::register_interrupt_handler(232, schedule, true, true);
-    Debug::print("[MULTITASKING] Initialized scheduler.\n");
+    Debug::print("[MULTITASKING] Initialized scheduler.\n\r");
 }

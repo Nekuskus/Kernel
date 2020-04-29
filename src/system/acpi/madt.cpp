@@ -73,5 +73,5 @@ void Madt::init() {
         offset += interrupt_controller->length;
     }
 
-    Debug::print("[MADT] Finished setting up.\n");
+    Debug::print("[MADT] Finished setting up.\n\r");
 }

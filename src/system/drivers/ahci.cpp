@@ -73,13 +73,13 @@ bool Ahci::gain_ownership() {
             bohc.raw = memory_reg->host_control.bios_os_handoff_control_and_status.raw;
 
             if (!bohc.bits.os_owned_semaphore && (bohc.bits.bios_owned_semaphore || bohc.bits.bios_busy)) {
-                Debug::print("[AHCI] Failed to acquire ownership of controller.\n");
+                Debug::print("[AHCI] Failed to acquire ownership of controller.\n\r");
                 return false;
             }
 
             bohc.bits.os_ownership_change = false;
             memory_reg->host_control.bios_os_handoff_control_and_status.raw = bohc.raw;
-            Debug::print("[AHCI] Acquired ownership of controller.\n");
+            Debug::print("[AHCI] Acquired ownership of controller.\n\r");
         }
     }
     return true;
@@ -89,7 +89,7 @@ void Ahci::init() {
     auto devs = Pci::get_devices(0x01, 0x06, 0x01);
 
     if (!devs.length()) {
-        Debug::print("[AHCI] No AHCI compatible controller found.\n");
+        Debug::print("[AHCI] No AHCI compatible controller found.\n\r");
 
         return;
     }
@@ -98,7 +98,7 @@ void Ahci::init() {
 
     char text[2048] = "";
 
-    sprintf(text, "[AHCI] Found AHCI controller with Vendor ID %x, Device ID %x, and AHCI base %x.\n", controller.device->vendor_id(), controller.device->device_id(), controller.ahci_base());
+    sprintf(text, "[AHCI] Found AHCI controller with Vendor ID %x, Device ID %x, and AHCI base %x.\n\r", controller.device->vendor_id(), controller.device->device_id(), controller.ahci_base());
     Debug::print(text);
 
     memory_reg = (HbaMemory*)((uint64_t)controller.ahci_base() + virtual_physical_base);
@@ -111,10 +111,10 @@ void Ahci::init() {
     memory_reg->host_control.global_hba_control.raw = ghc.raw;
 
     if (!gain_ownership()) {
-        Debug::print("[AHCI] Failed to initialize controller.\n");
+        Debug::print("[AHCI] Failed to initialize controller.\n\r");
 
         return;
     }
 
-    Debug::print("[AHCI] Successfully initialized controller.\n");
+    Debug::print("[AHCI] Successfully initialized controller.\n\r");
 }

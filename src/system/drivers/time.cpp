@@ -1,52 +1,36 @@
 #include "time.hpp"
 
+#include <lib/lib.hpp>
 #include <system/cpu/apic.hpp>
 #include <system/cpu/cpu.hpp>
 #include <system/debugging.hpp>
 #include <system/mm/mm.hpp>
 #include <system/panic.hpp>
 
-Hpet::Hpet* hpet;
+static Hpet::Hpet* hpet = nullptr;
 
-volatile uint64_t uptime_raw = 0, uptime_sec = 0, epoch = 0;
-
-void tick_handler([[maybe_unused]] const Cpu::Registers* registers) {
-    if (!(++uptime_raw % 1000)) {
-        uptime_sec++;
-        epoch++;
-    }
-}
+static uint64_t clk = 0;
 
 void Time::ksleep(uint64_t time) {
-    uint64_t final_time = uptime_raw + time + 1;
+    uint64_t final_time = hpet->main_counter_value + (time * 1000000000000) / clk;
 
-    while (uptime_raw < final_time)
+    while (hpet->main_counter_value < final_time)
         ;
 }
 
 void Hpet::init() {
     HpetTable* hpet_table = (HpetTable*)Acpi::get_table("HPET");
-    hpet = (Hpet*)(hpet_table->address + virtual_physical_base);
-
+    
     if (!hpet_table)
         panic("UNSUPPORTED_HARDWARE_MISSING_HPET");
 
-    if (!(hpet->general_capabilities & (1 << 15)))
-        panic("HPET_LEGACY_REPLACEMENT_UNSUPPORTED");
+    hpet = (Hpet*)(hpet_table->address + virtual_physical_base);
 
-    uint64_t counter_clk_period = hpet->general_capabilities >> 32, frequency = 1000000000000000 / counter_clk_period;
+    clk = (hpet->general_capabilities >> 32) & 0xFFFFFFFF;
 
-    hpet->general_configuration |= 0b10;
+    hpet->general_configuration = 0;
     hpet->main_counter_value = 0;
+    hpet->general_configuration = 1;
 
-    if (!(hpet->timers[0].config_and_capabilities & (1 << 4)))
-        panic("HPET_TIMER_0_PERIODIC_UNSUPPORTED");
-
-    hpet->timers[0].config_and_capabilities |= (1 << 2) | (1 << 3) | (1 << 6);
-    hpet->timers[0].comparator_value = frequency / 1000;
-    hpet->general_configuration |= 0b01;
-
-    Idt::register_interrupt_handler(32, tick_handler, true, true);
-    Cpu::Apic::IoApic::unmask_irq(0);
-    Debug::print("[HPET] Successfully initialized.\n");
+    Debug::print("[HPET] Successfully initialized.\n\r");
 }

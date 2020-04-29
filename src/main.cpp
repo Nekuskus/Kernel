@@ -51,11 +51,11 @@ extern "C" [[gnu::visibility("hidden")]] void __fw_ctors() {
 }
 
 extern "C" [[gnu::visibility("hidden")]] void __fw_dtors() {
-    Debug::print("__fw_dtors was called\n");
+    Debug::print("__fw_dtors was called\n\r");
 }
 
 extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
-    Debug::print("~~~~ Welcome to Firework! ~~~~\n");
+    Debug::print("~~~~ Welcome to Firework! ~~~~\n\r");
 
     if (multiboot_magic == 0x2BADB002 && mb_info_ptr) {
         Multiboot::MultibootInfo* mb_info = (Multiboot::MultibootInfo*)((uint64_t)mb_info_ptr + virtual_kernel_base);
@@ -82,36 +82,54 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
         progress_bar += 10;
 
         Idt::init();
+
         progress();
+
         Exceptions::init();
+
         progress();
+
         Acpi::init();
+
         progress();
-        Madt::init();
-        progress();
-        Cpu::Apic::IoApic::init();
-        progress();
+
         Hpet::init();
+
         progress();
+
+        Madt::init();
+
+        progress();
+
+        Cpu::Apic::IoApic::init();
+
+        progress();
+
         Cpu::Apic::LocalApic::init();
         asm("sti");
+
         progress();
+
         Cpu::Smp::init();
 
         char debug[255] = "";
-
+        
         for (Cpu::CpuState* cpu_state : Cpu::get_cpu_states()) {
-            sprintf(debug, "[Firework] CPU with ID %d, Thread %d, Process %d, Booted: %d, TSS %x\n", cpu_state->id, cpu_state->thread, cpu_state->process, cpu_state->booted, cpu_state->tss);
+            sprintf(debug, "[Firework] CPU with ID %d, Thread %d, Process %d, Booted: %d, TSS %x\n\r", cpu_state->id, cpu_state->thread, cpu_state->process, cpu_state->booted, cpu_state->tss);
             Debug::print(debug);
         }
 
         progress();
+
         Ahci::init();
+
         progress();
+
         Cpu::Multitasking::init();
+
         progress();
     } else {
-        Debug::print("!! Unable to boot; Invalid multiboot1 magic or missing multiboot info !!\n");
+        Debug::print("Unable to boot; Invalid Multiboot 1 magic or missing Multiboot info\n\r");
 
         return;
     }
@@ -122,8 +140,11 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
 extern "C" void smp_kernel_main() {
     Idt::init();
+    
     Exceptions::init();
+
     Cpu::Smp::set_booted();
+
     asm("sti");
 
     for (;;)

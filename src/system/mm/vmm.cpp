@@ -8,12 +8,12 @@
 
 extern "C" Vmm::PageTable* kernel_pml4;
 
-Vmm::PageTableEntries Vmm::virtual_to_entries(void* virt) {
+inline Vmm::PageTableEntries Vmm::virtual_to_entries(void* virt) {
     PageTableEntries off = {
-        .pml4 = ((size_t)virt >> 39) & 0x1ff,
-        .pdp = ((size_t)virt >> 30) & 0x1ff,
-        .pd = ((size_t)virt >> 21) & 0x1ff,
-        .pt = ((size_t)virt >> 12) & 0x1ff,
+        .pml4 = ((uint64_t)virt >> 39) & 0x1ff,
+        .pdp = ((uint64_t)virt >> 30) & 0x1ff,
+        .pd = ((uint64_t)virt >> 21) & 0x1ff,
+        .pt = ((uint64_t)virt >> 12) & 0x1ff,
     };
 
     return off;
@@ -24,21 +24,16 @@ void* Vmm::entries_to_virtual(PageTableEntries offs) {
 }
 
 void Vmm::init() {
-    Msr::write(ia32_pat, 0x0000000005010406);
-
     kernel_pml4 = new_address_space();
 
     set_context(kernel_pml4);
 }
 
-Vmm::PageTable* get_or_alloc_ent(Vmm::PageTable* tab, size_t off, int flags) {
+inline Vmm::PageTable* get_or_alloc_ent(Vmm::PageTable* tab, size_t off, int flags) {
     uint64_t ent_addr = tab->ents[off] & address_mask;
 
     if (!ent_addr) {
         ent_addr = tab->ents[off] = (uint64_t)Pmm::alloc(1);
-
-        if (!ent_addr)
-            return nullptr;
 
         tab->ents[off] |= flags | Vmm::VirtualMemoryFlags::VMM_PRESENT;
         memset((void*)(ent_addr + virtual_physical_base), 0, 4096);
@@ -47,7 +42,7 @@ Vmm::PageTable* get_or_alloc_ent(Vmm::PageTable* tab, size_t off, int flags) {
     return (Vmm::PageTable*)(ent_addr + virtual_physical_base);
 }
 
-Vmm::PageTable* get_or_null_ent(Vmm::PageTable* tab, size_t off) {
+inline Vmm::PageTable* get_or_null_ent(Vmm::PageTable* tab, size_t off) {
     uint64_t ent_addr = tab->ents[off] & address_mask;
 
     return !ent_addr ? nullptr : (Vmm::PageTable*)(ent_addr + virtual_physical_base);
@@ -61,8 +56,8 @@ bool Vmm::map_pages(PageTable* pml4, void* virt, void* phys, size_t count, int p
         PageTable* pd_virt = get_or_alloc_ent(pdp_virt, offs.pdp, perms);
         PageTable* pt_virt = get_or_alloc_ent(pd_virt, offs.pd, perms);
         pt_virt->ents[offs.pt] = (uint64_t)phys | perms;
-        virt = (void*)((uintptr_t)virt + page_size);
-        phys = (void*)((uintptr_t)phys + page_size);
+        virt = (void*)((uint64_t)virt + page_size);
+        phys = (void*)((uint64_t)phys + page_size);
     }
 
     return true;
@@ -96,7 +91,7 @@ bool Vmm::unmap_pages(PageTable* pml4, void* virt, size_t count) {
 
         pt_virt->ents[offs.pt] = 0;
         update_mapping(virt);
-        virt = (void*)((uintptr_t)virt + page_size);
+        virt = (void*)((uint64_t)virt + page_size);
     }
 
     return true;
@@ -122,7 +117,7 @@ bool Vmm::update_perms(PageTable* pml4, void* virt, size_t count, int perms) {
             return false;
 
         pt_virt->ents[offs.pt] = (pt_virt->ents[offs.pt] & address_mask) | perms;
-        virt = (void*)((uintptr_t)virt + page_size);
+        virt = (void*)((uint64_t)virt + page_size);
     }
 
     return true;
@@ -135,8 +130,8 @@ bool Vmm::map_huge_pages(PageTable* pml4, void* virt, void* phys, size_t count, 
         PageTable* pdp_virt = get_or_alloc_ent(pml4_virt, offs.pml4, perms);
         PageTable* pd_virt = get_or_alloc_ent(pdp_virt, offs.pdp, perms);
         pd_virt->ents[offs.pd] = (uint64_t)phys | perms | VirtualMemoryFlags::VMM_LARGE;
-        virt = (void*)((uintptr_t)virt + huge_page_size);
-        phys = (void*)((uintptr_t)phys + huge_page_size);
+        virt = (void*)((uint64_t)virt + huge_page_size);
+        phys = (void*)((uint64_t)phys + huge_page_size);
     }
 
     return true;
@@ -154,7 +149,7 @@ bool Vmm::unmap_huge_pages(PageTable* pml4, void* virt, size_t count) {
         PageTable* pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
         pd_virt->ents[offs.pd] = 0;
         update_mapping(virt);
-        virt = (void*)((uintptr_t)virt + huge_page_size);
+        virt = (void*)((uint64_t)virt + huge_page_size);
     }
 
     return true;
@@ -171,7 +166,7 @@ bool Vmm::update_huge_perms(PageTable* pml4, void* virt, size_t count, int perms
 
         PageTable* pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
         pd_virt->ents[offs.pd] = (pd_virt->ents[offs.pd] & address_mask) | perms | VirtualMemoryFlags::VMM_LARGE;
-        virt = (void*)((uintptr_t)virt + huge_page_size);
+        virt = (void*)((uint64_t)virt + huge_page_size);
     }
 
     return true;
@@ -201,7 +196,7 @@ uintptr_t Vmm::get_entry(PageTable* pml4, void* virt) {
 Vmm::PageTable* Vmm::new_address_space() {
     PageTable* new_pml4 = (PageTable*)Pmm::alloc(1);
 
-    memset((void*)((uintptr_t)new_pml4 + virtual_physical_base), 0, 4096);
+    memset((void*)((uint64_t)new_pml4 + virtual_physical_base), 0, 4096);
     map_huge_pages(new_pml4, (void*)0xFFFFFFFF80000000, NULL, 64, 3);
     map_huge_pages(new_pml4, (void*)0xFFFF800000000000, NULL, 512 * 4, 3);
 

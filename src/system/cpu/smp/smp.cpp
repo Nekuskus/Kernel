@@ -20,7 +20,8 @@ extern "C" void* trampoline_stack;
 
 extern "C" uint64_t stack_end;
 
-extern "C" void load_tss(void* tss);
+extern "C" void load_tss(uint64_t tss);
+extern "C" void prepare_trampoline(uint64_t page_table);
 
 bool trampoline_booted = false;
 
@@ -35,12 +36,12 @@ bool Cpu::Smp::wait_for_boot() {
     return false;
 }
 
-void Cpu::Smp::boot_cpu(uint32_t lapic_id) {
+void Cpu::Smp::boot_cpu(uint64_t kernel_pml4, uint32_t lapic_id) {
     trampoline_stack = (void*)((uint64_t)Pmm::alloc(0x10000 / page_size) + virtual_physical_base);
     char debug[255] = "";
 
     if (!trampoline_stack) {
-        sprintf(debug, "[SMP] Failed to allocate stack for CPU with lapic ID %d\n", lapic_id);
+        sprintf(debug, "[SMP] Failed to allocate stack for CPU with lapic ID %d\n\r", lapic_id);
         Debug::print(debug);
 
         return;
@@ -56,9 +57,11 @@ void Cpu::Smp::boot_cpu(uint32_t lapic_id) {
     Tss* tss = new Tss;
     tss->rsp[0] = (uint64_t)trampoline_stack + 0x10000;
 
-    load_tss(tss);
+    load_tss((uint64_t)tss);
 
     cpu->tss = tss;
+
+    prepare_trampoline(kernel_pml4);
 
     Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::TM_LEVEL | Apic::LocalApic::IcrFlags::LEVELASSERT | Apic::LocalApic::IcrFlags::DM_INIT);
     Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)&smp_entry >> 12) & 0xFF));
@@ -67,11 +70,11 @@ void Cpu::Smp::boot_cpu(uint32_t lapic_id) {
 
     if (wait_for_boot()) {
         cpu->booted = true;
-        
-        sprintf(debug, "[SMP] Sucessfully booted CPU with lapic ID %d\n", lapic_id);
+
+        sprintf(debug, "[SMP] Sucessfully booted CPU with lapic ID %d\n\r", lapic_id);
         Debug::print(debug);
     } else {
-        sprintf(debug, "[SMP] Failed to boot CPU with lapic ID %d\n", lapic_id);
+        sprintf(debug, "[SMP] Failed to boot CPU with lapic ID %d\n\r", lapic_id);
         Debug::print(debug);
     }
 
@@ -88,20 +91,24 @@ void Cpu::Smp::init() {
     Tss* bsp_tss = new Tss;
     bsp_tss->rsp[0] = stack_end - 0x1000;
 
-    load_tss(bsp_tss);
+    load_tss((uint64_t)bsp_tss);
 
     current_cpu->tss = bsp_tss;
 
     uint64_t len = (uint64_t)&_trampoline_end - (uint64_t)&_trampoline_start;
 
-    Vmm::map_pages(Vmm::get_current_context(), &_trampoline_start, &_trampoline_start, (len + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Vmm::PageTable* kernel_pml4 = Vmm::get_ctx_kernel();
+
+    Vmm::map_pages(kernel_pml4, &_trampoline_start, &_trampoline_start, (len + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
     memcpy(&_trampoline_start, (void*)(0x400000 + virtual_physical_base), len);
 
     uint32_t current_lapic = current_cpu->id;
 
+    Vmm::map_pages(kernel_pml4, (void*)0x510, (void*)0x510, 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+
     for (auto lapic : Madt::get_lapics())
         if (((lapic->flags & 1) || (lapic->flags & 2)) && lapic->id != current_lapic)
-            Cpu::Smp::boot_cpu(lapic->id);
+            Cpu::Smp::boot_cpu((uint64_t)kernel_pml4, lapic->id);
 
-    Debug::print("[SMP] Finished setting up.\n");
+    Debug::print("[SMP] Finished setting up.\n\r");
 }

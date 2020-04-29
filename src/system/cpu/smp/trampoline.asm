@@ -4,115 +4,122 @@ bits 16
 
 KERNEL_VMA equ 0xFFFFFFFF80000000
 
-extern kernel_pml4
-
 extern smp_kernel_main
 
 global smp_entry
 smp_entry:
     cli
     cld
-    jmp 0x000:.reset_cs
-.reset_cs:
+
     xor ax, ax
     mov ds, ax
+
+    jmp 0x0:fix_cs
+    fix_cs:
     mov es, ax
     mov fs, ax
     mov gs, ax
     mov ss, ax
 
-    lgdt [gdt32_ptr]
+    lgdt [gdt_ptr]
 
-    mov eax, cr0
-    or eax, 1
-    mov cr0, eax
-
-    jmp 0x08:.prot_mode
-.prot_mode:
-bits 32
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-
-    lgdt [gdt64_ptr]
-    mov esp, [trampoline_stack - KERNEL_VMA]
+    mov edx, dword [0x510]
+    mov cr3, edx
 
     mov eax, cr4
-    or eax, 0x000000A0
+    or eax, 1 << 5
+    or eax, 1 << 7
     mov cr4, eax
 
-    mov eax, [kernel_pml4 - KERNEL_VMA]
-    mov cr3, eax
-
-    mov ecx, 0xC0000080
+    mov ecx, 0xc0000080
     rdmsr
-    or eax, 0x00000901
+
+    or eax, 0x00000100
     wrmsr
 
     mov eax, cr0
     or eax, 0x80000001
+    and eax, ~(0x60000000)
     mov cr0, eax
 
-    mov ecx, 0x277
-    mov eax, 0x05010406
-    xor edx, edx
-    wrmsr
-
-    jmp 0x08:.long_mode
-.long_mode:
-bits 64
-    mov ax, 0x0
+    jmp 0x08:.mode64
+    .mode64:
+    bits 64
+    mov ax, 0
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
     mov ss, ax
 
-    add rsp, KERNEL_VMA
+    mov rsp, [trampoline_stack]
+
+    lgdt [0x520]
+    lidt [0x530]
+
+    mov ax, 0x38
+    ltr ax
 
     cld
 
     call smp_kernel_main
-    hlt
 
-gdt32_start:
-    dd 0x0
-    dd 0x0
-    dw 0xFFFF
-    dw 0x0
-    db 0x0
+align 16
+
+gdt_ptr:
+    dw .gdt_end - .gdt_start - 1
+    dq .gdt_start
+
+align 16
+.gdt_start:
+
+.null_descriptor:
+    dw 0x0000
+    dw 0x0000
+    db 0x00
+    db 00000000b
+    db 00000000b
+    db 0x00
+
+.kernel_code_64:
+    dw 0x0000
+    dw 0x0000
+    db 0x00
     db 10011010b
-    db 11001111b
-    db 0x0
-    dw 0xFFFF
-    dw 0x0
-    db 0x0
+    db 00100000b
+    db 0x00
+
+.kernel_data:
+    dw 0x0000
+    dw 0x0000
+    db 0x00
     db 10010010b
-    db 11001111b
-    db 0x0
-gdt32_end:
+    db 00000000b
+    db 0x00
 
-gdt32_ptr:
-    dw gdt32_end - gdt32_start - 1
-    dd gdt32_start
+.user_data_64:
+    dw 0x0000
+    dw 0x0000
+    db 0x00
+    db 11110010b
+    db 00000000b
+    db 0x00
 
-gdt64_start:
-    dq 0
-    dq 0x00209A0000000000
-gdt64_end:
+.gdt_end:
 
-gdt64_ptr:
-    dw gdt64_end - gdt64_start - 1
-    dq gdt64_start
+bits 64
 
-gdt64_ptr_high:
-    dw gdt64_end - gdt64_start - 1
-    dq gdt64_start + 0xFFFF800000000000
+section .text
+
+global prepare_trampoline
+prepare_trampoline:
+    mov qword [0x510], rdi
+    sgdt [0x520]
+    sidt [0x530]
+    ret
 
 section .data
+
 global trampoline_stack
 trampoline_stack:
     dq 0

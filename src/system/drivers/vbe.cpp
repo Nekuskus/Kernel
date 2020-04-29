@@ -15,7 +15,7 @@ void Graphics::init(ModeInfo gfx_mode_info) {
     is_working = true;
 
     clear(0x000000);
-    Debug::print("[VBE] Initialized display.\n");
+    Debug::print("[VBE] Initialized display.\n\r");
 }
 
 void Graphics::clear(uint32_t color) {
