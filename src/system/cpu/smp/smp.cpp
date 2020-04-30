@@ -23,9 +23,9 @@ extern "C" uint64_t stack_end;
 extern "C" void load_tss(uint64_t tss);
 extern "C" void prepare_trampoline(uint64_t page_table);
 
-bool trampoline_booted = false;
+static bool trampoline_booted = false;
 
-bool Cpu::Smp::wait_for_boot() {
+inline bool wait_for_boot() {
     for (int i = 0; i < 1000; i++)
         if (Time::ksleep(1); trampoline_booted)
             return true;
