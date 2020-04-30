@@ -50,7 +50,7 @@ uintptr_t find_available_memory_top(Multiboot::MemoryMap* mmap, size_t mmap_len)
 
 void Pmm::init(Multiboot::MemoryMap* mmap, size_t mmap_len) {
     uintptr_t mem_top = find_available_memory_top(mmap, mmap_len);
-    uint32_t mem_pages = (mem_top + page_size - 1) / page_size;
+    uint32_t mem_pages = (mem_top + 0x1000 - 1) / 0x1000;
     bitmap = (uint64_t*)(memory_base + virtual_physical_base);
     bitmap_len = mem_pages;
     size_t bitmap_phys = (size_t)bitmap - virtual_physical_base;
@@ -59,8 +59,8 @@ void Pmm::init(Multiboot::MemoryMap* mmap, size_t mmap_len) {
 
     for (size_t i = 0; i < mmap_len; i++) {
         if (mmap[i].type == Multiboot::MemoryState::AVAILABLE) {
-            uintptr_t start = Math::round_up(mmap[i].addr, page_size);
-            size_t len = Math::round_down(mmap[i].len, page_size), count = len / page_size;
+            uintptr_t start = Math::round_up(mmap[i].addr, 0x1000);
+            size_t len = Math::round_down(mmap[i].len, 0x1000), count = len / 0x1000;
 
             if (!len || start + len < memory_base)
                 continue;
@@ -68,16 +68,16 @@ void Pmm::init(Multiboot::MemoryMap* mmap, size_t mmap_len) {
             if (start < memory_base) {
                 len -= memory_base - start;
                 start = memory_base;
-                count = len / page_size;
+                count = len / 0x1000;
             }
 
             if (Math::overlaps(bitmap_phys, bitmap_len / 8, start, len)) {
                 if (start < bitmap_phys)
-                    free((void*)start, (start - bitmap_phys) / page_size);
+                    free((void*)start, (start - bitmap_phys) / 0x1000);
 
                 start = bitmap_phys + bitmap_len / 8;
                 len -= bitmap_len / 8;
-                count = len / page_size;
+                count = len / 0x1000;
             }
 
             free((void*)start, count);
@@ -85,8 +85,8 @@ void Pmm::init(Multiboot::MemoryMap* mmap, size_t mmap_len) {
     }
 
     total_pages = free_pages;
-    bit_write(bitmap_phys / page_size, 1, (bitmap_len / 8 + page_size - 1) / page_size);
-    alloc((bitmap_len / 8 + page_size - 1) / page_size);
+    bit_write(bitmap_phys / 0x1000, 1, (bitmap_len / 8 + 0x1000 - 1) / 0x1000);
+    alloc((bitmap_len / 8 + 0x1000 - 1) / 0x1000);
 }
 
 void* Pmm::alloc(size_t count) {
@@ -105,7 +105,7 @@ void* Pmm::alloc(size_t count) {
         if (total_pages)
             free_pages -= count;
 
-        return (void*)(cur_idx * page_size);
+        return (void*)(cur_idx * 0x1000);
     }
 
     panic("OUT_OF_MEMORY");
@@ -114,7 +114,7 @@ void* Pmm::alloc(size_t count) {
 }
 
 void Pmm::free(void* mem, size_t count) {
-    size_t idx = (size_t)mem / page_size;
+    size_t idx = (size_t)mem / 0x1000;
 
     bit_write(idx, 0, count);
 

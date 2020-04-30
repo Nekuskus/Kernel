@@ -1,9 +1,5 @@
 #include "serial.hpp"
 
-#include <stddef.h>
-
-#include <lib/lib.hpp>
-
 #include "port.hpp"
 
 Serial::Serial(uint16_t com_port, uint32_t baud_rate)

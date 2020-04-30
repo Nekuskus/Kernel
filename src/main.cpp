@@ -66,7 +66,7 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
         uintptr_t virtual_fb = mb_info->framebuffer_addr + virtual_kernel_base;
 
-        Vmm::map_huge_pages(Vmm::get_ctx_kernel(), (void*)virtual_fb, (void*)mb_info->framebuffer_addr, (mb_info->framebuffer_width * mb_info->framebuffer_pitch + huge_page_size - 1) / huge_page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+        Vmm::map_huge_pages(Vmm::get_ctx_kernel(), (void*)virtual_fb, (void*)mb_info->framebuffer_addr, (mb_info->framebuffer_width * mb_info->framebuffer_pitch + 0x200000 - 1) / 0x200000, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
 
         mode_info = {
             .framebuffer = (uint32_t*)virtual_fb,
@@ -113,7 +113,7 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
         Cpu::Smp::init();
 
         char debug[255] = "";
-        
+
         for (Cpu::CpuState* cpu_state : Cpu::get_cpu_states()) {
             sprintf(debug, "[Firework] CPU with ID %d, Thread %d, Process %d, Booted: %d, TSS %x\n\r", cpu_state->id, cpu_state->thread, cpu_state->process, cpu_state->booted, cpu_state->tss);
             Debug::print(debug);
@@ -140,7 +140,7 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
 extern "C" void smp_kernel_main() {
     Idt::init();
-    
+
     Exceptions::init();
 
     Cpu::Smp::set_booted();

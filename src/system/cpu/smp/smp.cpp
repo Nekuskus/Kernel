@@ -26,18 +26,15 @@ extern "C" void prepare_trampoline(uint64_t page_table);
 bool trampoline_booted = false;
 
 bool Cpu::Smp::wait_for_boot() {
-    for (int i = 0; i < 1000; i++) {
-        Time::ksleep(1);
-
-        if (trampoline_booted)
+    for (int i = 0; i < 1000; i++)
+        if (Time::ksleep(1); trampoline_booted)
             return true;
-    }
 
     return false;
 }
 
 void Cpu::Smp::boot_cpu(uint64_t kernel_pml4, uint32_t lapic_id) {
-    trampoline_stack = (void*)((uint64_t)Pmm::alloc(0x10000 / page_size) + virtual_physical_base);
+    trampoline_stack = calloc(0x10000, 1);
     char debug[255] = "";
 
     if (!trampoline_stack) {
@@ -66,7 +63,8 @@ void Cpu::Smp::boot_cpu(uint64_t kernel_pml4, uint32_t lapic_id) {
     Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::TM_LEVEL | Apic::LocalApic::IcrFlags::LEVELASSERT | Apic::LocalApic::IcrFlags::DM_INIT);
     Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)&smp_entry >> 12) & 0xFF));
 
-    if (!wait_for_boot()) Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)&smp_entry >> 12) & 0xFF));
+    if (!wait_for_boot())
+        Apic::LocalApic::send_ipi(lapic_id, Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)&smp_entry >> 12) & 0xFF));
 
     if (wait_for_boot()) {
         cpu->booted = true;
@@ -99,15 +97,13 @@ void Cpu::Smp::init() {
 
     Vmm::PageTable* kernel_pml4 = Vmm::get_ctx_kernel();
 
-    Vmm::map_pages(kernel_pml4, &_trampoline_start, &_trampoline_start, (len + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Vmm::map_pages(kernel_pml4, &_trampoline_start, &_trampoline_start, (len + 0x1000 - 1) / 0x1000, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
     memcpy(&_trampoline_start, (void*)(0x400000 + virtual_physical_base), len);
-
-    uint32_t current_lapic = current_cpu->id;
 
     Vmm::map_pages(kernel_pml4, (void*)0x510, (void*)0x510, 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
 
     for (auto lapic : Madt::get_lapics())
-        if (((lapic->flags & 1) || (lapic->flags & 2)) && lapic->id != current_lapic)
+        if (((lapic->flags & 1) || (lapic->flags & 2)) && lapic->id != current_cpu->id)
             Cpu::Smp::boot_cpu((uint64_t)kernel_pml4, lapic->id);
 
     Debug::print("[SMP] Finished setting up.\n\r");

@@ -12,8 +12,8 @@ static uint64_t top = heap_base;
 extern "C" void* malloc(size_t bytes) {
     mm_lock.lock();
 
-    bytes = (bytes + 7) / 8 * 8;  // Round up size to a multiple of 8
-    uint64_t size = bytes + sizeof(HeapHeader), pages = (size + page_size - 1) / page_size + 1, out = top;
+    bytes = (bytes + 7) / 8 * 8;
+    uint64_t size = bytes + sizeof(HeapHeader), pages = (size + 0x1000 - 1) / 0x1000 + 1, out = top;
     void* p = Pmm::alloc(pages);
 
     if (!p) {
@@ -24,8 +24,8 @@ extern "C" void* malloc(size_t bytes) {
 
     Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)top, p, pages, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
 
-    top += page_size * (pages + 1);
-    out = out + (page_size * pages - size);
+    top += 0x1000 * (pages + 1);
+    out = out + (0x1000 * pages - size);
     HeapHeader* header = (HeapHeader*)out;
     header->size = bytes;
     header->pages = pages;
@@ -47,14 +47,14 @@ extern "C" void free(void* ptr) {
     mm_lock.lock();
 
     HeapHeader* header = (HeapHeader*)((uint64_t)ptr - 16);
-    uintptr_t start = (uintptr_t)ptr & ~(page_size - 1);
-    size_t pages = (header->size + page_size - 1) / page_size + 1;
+    uint64_t start = (uint64_t)ptr & ~(0x1000 - 1);
+    size_t pages = (header->size + 0x1000 - 1) / 0x1000 + 1;
 
     if (header->pages != pages)
         return;
 
     Vmm::PageTable* current_ctx = Vmm::get_current_context();
-    uint64_t curr = (uintptr_t)start + pages * page_size, p = Vmm::get_entry(current_ctx, (void*)curr);
+    uint64_t curr = (uint64_t)start + pages * 0x1000, p = Vmm::get_entry(current_ctx, (void*)curr);
 
     Vmm::unmap_pages(current_ctx, (void*)curr, pages);
     Pmm::free((void*)p, pages);

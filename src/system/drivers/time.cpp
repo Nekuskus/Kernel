@@ -8,7 +8,6 @@
 #include <system/panic.hpp>
 
 static Hpet::Hpet* hpet = nullptr;
-
 static uint64_t clk = 0;
 
 void Time::ksleep(uint64_t time) {

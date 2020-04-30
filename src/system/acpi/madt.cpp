@@ -8,10 +8,10 @@
 #include <system/mm/vmm.hpp>
 #include <system/panic.hpp>
 
-auto lapics = LinkedList<Madt::LocalApic*>();
-auto ioapics = LinkedList<Madt::IoApic*>();
-auto isos = LinkedList<Madt::InterruptSourceOverride*>();
-bool legacy_pic;
+static auto lapics = LinkedList<Madt::LocalApic*>();
+static auto ioapics = LinkedList<Madt::IoApic*>();
+static auto isos = LinkedList<Madt::InterruptSourceOverride*>();
+static bool legacy_pic;
 
 LinkedList<Madt::LocalApic*>& Madt::get_lapics() {
     return lapics;

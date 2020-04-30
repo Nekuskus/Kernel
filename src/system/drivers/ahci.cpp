@@ -6,8 +6,8 @@
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
 
-Ahci::HbaConfiguration controller{};
-Ahci::HbaMemory* memory_reg = nullptr;
+static Ahci::HbaConfiguration controller{};
+static Ahci::HbaMemory* memory_reg = nullptr;
 
 void Ahci::wait_idle(uint16_t port) {
     PortRegister mem_port = memory_reg->ports[port];
@@ -74,11 +74,13 @@ bool Ahci::gain_ownership() {
 
             if (!bohc.bits.os_owned_semaphore && (bohc.bits.bios_owned_semaphore || bohc.bits.bios_busy)) {
                 Debug::print("[AHCI] Failed to acquire ownership of controller.\n\r");
+
                 return false;
             }
 
             bohc.bits.os_ownership_change = false;
             memory_reg->host_control.bios_os_handoff_control_and_status.raw = bohc.raw;
+
             Debug::print("[AHCI] Acquired ownership of controller.\n\r");
         }
     }
@@ -101,9 +103,11 @@ void Ahci::init() {
     sprintf(text, "[AHCI] Found AHCI controller with Vendor ID %x, Device ID %x, and AHCI base %x.\n\r", controller.device->vendor_id(), controller.device->device_id(), controller.ahci_base());
     Debug::print(text);
 
-    memory_reg = (HbaMemory*)((uint64_t)controller.ahci_base() + virtual_physical_base);
+    uint64_t ahci_base = (uint64_t)controller.ahci_base();
 
-    Vmm::map_pages(Vmm::get_ctx_kernel(), memory_reg, (void*)(uint64_t)controller.ahci_base(), (sizeof(HbaMemory) + page_size - 1) / page_size, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+    memory_reg = (HbaMemory*)(ahci_base + virtual_physical_base);
+
+    Vmm::map_pages(Vmm::get_ctx_kernel(), memory_reg, (void*)ahci_base, (sizeof(HbaMemory) + 0x1000 - 1) / 0x1000, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
 
     GenericHostControl::HbaControl ghc{};
     ghc.raw = memory_reg->host_control.global_hba_control.raw;

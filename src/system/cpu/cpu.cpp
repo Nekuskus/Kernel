@@ -2,13 +2,29 @@
 
 #include <cpuid.h>
 
-auto cpu_states = LinkedList<Cpu::CpuState*>();
+static auto cpu_states = LinkedList<Cpu::CpuState*>();
 
 bool Cpu::check_msr(uint32_t flag) {
     uint32_t a, b, c, d;
     __cpuid(1, a, b, c, d);
 
     return d & flag;
+}
+
+uint64_t Cpu::read_msr(uint32_t msr) {
+    uint64_t value_low = 0, value_high = 0;
+
+    asm volatile("rdmsr"
+                 : "=a"(value_low), "=d"(value_high)
+                 : "c"(msr));
+
+    return value_low | (value_high << 32);
+}
+
+void Cpu::write_msr(uint32_t msr, uint64_t value) {
+    asm volatile("wrmsr"
+                 :
+                 : "a"((uint32_t)value), "d"((uint32_t)(value >> 32)), "c"(msr));
 }
 
 void Cpu::halt_forever() {

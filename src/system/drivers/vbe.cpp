@@ -1,8 +1,6 @@
 #include "vbe.hpp"
 
-#include <lib/lib.hpp>
 #include <system/debugging.hpp>
-#include <system/mm/mm.hpp>
 
 #include "vgafont.hpp"
 

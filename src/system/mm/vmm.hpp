@@ -5,7 +5,7 @@
 constexpr size_t address_mask = ~(0xFFF | (1ull << 63));
 
 namespace Vmm {
-    enum VirtualMemoryFlags {
+    enum VirtualMemoryFlags : int {
         VMM_PRESENT = 1 << 0,
         VMM_WRITE = 1 << 1,
         VMM_USER = 1 << 2,
@@ -29,7 +29,7 @@ namespace Vmm {
     PageTableEntries virtual_to_entries(void* virt);
     void* entries_to_virtual(PageTableEntries entries);
     void init();
-    bool map_pages(PageTable* pml4, void* virt, void* phys, size_t count, int perms);
+    void map_pages(PageTable* pml4, void* virt, void* phys, size_t count, int perms);
     bool unmap_pages(PageTable* pml4, void* virt, size_t count);
     bool update_perms(PageTable* pml4, void* virt, size_t count, int perms);
     bool map_huge_pages(PageTable* pml4, void* virt, void* phys, size_t count, int perms);

@@ -5,11 +5,11 @@
 
 #include "drivers/vbe.hpp"
 
-Spinlock lock{};
+static Spinlock lock{};
 
 static uint16_t x = 0, y = 0;
 
-bool Terminal::handle_special_characters(const char c) {
+inline bool handle_special_characters(const char c) {
     bool ret = false;
 
     switch (c) {
@@ -33,12 +33,12 @@ bool Terminal::handle_special_characters(const char c) {
         }
     }
 
-    set_cursor(x, y);
+    Terminal::set_cursor(x, y);
 
     return ret;
 }
 
-void Terminal::set_cursor(uint16_t nx, uint16_t ny) {
+inline void Terminal::set_cursor(uint16_t nx, uint16_t ny) {
     x = nx;
     y = ny;
 }
