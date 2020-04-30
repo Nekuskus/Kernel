@@ -61,6 +61,7 @@ void Terminal::write(const char* str, uint32_t foreground) {
         write(*str, foreground);
         str++;
     }
+    
     lock.release();
 }
 

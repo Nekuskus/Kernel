@@ -115,10 +115,10 @@ void Ahci::init() {
     memory_reg->host_control.global_hba_control.raw = ghc.raw;
 
     if (!gain_ownership()) {
-        Debug::print("[AHCI] Failed to initialize controller.\n\r");
+        Debug::print("[AHCI] Failed to gain controller ownership.\n\r");
 
         return;
     }
 
-    Debug::print("[AHCI] Successfully initialized controller.\n\r");
+    Debug::print("[AHCI] Gained controller ownership.\n\r");
 }

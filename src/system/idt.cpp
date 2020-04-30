@@ -134,6 +134,6 @@ void Idt::init() {
 
     char debug[256] = "";
 
-    sprintf(debug, "[IDT] Successfully initialized IDT on CPU #%d.\n\r", Cpu::get_current_cpu()->id);
+    sprintf(debug, "[IDT] Initialized IDT on CPU #%d.\n\r", Cpu::get_current_cpu()->id);
     Debug::print(debug);
 }

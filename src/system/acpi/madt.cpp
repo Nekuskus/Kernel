@@ -33,7 +33,7 @@ void Madt::init() {
     MadtHeader* madt = (MadtHeader*)Acpi::get_table("APIC");
 
     if (!madt)
-        panic("MADT_MISSING");
+        panic("UNSUPPORTED_HARDWARE_MADT_MISSING");
 
     legacy_pic = madt->flags & 1ULL;
 

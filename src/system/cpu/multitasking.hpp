@@ -2,14 +2,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <lib/linked_list.hpp>
 #include <system/mm/vmm.hpp>
 
 #include "cpu.hpp"
 
 namespace Cpu::Multitasking {
+    enum ThreadState : uint16_t {
+        ACTIVE = 1,
+        SUSPENDED,
+        BLOCKED,
+        WAITING,
+    };
+
     struct Thread {
-        size_t id;
+        ThreadState state;
+        size_t tid;
         Cpu::Registers regs;
         uint64_t fs_base, gs_base;
         uint64_t user_rsp;
@@ -17,14 +24,13 @@ namespace Cpu::Multitasking {
     };
 
     struct Process {
-        size_t id;
+        size_t pid;
         char* path;
         char* cwd;
         Vmm::PageTable* cr3;
-        LinkedList<Thread> threads;
+        LinkedList<Thread*> threads;
     };
 
     void init();
-    Thread* find_next_thread();
     void switch_task();
 }  // namespace Cpu::Multitasking

@@ -46,8 +46,6 @@ void Cpu::Smp::boot_cpu(uint64_t kernel_pml4, uint32_t lapic_id) {
 
     auto cpu = new CpuState;
     cpu->id = lapic_id;
-    cpu->thread = -1;
-    cpu->process = -1;
 
     push(cpu);
 
@@ -69,10 +67,10 @@ void Cpu::Smp::boot_cpu(uint64_t kernel_pml4, uint32_t lapic_id) {
     if (wait_for_boot()) {
         cpu->booted = true;
 
-        sprintf(debug, "[SMP] Sucessfully booted CPU with lapic ID %d\n\r", lapic_id);
+        sprintf(debug, "[SMP] Booted CPU with lapic ID #%d\n\r", lapic_id);
         Debug::print(debug);
     } else {
-        sprintf(debug, "[SMP] Failed to boot CPU with lapic ID %d\n\r", lapic_id);
+        sprintf(debug, "[SMP] Failed to boot CPU with lapic ID #%d\n\r", lapic_id);
         Debug::print(debug);
     }
 

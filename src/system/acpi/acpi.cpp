@@ -79,11 +79,11 @@ void Acpi::init() {
         rsdp_info = bios_detect_rsdp(0xE0000, 0x20000);
 
     if (!rsdp_info.version)
-        panic("ACPI_MISSING");
+        panic("UNSUPPORTED_HARDWARE_ACPI_MISSING");
 
     char text[255] = "";
 
-    sprintf(text, "[ACPI] Detected ACPI with OEM ID '%s' and version %d.\n\r", rsdp_info.oem_id, rsdp_info.version);
+    sprintf(text, "[ACPI] Found ACPI with OEM ID '%s' and version %d.\n\r", rsdp_info.oem_id, rsdp_info.version);
     Debug::print(text);
 
     if (rsdp_info.version >= 2) {

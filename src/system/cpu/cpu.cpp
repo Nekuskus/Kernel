@@ -55,8 +55,6 @@ Cpu::CpuState* Cpu::get_current_cpu() {
     if (cpu_states.length() <= 0) {
         auto current_cpu = new CpuState;
         current_cpu->id = lapic_id;
-        current_cpu->thread = -1;
-        current_cpu->process = -1;
         current_cpu->booted = true;
 
         push(current_cpu);

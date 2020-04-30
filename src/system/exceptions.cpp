@@ -35,6 +35,6 @@ void Exceptions::init() {
     Idt::register_interrupt_handler(14, page_fault_handler, false, false);
 
     char debug[256] = "";
-    sprintf(debug, "[CPUEXCEPT] Successfully initialized exception handlers on CPU #%d.\n\r", Cpu::get_current_cpu()->id);
+    sprintf(debug, "[Exceptions] Initialized exception handlers on CPU #%d.\n\r", Cpu::get_current_cpu()->id);
     Debug::print(debug);
 }

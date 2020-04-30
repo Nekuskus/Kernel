@@ -33,7 +33,7 @@ void Cpu::Apic::LocalApic::init() {
     write(lapic_tpr, 0);
     write(0xF0, 0xFF | 0x100);
 
-    Debug::print("[APIC] Initialized LAPIC.\n\r");
+    Debug::print("[APIC] Initialized Local APIC.\n\r");
 }
 
 void Cpu::Apic::LocalApic::send_ipi(uint32_t target, uint32_t flags) {
@@ -210,5 +210,5 @@ void Cpu::Apic::IoApic::init() {
         Idt::set_irq(i + 0x20, true);
     }
 
-    Debug::print("[APIC] Initialized IOAPIC.\n\r");
+    Debug::print("[APIC] Initialized I/O APIC.\n\r");
 }

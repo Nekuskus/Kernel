@@ -5,7 +5,6 @@
 #include <system/acpi/acpi.hpp>
 #include <system/acpi/madt.hpp>
 #include <system/cpu/apic.hpp>
-#include <system/cpu/cpu.hpp>
 #include <system/cpu/multitasking.hpp>
 #include <system/cpu/smp/smp.hpp>
 #include <system/debugging.hpp>
@@ -110,22 +109,15 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
         progress();
 
-        Cpu::Smp::init();
-
-        char debug[255] = "";
-
-        for (Cpu::CpuState* cpu_state : Cpu::get_cpu_states()) {
-            sprintf(debug, "[Firework] CPU with ID %d, Thread %d, Process %d, Booted: %d, TSS %x\n\r", cpu_state->id, cpu_state->thread, cpu_state->process, cpu_state->booted, cpu_state->tss);
-            Debug::print(debug);
-        }
-
-        progress();
-
         Ahci::init();
 
         progress();
 
         Cpu::Multitasking::init();
+
+        progress();
+
+        Cpu::Smp::init();
 
         progress();
     } else {
@@ -140,9 +132,8 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
 extern "C" void smp_kernel_main() {
     Idt::init();
-
     Exceptions::init();
-
+    Cpu::Multitasking::init();
     Cpu::Smp::set_booted();
 
     asm("sti");
