@@ -42,8 +42,8 @@ namespace Cpu {
         bool booted;
         Tss* tss;
         uint32_t id;
-        int process;
-        int thread;
+        size_t process;
+        size_t thread;
     };
 
     bool check_msr(uint32_t flag);
