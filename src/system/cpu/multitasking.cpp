@@ -15,11 +15,11 @@ static auto processes = LinkedList<Cpu::Multitasking::Process*>();
 inline Cpu::Multitasking::Thread* find_next_thread() {
     auto current_cpu = Cpu::get_current_cpu();
     auto kernel_idle_thread = *(*processes[0])->threads[0];
-    int current_process_threads_len = (*processes[current_cpu->process])->threads.length();
+    size_t current_process_threads_len = (*processes[current_cpu->process])->threads.length();
 
-    for (int i = 0; i < current_process_threads_len; i++) {
+    for (size_t i = 0; i < current_process_threads_len; i++) {
         if (current_cpu->thread >= current_process_threads_len) {
-            if (++current_cpu->process >= (int)processes.length())
+            if (++current_cpu->process >= processes.length())
                 current_cpu->process = 1;
 
             current_cpu->thread = 1;
