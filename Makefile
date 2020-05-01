@@ -2,14 +2,14 @@ CXXPARAMS := -target x86_64-unknown-elf -Isrc -ffreestanding -fno-use-cxa-atexit
 NASMPARAMS := -felf64 -F dwarf
 LINKERPARAMS := -nostdlib -Wl,--build-id=none -Wl,-z,max-page-size=0x1000,-n,-T,src/linker.ld -fuse-ld=lld
 OBJECTS := ${patsubst src/%.cpp, ${OUTPUTDIR}/objects/%.cpp.o, ${shell find src -name *.cpp}} ${patsubst src/%.asm, ${OUTPUTDIR}/objects/%.asm.o, ${shell find src -name *.asm}}
-TARGET ?= DEBUG
+TARGET ?= Debug
 
-ifeq (${TARGET}, RELEASE)
+ifeq (${TARGET}, Release)
 	CXXPARAMS += -O3
 	LINKERPARAMS += -O3
 endif
 
-ifeq (${TARGET}, DEBUG)
+ifeq (${TARGET}, Debug)
 	CXXPARAMS += -g
 	NASMPARAMS += -g
 	LINKERPARAMS += -g
