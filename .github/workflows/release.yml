@@ -1,0 +1,27 @@
+name: Automagically bundle release ISO
+on:
+  push:
+    tags:
+      - "v*"
+jobs:
+  tagged-release:
+    name: "Tagged Release"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Install dependencies"
+        run: sudo apt install build-essential clang lld make grub-pc-bin xorriso
+      - name: "Clone FWBuild"
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+          repository: Firework-OS/FWBuild
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Build & Run FWBuild to create ISO"
+        run: cd FWBuild && make TARGET=Release && cd build && ./FireworkBuild -release
+      - name: "Create Release"
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            out/Release/Firework.iso
