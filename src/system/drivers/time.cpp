@@ -19,7 +19,7 @@ void Time::ksleep(uint64_t time) {
 
 void Hpet::init() {
     HpetTable* hpet_table = (HpetTable*)Acpi::get_table("HPET");
-    
+
     if (!hpet_table)
         panic("UNSUPPORTED_HARDWARE_MISSING_HPET");
 
