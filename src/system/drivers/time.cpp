@@ -14,7 +14,7 @@ void Time::ksleep(uint64_t time) {
     uint64_t final_time = hpet->main_counter_value + (time * 1000000000000) / clk;
 
     while (hpet->main_counter_value < final_time)
-        ;
+        asm volatile("pause");
 }
 
 void Hpet::init() {
