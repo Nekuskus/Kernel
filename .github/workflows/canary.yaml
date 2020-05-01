@@ -3,6 +3,8 @@ on:
   push:
     tags:
       - "v*-canary*"
+    tags-ignore:
+      - "v*"
 jobs:
   tagged-release:
     name: "Canary"
@@ -18,7 +20,6 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "Automatic Canary build"
           prerelease: true
           files: |
             ./out/Debug/Firework.iso
