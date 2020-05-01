@@ -21,4 +21,4 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
-            *.iso
+            FWBuild/build/out/Release/Firework.iso
