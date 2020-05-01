@@ -11,11 +11,7 @@ jobs:
       - name: "Install dependencies"
         run: sudo apt install build-essential clang lld make grub-pc-bin xorriso
       - name: "Clone FWBuild"
-        uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-          repository: Firework-OS/FWBuild
-          token: ${{ secrets.GITHUB_TOKEN }}
+        run: git clone https://github.com/Firework-OS/FWBuild
       - name: "Build & Run FWBuild to create ISO"
         run: cd FWBuild && make TARGET=Release && cd build && ./FireworkBuild -release
       - name: "Create Release"
