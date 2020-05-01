@@ -21,4 +21,4 @@ jobs:
           automatic_release_tag: "Automatic Canary build"
           prerelease: true
           files: |
-            ./out/Release/Firework.iso
+            ./out/Debug/Firework.iso
