@@ -1,11 +1,11 @@
-name: Automagically bundle release ISO
+name: Automagically bundle Canary ISO
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - master
 jobs:
   tagged-release:
-    name: "Tagged Release"
+    name: "Canary"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Install dependencies"
@@ -18,6 +18,6 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
+          prerelease: true
           files: |
             out/Release/Firework.iso
