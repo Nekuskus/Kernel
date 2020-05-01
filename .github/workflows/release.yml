@@ -1,4 +1,4 @@
-name: Automagically bundle release ISO
+name: Automagically bundle Release ISO
 on:
   push:
     tags:
@@ -21,4 +21,4 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
-            ./out/Release/Firework.iso
+            out/Release/Firework.iso
