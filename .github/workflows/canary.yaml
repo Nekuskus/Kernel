@@ -13,7 +13,7 @@ jobs:
       - name: "Clone FWBuild"
         run: git clone https://github.com/Firework-OS/FWBuild
       - name: "Build & Run FWBuild to create ISO"
-        run: cd FWBuild && make TARGET=Release && cd build && ./FireworkBuild -release
+        run: cd FWBuild && make && cd build && ./FireworkBuild
       - name: "Create Release"
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
