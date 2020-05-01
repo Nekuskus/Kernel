@@ -9,7 +9,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Install dependencies"
-        run: sudo apt install build-essential clang lld nasm make grub-pc-bin xorriso
+        run: sudo apt install build-essential clang-9 lld-9 nasm make grub-pc-bin xorriso && alias clang++=clang++-9
       - name: "Clone FWBuild"
         run: git clone https://github.com/Firework-OS/FWBuild
       - name: "Build & Run FWBuild to create ISO"
