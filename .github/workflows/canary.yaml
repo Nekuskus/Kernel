@@ -2,8 +2,8 @@ name: Automagically bundle Canary ISO
 on:
   push:
     tags:
-      - "!v*"
-      - "v*-canary*"
+      - "!*"
+      - "*-canary*"
 jobs:
   tagged-release:
     name: "Canary"
