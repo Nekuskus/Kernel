@@ -1,4 +1,4 @@
-# Kernel ![Automagically bundle Release ISO](https://github.com/Firework-OS/Kernel/workflows/Automagically%20bundle%20Release%20ISO/badge.svg) ![Automagically bundle Canary ISO](https://github.com/Firework-OS/Kernel/workflows/Automagically%20bundle%20Canary%20ISO/badge.svg)
+# Kernel [![Total alerts](https://img.shields.io/lgtm/alerts/g/Firework-OS/Kernel.svg?logo=lgtm&logoWidth=18&style=for-the-badge)](https://lgtm.com/projects/g/Firework-OS/Kernel/alerts/) [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/github/Firework-OS/Kernel.svg?logo=lgtm&logoWidth=18&style=for-the-badge)](https://lgtm.com/projects/g/Firework-OS/Kernel/context:cpp) ![Automagically bundle Release ISO](https://img.shields.io/github/workflow/status/Firework-OS/Kernel/Automagically%20bundle%20Release%20ISO?logo=github&logoWidth=18&style=for-the-badge) ![Automagically bundle Canary ISO](https://img.shields.io/github/workflow/status/Firework-OS/Kernel/Automagically%20bundle%20Canary%20ISO?logo=github&logoWidth=18&style=for-the-badge)
 The kernel for Firework.
 
 ## Notes
