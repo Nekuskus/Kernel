@@ -1,0 +1,11 @@
+extraction:
+  cpp:
+    prepare:
+      packages:
+      - "clang-9"
+      - "lld-9"
+      - "nasm"
+      - "make"
+    after_prepare: "alias clang++=clang++-9"
+    index:
+      build_command: "make OUTPUTDIR=build"
