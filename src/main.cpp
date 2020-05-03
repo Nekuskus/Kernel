@@ -18,8 +18,10 @@
 #include <system/mm/pmm.hpp>
 #include <system/mm/vmm.hpp>
 
-extern "C" void* _init_array_begin;
-extern "C" void* _init_array_end;
+extern "C" {
+    void* _init_array_begin;
+    void* _init_array_end;
+}
 
 Graphics::ModeInfo mode_info{};
 

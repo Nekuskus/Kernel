@@ -12,6 +12,13 @@ static size_t free_pages = 0;
 static size_t total_pages = 0;
 static size_t cur_idx = 0;
 
+extern "C" {
+    void* _kernel_start;
+    void* _kernel_end;
+    void* _trampoline_start;
+    void* _trampoline_end;
+}
+
 bool bit_read(size_t idx) {
     size_t off = idx / 64, mask = 1UL << (idx % 64UL);
 
@@ -83,6 +90,9 @@ void Pmm::init(Multiboot::MemoryMap* mmap, size_t mmap_len) {
             free((void*)start, count);
         }
     }
+
+    bit_write((size_t)(&_kernel_start - virtual_kernel_base) / 0x1000, 1, ((size_t)(&_kernel_end - &_kernel_start) + 0x1000 - 1) / 0x1000);
+    bit_write((size_t)0x400000 / 0x1000, 1, ((size_t)(&_trampoline_end - &_trampoline_start) + 0x1000 - 1) / 0x1000);
 
     total_pages = free_pages;
     bit_write(bitmap_phys / 0x1000, 1, (bitmap_len / 8 + 0x1000 - 1) / 0x1000);

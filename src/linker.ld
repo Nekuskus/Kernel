@@ -3,6 +3,7 @@ KERNEL_VMA = 0xFFFFFFFF80000000;
 
 SECTIONS {
     . = KERNEL_VMA + 0x200000;
+    _kernel_start = .;
 
     .text : AT(ADDR(.text) - KERNEL_VMA) {
         *(.multiboot)
@@ -29,6 +30,8 @@ SECTIONS {
     .finit : AT(ADDR(.finit) - KERNEL_VMA) {
         *(.finit)
     }
+
+    _kernel_end = .;
 
     . = 0x1000;
 
