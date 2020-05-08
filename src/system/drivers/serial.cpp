@@ -16,7 +16,7 @@ Serial::~Serial() {
 }
 
 void Serial::set_baud_rate(uint32_t baud_rate) {
-    uint8_t cmd = Port::inb(base + 3) | 1ull << 7;
+    uint8_t cmd = Port::inb(base + 3) | (1ull << 7);
     Port::outb(base + 3, cmd);
 
     uint16_t divisor = 115200 / baud_rate;
@@ -24,7 +24,7 @@ void Serial::set_baud_rate(uint32_t baud_rate) {
     Port::outb(base, (divisor >> 8) & 0xFF);
     Port::outb(base + 1, divisor & 0xFF);
 
-    cmd &= ~(1ull << 7);
+    cmd = Port::inb(base + 3) & ~(1ull << 7);
 
     Port::outb(base + 3, cmd);
 }
