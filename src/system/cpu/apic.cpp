@@ -10,21 +10,18 @@
 #include <system/mm/mm.hpp>
 #include <system/mm/vmm.hpp>
 
-uint64_t lapic_base = 0;
+static uint64_t lapic_base = 0;
 
 uint32_t Cpu::Apic::LocalApic::read(uint32_t reg) {
-    uint32_t* value = (uint32_t*)(lapic_base + reg);
-
-    return *value;
+    return *(uint32_t*)(lapic_base + reg);
 }
 
 void Cpu::Apic::LocalApic::write(uint32_t reg, uint32_t data) {
-    uint32_t* value = (uint32_t*)(lapic_base + reg);
-    *value = data;
+    *(uint32_t*)(lapic_base + reg) = data;
 }
 
 void Cpu::Apic::LocalApic::init() {
-    uint64_t apic_msr_base = Cpu::read_msr(apic_base);
+    auto apic_msr_base = Cpu::read_msr(apic_base);
     lapic_base = (apic_msr_base & 0xFFFFFFFFFFFFF000) + virtual_kernel_base;
     apic_msr_base |= 1 << 11;
 
@@ -49,14 +46,14 @@ void Cpu::Apic::LocalApic::send_eoi() {
 }
 
 uint32_t Cpu::Apic::IoApic::read(uint32_t ioapic_base, uint32_t reg) {
-    uint32_t* ioapic = (uint32_t*)((uint64_t)ioapic_base + virtual_kernel_base);
+    auto ioapic = (uint32_t*)((uint64_t)ioapic_base + virtual_kernel_base);
     ioapic[0] = reg & 0xFF;
 
     return ioapic[4];
 }
 
 void Cpu::Apic::IoApic::write(uint32_t ioapic_base, uint32_t reg, uint32_t data) {
-    uint32_t* ioapic = (uint32_t*)((uint64_t)ioapic_base + virtual_kernel_base);
+    auto ioapic = (uint32_t*)((uint64_t)ioapic_base + virtual_kernel_base);
     ioapic[0] = reg & 0xFF;
     ioapic[4] = data;
 }

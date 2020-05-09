@@ -54,10 +54,8 @@ void Serial::write(const char a) {
 void Serial::write(const char* a) {
     lock.lock();
 
-    while (*a) {
-        write(*a);
-        a++;
-    }
+    while (*a)
+        write(*a++);
 
     lock.release();
 }

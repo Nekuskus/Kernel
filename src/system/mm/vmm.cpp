@@ -69,19 +69,19 @@ void update_mapping(void* ptr) {
 
 bool Vmm::unmap_pages(PageTable* pml4, void* virt, size_t count) {
     while (count--) {
-        PageTableEntries offs = virtual_to_entries(virt);
-        PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
-        PageTable* pdp_virt = get_or_null_ent(pml4_virt, offs.pml4);
+        auto offs = virtual_to_entries(virt);
+        auto pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
+        auto pdp_virt = get_or_null_ent(pml4_virt, offs.pml4);
 
         if (!pdp_virt)
             return false;
 
-        PageTable* pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
+        auto pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
 
         if (!pd_virt)
             return false;
 
-        PageTable* pt_virt = get_or_null_ent(pd_virt, offs.pd);
+        auto pt_virt = get_or_null_ent(pd_virt, offs.pd);
 
         if (!pt_virt)
             return false;
@@ -96,19 +96,19 @@ bool Vmm::unmap_pages(PageTable* pml4, void* virt, size_t count) {
 
 bool Vmm::update_perms(PageTable* pml4, void* virt, size_t count, int perms) {
     while (count--) {
-        PageTableEntries offs = virtual_to_entries(virt);
-        PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
-        PageTable* pdp_virt = get_or_null_ent(pml4_virt, offs.pml4);
+        auto offs = virtual_to_entries(virt);
+        auto pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
+        auto pdp_virt = get_or_null_ent(pml4_virt, offs.pml4);
 
         if (!pdp_virt)
             return false;
 
-        PageTable* pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
+        auto pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
 
         if (!pd_virt)
             return false;
 
-        PageTable* pt_virt = get_or_null_ent(pd_virt, offs.pd);
+        auto pt_virt = get_or_null_ent(pd_virt, offs.pd);
 
         if (!pt_virt)
             return false;
@@ -122,10 +122,10 @@ bool Vmm::update_perms(PageTable* pml4, void* virt, size_t count, int perms) {
 
 bool Vmm::map_huge_pages(PageTable* pml4, void* virt, void* phys, size_t count, int perms) {
     while (count--) {
-        PageTableEntries offs = virtual_to_entries(virt);
-        PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
-        PageTable* pdp_virt = get_or_alloc_ent(pml4_virt, offs.pml4, perms);
-        PageTable* pd_virt = get_or_alloc_ent(pdp_virt, offs.pdp, perms);
+        auto offs = virtual_to_entries(virt);
+        auto pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
+        auto pdp_virt = get_or_alloc_ent(pml4_virt, offs.pml4, perms);
+        auto pd_virt = get_or_alloc_ent(pdp_virt, offs.pdp, perms);
         pd_virt->ents[offs.pd] = (uint64_t)phys | perms | VirtualMemoryFlags::VMM_LARGE;
         virt = (void*)((uint64_t)virt + 0x200000);
         phys = (void*)((uint64_t)phys + 0x200000);
@@ -136,14 +136,14 @@ bool Vmm::map_huge_pages(PageTable* pml4, void* virt, void* phys, size_t count, 
 
 bool Vmm::unmap_huge_pages(PageTable* pml4, void* virt, size_t count) {
     while (count--) {
-        PageTableEntries offs = virtual_to_entries(virt);
-        PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
-        PageTable* pdp_virt = get_or_null_ent(pml4_virt, offs.pml4);
+        auto offs = virtual_to_entries(virt);
+        auto pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
+        auto pdp_virt = get_or_null_ent(pml4_virt, offs.pml4);
 
         if (!pdp_virt)
             return false;
 
-        PageTable* pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
+        auto pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
         pd_virt->ents[offs.pd] = 0;
         update_mapping(virt);
         virt = (void*)((uint64_t)virt + 0x200000);
@@ -154,14 +154,14 @@ bool Vmm::unmap_huge_pages(PageTable* pml4, void* virt, size_t count) {
 
 bool Vmm::update_huge_perms(PageTable* pml4, void* virt, size_t count, int perms) {
     while (count--) {
-        PageTableEntries offs = virtual_to_entries(virt);
-        PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
-        PageTable* pdp_virt = get_or_null_ent(pml4_virt, offs.pml4);
+        auto offs = virtual_to_entries(virt);
+        auto pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
+        auto pdp_virt = get_or_null_ent(pml4_virt, offs.pml4);
 
         if (!pdp_virt)
             return false;
 
-        PageTable* pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
+        auto pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
         pd_virt->ents[offs.pd] = (pd_virt->ents[offs.pd] & address_mask) | perms | VirtualMemoryFlags::VMM_LARGE;
         virt = (void*)((uint64_t)virt + 0x200000);
     }
@@ -170,19 +170,19 @@ bool Vmm::update_huge_perms(PageTable* pml4, void* virt, size_t count, int perms
 }
 
 uintptr_t Vmm::get_entry(PageTable* pml4, void* virt) {
-    PageTableEntries offs = virtual_to_entries(virt);
-    PageTable* pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
-    PageTable* pdp_virt = get_or_null_ent(pml4_virt, offs.pml4);
+    auto offs = virtual_to_entries(virt);
+    auto pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
+    auto pdp_virt = get_or_null_ent(pml4_virt, offs.pml4);
 
     if (!pdp_virt)
         return 0;
 
-    PageTable* pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
+    auto pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
 
     if (!pd_virt)
         return 0;
 
-    PageTable* pt_virt = get_or_null_ent(pd_virt, offs.pd);
+    auto pt_virt = get_or_null_ent(pd_virt, offs.pd);
 
     if (!pt_virt)
         return 0;
@@ -191,7 +191,7 @@ uintptr_t Vmm::get_entry(PageTable* pml4, void* virt) {
 }
 
 Vmm::PageTable* Vmm::new_address_space() {
-    PageTable* new_pml4 = (PageTable*)Pmm::alloc(1);
+    auto new_pml4 = (PageTable*)Pmm::alloc(1);
 
     memset((void*)((uint64_t)new_pml4 + virtual_physical_base), 0, 4096);
     map_huge_pages(new_pml4, (void*)0xFFFFFFFF80000000, NULL, 64, VirtualMemoryFlags::VMM_PRESENT | VirtualMemoryFlags::VMM_WRITE);

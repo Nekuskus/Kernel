@@ -17,8 +17,7 @@ extern "C" void* smp_entry;
 extern "C" void* _trampoline_start;
 extern "C" void* _trampoline_end;
 extern "C" void* trampoline_stack;
-
-extern "C" uint64_t stack_end;
+extern "C" void* stack_end;
 
 extern "C" void load_tss(uint64_t tss);
 extern "C" void prepare_trampoline(uint64_t page_table);
@@ -85,15 +84,14 @@ void Cpu::Smp::init() {
     Cpu::CpuState* current_cpu = Cpu::get_current_cpu();
 
     Tss* bsp_tss = new Tss;
-    bsp_tss->rsp[0] = stack_end - 0x1000;
+    bsp_tss->rsp[0] = (uint64_t)&stack_end - 0x1000;
 
     load_tss((uint64_t)bsp_tss);
 
     current_cpu->tss = bsp_tss;
 
-    uint64_t len = (uint64_t)&_trampoline_end - (uint64_t)&_trampoline_start;
-
-    Vmm::PageTable* kernel_pml4 = Vmm::get_ctx_kernel();
+    auto len = (uint64_t)&_trampoline_end - (uint64_t)&_trampoline_start;
+    auto kernel_pml4 = Vmm::get_ctx_kernel();
 
     Vmm::map_pages(kernel_pml4, &_trampoline_start, &_trampoline_start, (len + 0x1000 - 1) / 0x1000, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
     memcpy(&_trampoline_start, (void*)(0x400000 + virtual_physical_base), len);

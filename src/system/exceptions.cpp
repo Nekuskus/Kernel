@@ -10,7 +10,7 @@
 #include "terminal.hpp"
 
 void page_fault_handler(const Cpu::Registers* registers) {
-    uint64_t cr2;
+    uint64_t cr2 = 0;
 
     asm volatile("mov %%cr2, %0"
                  : "=r"(cr2));

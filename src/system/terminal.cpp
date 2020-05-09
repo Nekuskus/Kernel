@@ -46,10 +46,8 @@ inline void Terminal::set_cursor(uint16_t nx, uint16_t ny) {
 void Terminal::write(const char* str, uint32_t foreground, uint32_t background) {
     lock.lock();
 
-    while (*str) {
-        write(*str, foreground, background);
-        str++;
-    }
+    while (*str)
+        write(*str++, foreground, background);
 
     lock.release();
 }
@@ -57,11 +55,9 @@ void Terminal::write(const char* str, uint32_t foreground, uint32_t background) 
 void Terminal::write(const char* str, uint32_t foreground) {
     lock.lock();
 
-    while (*str) {
-        write(*str, foreground);
-        str++;
-    }
-    
+    while (*str)
+        write(*str++, foreground);
+
     lock.release();
 }
 

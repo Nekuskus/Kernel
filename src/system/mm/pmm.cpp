@@ -12,12 +12,10 @@ static size_t free_pages = 0;
 static size_t total_pages = 0;
 static size_t cur_idx = 0;
 
-extern "C" {
-    void* _kernel_start;
-    void* _kernel_end;
-    void* _trampoline_start;
-    void* _trampoline_end;
-}
+extern "C" void* _kernel_start;
+extern "C" void* _kernel_end;
+extern "C" void* _trampoline_start;
+extern "C" void* _trampoline_end;
 
 bool bit_read(size_t idx) {
     size_t off = idx / 64, mask = 1UL << (idx % 64UL);
@@ -29,10 +27,7 @@ void bit_write(size_t idx, int bit, size_t count) {
     for (; count; count--, idx++) {
         size_t off = idx / 64, mask = 1UL << (idx % 64UL);
 
-        if (bit)
-            bitmap[off] |= mask;
-        else
-            bitmap[off] &= ~mask;
+        bit ? bitmap[off] |= mask : bitmap[off] &= ~mask;
     }
 }
 
@@ -56,7 +51,7 @@ uintptr_t find_available_memory_top(Multiboot::MemoryMap* mmap, size_t mmap_len)
 }
 
 void Pmm::init(Multiboot::MemoryMap* mmap, size_t mmap_len) {
-    uintptr_t mem_top = find_available_memory_top(mmap, mmap_len);
+    auto mem_top = find_available_memory_top(mmap, mmap_len);
     uint32_t mem_pages = (mem_top + 0x1000 - 1) / 0x1000;
     bitmap = (uint64_t*)(memory_base + virtual_physical_base);
     bitmap_len = mem_pages;

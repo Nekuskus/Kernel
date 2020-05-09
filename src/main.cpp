@@ -18,14 +18,9 @@
 #include <system/mm/pmm.hpp>
 #include <system/mm/vmm.hpp>
 
-extern "C" {
-    void* _init_array_begin;
-    void* _init_array_end;
-}
+static Graphics::ModeInfo mode_info{};
 
-Graphics::ModeInfo mode_info{};
-
-size_t progress_bar = 0, progress_increase = 0;
+static size_t progress_bar = 0, progress_increase = 0;
 
 void progress() {
     if (progress_bar + progress_increase >= mode_info.width)

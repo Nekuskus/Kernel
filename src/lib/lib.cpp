@@ -39,7 +39,7 @@ int sprintf(char* text, const char* format, ...) {
         switch (*format) {
             case 'c': {
                 format++;
-                char c = (char)va_arg(parameters, int);
+                auto c = (char)va_arg(parameters, int);
 
                 if (!maxrem) {
                     va_end(parameters);
@@ -56,7 +56,7 @@ int sprintf(char* text, const char* format, ...) {
 
             case 's': {
                 format++;
-                const char* str = va_arg(parameters, const char*);
+                auto str = va_arg(parameters, const char*);
                 size_t len = strlen(str);
 
                 if (maxrem < len) {
@@ -76,7 +76,7 @@ int sprintf(char* text, const char* format, ...) {
 
             case 'i':
             case 'd': {
-                int item = va_arg(parameters, int);
+                auto item = va_arg(parameters, int);
                 char str[32] = "";
 
                 itoa(item, str, 10);
@@ -100,7 +100,7 @@ int sprintf(char* text, const char* format, ...) {
 
             case 'x':
             case 'X': {
-                uint64_t item = va_arg(parameters, uint64_t);
+                auto item = va_arg(parameters, uint64_t);
                 char str[32] = "";
 
                 htoa(item, str, *format == 'X');
@@ -122,7 +122,7 @@ int sprintf(char* text, const char* format, ...) {
                 break;
             }
             case 'p': {
-                void* item = va_arg(parameters, void*);
+                auto item = va_arg(parameters, void*);
                 char str[32] = "";
 
                 htoa((uintptr_t)item, str, false);
@@ -179,7 +179,7 @@ int strncmp(const char* s1, const char* s2, size_t n) {
         --n;
     }
 
-    return !n ? 0 : *s1 - *s2;
+    return !n ? 0 : s1 - s2;
 }
 
 size_t strlen(const char* chr) {
@@ -237,7 +237,7 @@ void htoa(uint64_t n, char* str, bool caps) {
     *str++ = 'x';
 
     int8_t zeros = 0;
-    int64_t tmp;
+    int64_t tmp = 0;
 
     for (int i = 60; i > 0; i -= 4) {
         tmp = (n >> i) & 0xF;
@@ -254,8 +254,8 @@ void htoa(uint64_t n, char* str, bool caps) {
 }
 
 extern "C" void* memset(void* s, int c, size_t n) {
-    unsigned char* p = (unsigned char*)s;
-    unsigned char fill = (unsigned char)c;
+    auto p = (unsigned char*)s;
+    auto fill = (unsigned char)c;
 
     while (n--)
         *p++ = fill;

@@ -129,7 +129,7 @@ void Idt::init() {
         set_entry(i, (uintptr_t)isrs[i], 0x08, 0);
 
     idt_pointer = { .limit = 256 * sizeof(Entry) - 1, .base = (uint64_t)&idt_entries };
-    
+
     asm volatile("lidt %0" ::"m"(idt_pointer) : "memory");
 
     char debug[256] = "";

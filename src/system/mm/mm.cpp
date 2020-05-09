@@ -26,7 +26,8 @@ extern "C" void* malloc(size_t bytes) {
 
     top += 0x1000 * (pages + 1);
     out = out + (0x1000 * pages - size);
-    HeapHeader* header = (HeapHeader*)out;
+
+    auto header = (HeapHeader*)out;
     header->size = bytes;
     header->pages = pages;
 
@@ -36,7 +37,7 @@ extern "C" void* malloc(size_t bytes) {
 }
 
 extern "C" void* calloc(size_t bytes, size_t elem) {
-    void* out = malloc(bytes * elem);
+    auto out = malloc(bytes * elem);
 
     memset(out, 0, bytes * elem);
 
@@ -46,14 +47,14 @@ extern "C" void* calloc(size_t bytes, size_t elem) {
 extern "C" void free(void* ptr) {
     mm_lock.lock();
 
-    HeapHeader* header = (HeapHeader*)((uint64_t)ptr - 16);
+    auto header = (HeapHeader*)((uint64_t)ptr - 16);
     uint64_t start = (uint64_t)ptr & ~(0x1000 - 1);
     size_t pages = (header->size + 0x1000 - 1) / 0x1000 + 1;
 
     if (header->pages != pages)
         return;
 
-    Vmm::PageTable* current_ctx = Vmm::get_current_context();
+    auto current_ctx = Vmm::get_current_context();
     uint64_t curr = (uint64_t)start + pages * 0x1000, p = Vmm::get_entry(current_ctx, (void*)curr);
 
     Vmm::unmap_pages(current_ctx, (void*)curr, pages);
@@ -63,12 +64,12 @@ extern "C" void free(void* ptr) {
 }
 
 extern "C" void* realloc(void* old, size_t s) {
-    void* newp = malloc(s);
+    auto newp = malloc(s);
 
     if (old) {
         mm_lock.lock();
 
-        uint64_t size = *(uint64_t*)((uint64_t)old - 16);
+        auto size = *(uint64_t*)((uint64_t)old - 16);
 
         mm_lock.release();
         memcpy(newp, old, size);

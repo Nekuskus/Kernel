@@ -37,7 +37,7 @@ void Ahci::wait_idle(uint16_t port) {
 }
 
 void Ahci::wait_ready(uint16_t port) {
-    PortRegister mem_port = memory_reg->ports[port];
+    auto mem_port = memory_reg->ports[port];
 
     while (true) {
         PortRegister::TaskFileData poll{};
@@ -84,6 +84,7 @@ bool Ahci::gain_ownership() {
             Debug::print("[AHCI] Acquired ownership of controller.\n\r");
         }
     }
+
     return true;
 }
 
@@ -103,7 +104,7 @@ void Ahci::init() {
     sprintf(text, "[AHCI] Found AHCI controller with Vendor ID %x, Device ID %x, and AHCI base %x.\n\r", controller.device->vendor_id(), controller.device->device_id(), controller.ahci_base());
     Debug::print(text);
 
-    uint64_t ahci_base = (uint64_t)controller.ahci_base();
+    auto ahci_base = (uint64_t)controller.ahci_base();
 
     memory_reg = (HbaMemory*)(ahci_base + virtual_physical_base);
 

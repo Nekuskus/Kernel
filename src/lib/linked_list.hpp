@@ -67,7 +67,7 @@ public:
     NodeLink<T>* find(int index) {
         lock.lock();
 
-        NodeLink<T>* temp = list;
+        auto temp = list;
 
         while (temp && temp->index != index)
             temp = temp->next;
@@ -78,7 +78,7 @@ public:
     }
 
     T* operator[](int index) {
-        NodeLink<T>* node = find(index);
+        auto node = find(index);
 
         return node ? &node->data : nullptr;
     }
@@ -86,7 +86,7 @@ public:
     void push(T value) {
         lock.lock();
 
-        NodeLink<T>* node = new NodeLink<T>;
+        auto node = new NodeLink<T>;
         node->data = value;
         node->next = list;
         list = node;
@@ -98,7 +98,7 @@ public:
     void push_back(T value) {
         lock.lock();
 
-        NodeLink<T>*node = new NodeLink<T>, *last = list;
+        NodeLink<T> *node = new NodeLink<T>, *last = list;
         node->data = value;
         node->next = nullptr;
 
@@ -117,7 +117,7 @@ public:
     bool insert_before(int index, T value) {
         lock.lock();
 
-        NodeLink<T>*node = list, *last, *result = new NodeLink<T>;
+        NodeLink<T> *node = list, *last, *result = new NodeLink<T>;
         bool found = false;
 
         while (node != nullptr) {
@@ -161,7 +161,7 @@ public:
     bool insert_after(int index, T value) {
         lock.lock();
 
-        NodeLink<T>*node = list, *last, *result = new NodeLink<T>;
+        NodeLink<T> *node = list, *last, *result = new NodeLink<T>;
         bool found = false;
 
         while (node != nullptr) {
@@ -207,7 +207,7 @@ public:
 
         lock.lock();
 
-        NodeLink<T>* node = list;
+        auto node = list;
         list = list->next;
 
         delete node;
@@ -224,7 +224,7 @@ public:
 
         lock.lock();
 
-        NodeLink<T>*node = list, *last;
+        NodeLink<T> *node = list, *last;
         bool found = false;
 
         while (node != nullptr) {
@@ -269,7 +269,7 @@ public:
 
         lock.lock();
 
-        NodeLink<T>*node = list, *last = nullptr;
+        NodeLink<T> *node = list, *last = nullptr;
 
         if (node == nullptr || !node->next)
             list = nullptr;

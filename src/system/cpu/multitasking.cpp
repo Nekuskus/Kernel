@@ -90,7 +90,7 @@ void Cpu::Multitasking::init() {
         kernel_idle->pid = 0;
         kernel_idle->cwd = kernel_idle->path = nullptr;
 
-        Thread* kernel_idle_thread = new Thread;
+        auto kernel_idle_thread = new Thread;
         kernel_idle_thread->tid = 0;
         kernel_idle_thread->regs.rip = (uint64_t)kernel_idle_task;
         kernel_idle_thread->kernel_rsp = (uint64_t)calloc(0x10000, 1) + 0x10000;

@@ -69,7 +69,7 @@ Acpi::SdtHeader* Acpi::get_table(const char* signature) {
 }
 
 void Acpi::init() {
-    uint16_t* ebda_seg_ptr = (uint16_t*)(0x40E + virtual_physical_base);
+    auto ebda_seg_ptr = (uint16_t*)(0x40E + virtual_physical_base);
 
     Vmm::map_pages(Vmm::get_ctx_kernel(), ebda_seg_ptr, (void*)0x40E, (sizeof(uint16_t) + 0x1000 - 1) / 0x1000, Vmm::VirtualMemoryFlags::VMM_PRESENT);
 
@@ -87,11 +87,11 @@ void Acpi::init() {
     Debug::print(text);
 
     if (rsdp_info.version >= 2) {
-        XsdtHeader* xsdt = (XsdtHeader*)rsdp_info.address;
+        auto xsdt = (XsdtHeader*)rsdp_info.address;
         size_t entries = (xsdt->header.length - sizeof(SdtHeader)) / 8;
 
         for (size_t i = 0; i < entries; i++) {
-            SdtHeader* h = (SdtHeader*)(xsdt->tables[i] + virtual_physical_base);
+            auto h = (SdtHeader*)(xsdt->tables[i] + virtual_physical_base);
 
             Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void*)xsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
             Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void*)xsdt->tables[i], (h->length + 0x1000 - 1) / 0x1000, Vmm::VirtualMemoryFlags::VMM_PRESENT);
@@ -106,11 +106,11 @@ void Acpi::init() {
             }
         }
     } else {
-        RsdtHeader* rsdt = (RsdtHeader*)rsdp_info.address;
+        auto rsdt = (RsdtHeader*)rsdp_info.address;
         size_t entries = (rsdt->header.length - sizeof(SdtHeader)) / 4;
 
         for (size_t i = 0; i < entries; i++) {
-            SdtHeader* h = (SdtHeader*)((uint64_t)rsdt->tables[i] + virtual_physical_base);
+            auto h = (SdtHeader*)((uint64_t)rsdt->tables[i] + virtual_physical_base);
 
             Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void*)(uint64_t)rsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
             Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void*)(uint64_t)rsdt->tables[i], (h->length + 0x1000 - 1) / 0x1000, Vmm::VirtualMemoryFlags::VMM_PRESENT);
