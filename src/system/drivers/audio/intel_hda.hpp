@@ -2,4 +2,4 @@
 
 namespace IntelHda {
 
-}
+}  // namespace IntelHda

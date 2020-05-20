@@ -1,21 +1,20 @@
-#include "multitasking.hpp"
+#include "task.hpp"
 
 #include <lib/lib.hpp>
 #include <lib/linked_list.hpp>
+#include <system/cpu/apic.hpp>
 #include <system/debugging.hpp>
 #include <system/drivers/time.hpp>
 #include <system/idt.hpp>
 #include <system/mm/mm.hpp>
 #include <system/terminal.hpp>
 
-#include "apic.hpp"
+static auto processes = LinkedList<Tasking::Process*>();
 
-static auto processes = LinkedList<Cpu::Multitasking::Process*>();
-
-inline Cpu::Multitasking::Thread* find_next_thread() {
+inline Tasking::Thread* find_next_thread() {
     auto current_cpu = Cpu::get_current_cpu();
     auto kernel_idle_thread = *(*processes[0])->threads[0];
-    size_t current_process_threads_len = (*processes[current_cpu->process])->threads.length();
+    auto current_process_threads_len = (*processes[current_cpu->process])->threads.length();
 
     for (size_t i = 0; i < current_process_threads_len; i++) {
         if (current_cpu->thread >= current_process_threads_len) {
@@ -43,31 +42,31 @@ inline Cpu::Multitasking::Thread* find_next_thread() {
 
         auto next_thread = *thread;
 
-        if (next_thread->state != Cpu::Multitasking::ThreadState::WAITING) {
+        if (next_thread->state != Tasking::ThreadState::WAITING) {
             current_cpu->thread++;
 
             continue;
         }
 
-        next_thread->state = Cpu::Multitasking::ThreadState::ACTIVE;
+        next_thread->state = Tasking::ThreadState::ACTIVE;
         current_cpu->thread = next_thread->tid;
 
         return next_thread;
     }
 
-    kernel_idle_thread->state = Cpu::Multitasking::ThreadState::ACTIVE;
+    kernel_idle_thread->state = Tasking::ThreadState::ACTIVE;
     current_cpu->process = 0;
     current_cpu->thread = 0;
 
     return kernel_idle_thread;
 }
 
-void Cpu::Multitasking::switch_task() {
-    [[maybe_unused]] Thread* thread = find_next_thread();
+void Tasking::switch_task() {
+    [[maybe_unused]] auto thread = find_next_thread();
 }
 
 void schedule([[maybe_unused]] const Cpu::Registers* registers) {
-    Cpu::Multitasking::switch_task();
+    Tasking::switch_task();
 }
 
 void kernel_idle_task() {
@@ -78,7 +77,7 @@ void kernel_idle_task() {
         "jmp 1b;");
 }
 
-void Cpu::Multitasking::init() {
+void Tasking::init() {
     if (processes.length() < 1) {
         Debug::print("[Multitasking] Creating PID 0 (Kernel Idle Task).\n\r");
 
@@ -99,15 +98,15 @@ void Cpu::Multitasking::init() {
         kernel_idle->threads.push_back(kernel_idle_thread);
     }
 
-    Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_LVT, 232 | (1 << 17));
-    Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_DIV, 0x3);
-    Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_INITCNT, 0xFFFFFFFF);
+    Cpu::Apic::LocalApic::write(Cpu::Apic::LocalApic::TimerRegisters::TIMER_LVT, 232 | (1 << 17));
+    Cpu::Apic::LocalApic::write(Cpu::Apic::LocalApic::TimerRegisters::TIMER_DIV, 0x3);
+    Cpu::Apic::LocalApic::write(Cpu::Apic::LocalApic::TimerRegisters::TIMER_INITCNT, 0xFFFFFFFF);
 
     Time::ksleep(20);
 
-    uint32_t ticks = 0xFFFFFFFF - Apic::LocalApic::read(Apic::LocalApic::TimerRegisters::TIMER_CURRCNT);
+    uint32_t ticks = 0xFFFFFFFF - Cpu::Apic::LocalApic::read(Cpu::Apic::LocalApic::TimerRegisters::TIMER_CURRCNT);
 
-    Apic::LocalApic::write(Apic::LocalApic::TimerRegisters::TIMER_INITCNT, ticks / 10);
+    Cpu::Apic::LocalApic::write(Cpu::Apic::LocalApic::TimerRegisters::TIMER_INITCNT, ticks / 10);
 
     Idt::register_interrupt_handler(232, schedule, true, true);
 

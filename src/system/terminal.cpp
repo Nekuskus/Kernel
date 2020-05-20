@@ -3,7 +3,7 @@
 #include <lib/lib.hpp>
 #include <lib/spinlock.hpp>
 
-#include "drivers/vbe.hpp"
+#include "drivers/display/vbe.hpp"
 
 static Spinlock lock{};
 

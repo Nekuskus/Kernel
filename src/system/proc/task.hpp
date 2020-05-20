@@ -2,11 +2,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <system/cpu/cpu.hpp>
 #include <system/mm/vmm.hpp>
 
-#include "cpu.hpp"
-
-namespace Cpu::Multitasking {
+namespace Tasking {
     enum ThreadState : uint16_t {
         ACTIVE = 1,
         SUSPENDED,
@@ -33,4 +32,4 @@ namespace Cpu::Multitasking {
 
     void init();
     void switch_task();
-}  // namespace Cpu::Multitasking
+}  // namespace Tasking

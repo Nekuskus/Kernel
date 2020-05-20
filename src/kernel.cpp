@@ -5,13 +5,13 @@
 #include <system/acpi/acpi.hpp>
 #include <system/acpi/madt.hpp>
 #include <system/cpu/apic.hpp>
-#include <system/cpu/multitasking.hpp>
+#include <system/proc/task.hpp>
 #include <system/cpu/smp/smp.hpp>
 #include <system/debugging.hpp>
-#include <system/drivers/ahci.hpp>
+#include <system/drivers/storage/ahci.hpp>
 #include <system/drivers/pci.hpp>
 #include <system/drivers/time.hpp>
-#include <system/drivers/vbe.hpp>
+#include <system/drivers/display/vbe.hpp>
 #include <system/exceptions.hpp>
 #include <system/idt.hpp>
 #include <system/mm/mm.hpp>
@@ -110,7 +110,7 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
         progress();
 
-        Cpu::Multitasking::init();
+        Tasking::init();
 
         progress();
 
@@ -130,7 +130,7 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 extern "C" void smp_kernel_main() {
     Idt::init();
     Exceptions::init();
-    Cpu::Multitasking::init();
+    Tasking::init();
     Cpu::Smp::set_booted();
 
     asm("sti");

@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-#include "pci.hpp"
+#include <system/drivers/pci.hpp>
 
 namespace Ahci {
     struct HbaConfiguration {
