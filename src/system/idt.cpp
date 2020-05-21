@@ -11,10 +11,12 @@ static Idt::Entry idt_entries[256] = {};
 static Idt::InterruptHandler interrupt_handlers[256] = {};
 static Idt::Pointer idt_pointer{};
 
-struct {
+struct Exception {
     const char* mnemonic;
     const char* message;
-} exceptions[] = {
+};
+
+static constexpr inline Exception exceptions[] = {
     { .mnemonic = "DE", .message = "Division By Zero" },
     { .mnemonic = "DB", .message = "Debug" },
     { .mnemonic = "NMI", .message = "Non Maskable Interrupt" },
@@ -130,7 +132,8 @@ void Idt::init() {
 
     idt_pointer = { .limit = 256 * sizeof(Entry) - 1, .base = (uint64_t)&idt_entries };
 
-    asm volatile("lidt %0" ::"m"(idt_pointer) : "memory");
+    asm volatile("lidt %0" ::"m"(idt_pointer)
+                 : "memory");
 
     char debug[256] = "";
 
