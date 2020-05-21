@@ -6,9 +6,9 @@
 #include <system/mm/vmm.hpp>
 
 namespace Tasking {
-    enum ThreadState : uint16_t {
-        ACTIVE = 1,
+    enum class ThreadState : uint16_t {
         SUSPENDED,
+        ACTIVE,
         BLOCKED,
         WAITING,
     };
@@ -24,8 +24,8 @@ namespace Tasking {
 
     struct Process {
         size_t pid;
-        char* path;
-        char* cwd;
+        const char* path;
+        const char* cwd;
         Vmm::PageTable* cr3;
         LinkedList<Thread*> threads;
     };
