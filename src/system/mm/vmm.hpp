@@ -5,14 +5,14 @@
 constexpr size_t address_mask = ~(0xFFF | (1ull << 63));
 
 namespace Vmm {
-    enum VirtualMemoryFlags : int {
-        VMM_PRESENT = 1 << 0,
-        VMM_WRITE = 1 << 1,
-        VMM_USER = 1 << 2,
-        VMM_WT = 1 << 3,
-        VMM_NO_CACHE = 1 << 4,
-        VMM_DIRTY = 1 << 5,
-        VMM_LARGE = 1 << 7,
+    enum class VirtualMemoryFlags : int {
+        PRESENT = 1 << 0,
+        WRITE = 1 << 1,
+        USER = 1 << 2,
+        WT = 1 << 3,
+        NO_CACHE = 1 << 4,
+        DIRTY = 1 << 5,
+        LARGE = 1 << 7,
     };
 
     struct PageTable {

@@ -93,10 +93,10 @@ void Cpu::Smp::init() {
     auto len = (uint64_t)&_trampoline_end - (uint64_t)&_trampoline_start;
     auto kernel_pml4 = Vmm::get_ctx_kernel();
 
-    Vmm::map_pages(kernel_pml4, &_trampoline_start, &_trampoline_start, (len + 0x1000 - 1) / 0x1000, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Vmm::map_pages(kernel_pml4, &_trampoline_start, &_trampoline_start, (len + 0x1000 - 1) / 0x1000, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
     memcpy(&_trampoline_start, (void*)(0x400000 + virtual_physical_base), len);
 
-    Vmm::map_pages(kernel_pml4, (void*)0x510, (void*)0x510, 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Vmm::map_pages(kernel_pml4, (void*)0x510, (void*)0x510, 1, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
 
     for (auto lapic : Madt::get_lapics())
         if (((lapic->flags & 1) || (lapic->flags & 2)) && lapic->id != current_cpu->id)

@@ -55,7 +55,7 @@ void Madt::init() {
             case InterruptControllerType::IOAPIC: {
                 IoApic* ioapic = (IoApic*)interrupt_controller;
 
-                Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)((uint64_t)ioapic->ioapic_base + virtual_kernel_base), (void*)(uint64_t)ioapic->ioapic_base, 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+                Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)((uint64_t)ioapic->ioapic_base + virtual_kernel_base), (void*)(uint64_t)ioapic->ioapic_base, 1, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
                 ioapics.push_back(ioapic);
 
                 break;

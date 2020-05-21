@@ -62,7 +62,7 @@ extern "C" void kmain(void* mb_info_ptr, uint32_t multiboot_magic) {
 
         uintptr_t virtual_fb = mb_info->framebuffer_addr + virtual_kernel_base;
 
-        Vmm::map_huge_pages(Vmm::get_ctx_kernel(), (void*)virtual_fb, (void*)mb_info->framebuffer_addr, (mb_info->framebuffer_width * mb_info->framebuffer_pitch + 0x200000 - 1) / 0x200000, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+        Vmm::map_huge_pages(Vmm::get_ctx_kernel(), (void*)virtual_fb, (void*)mb_info->framebuffer_addr, (mb_info->framebuffer_width * mb_info->framebuffer_pitch + 0x200000 - 1) / 0x200000, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
 
         mode_info = {
             .framebuffer = (uint32_t*)virtual_fb,

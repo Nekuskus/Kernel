@@ -34,7 +34,7 @@ inline Vmm::PageTable* get_or_alloc_ent(Vmm::PageTable* tab, size_t off, int fla
     if (!ent_addr) {
         ent_addr = tab->ents[off] = (uint64_t)Pmm::alloc(1);
 
-        tab->ents[off] |= flags | Vmm::VirtualMemoryFlags::VMM_PRESENT;
+        tab->ents[off] |= flags | (int)Vmm::VirtualMemoryFlags::PRESENT;
         memset((void*)(ent_addr + virtual_physical_base), 0, 4096);
     }
 
@@ -126,7 +126,7 @@ bool Vmm::map_huge_pages(PageTable* pml4, void* virt, void* phys, size_t count, 
         auto pml4_virt = (PageTable*)((uint64_t)pml4 + virtual_physical_base);
         auto pdp_virt = get_or_alloc_ent(pml4_virt, offs.pml4, perms);
         auto pd_virt = get_or_alloc_ent(pdp_virt, offs.pdp, perms);
-        pd_virt->ents[offs.pd] = (uint64_t)phys | perms | VirtualMemoryFlags::VMM_LARGE;
+        pd_virt->ents[offs.pd] = (uint64_t)phys | perms | (int)VirtualMemoryFlags::LARGE;
         virt = (void*)((uint64_t)virt + 0x200000);
         phys = (void*)((uint64_t)phys + 0x200000);
     }
@@ -162,7 +162,7 @@ bool Vmm::update_huge_perms(PageTable* pml4, void* virt, size_t count, int perms
             return false;
 
         auto pd_virt = get_or_null_ent(pdp_virt, offs.pdp);
-        pd_virt->ents[offs.pd] = (pd_virt->ents[offs.pd] & address_mask) | perms | VirtualMemoryFlags::VMM_LARGE;
+        pd_virt->ents[offs.pd] = (pd_virt->ents[offs.pd] & address_mask) | perms | (int)VirtualMemoryFlags::LARGE;
         virt = (void*)((uint64_t)virt + 0x200000);
     }
 
@@ -194,8 +194,8 @@ Vmm::PageTable* Vmm::new_address_space() {
     auto new_pml4 = (PageTable*)Pmm::alloc(1);
 
     memset((void*)((uint64_t)new_pml4 + virtual_physical_base), 0, 4096);
-    map_huge_pages(new_pml4, (void*)0xFFFFFFFF80000000, NULL, 64, VirtualMemoryFlags::VMM_PRESENT | VirtualMemoryFlags::VMM_WRITE);
-    map_huge_pages(new_pml4, (void*)0xFFFF800000000000, NULL, 512 * 4, VirtualMemoryFlags::VMM_PRESENT | VirtualMemoryFlags::VMM_WRITE);
+    map_huge_pages(new_pml4, (void*)0xFFFFFFFF80000000, NULL, 64, (int)VirtualMemoryFlags::PRESENT | (int)VirtualMemoryFlags::WRITE);
+    map_huge_pages(new_pml4, (void*)0xFFFF800000000000, NULL, 512 * 4, (int)VirtualMemoryFlags::PRESENT | (int)VirtualMemoryFlags::WRITE);
 
     return new_pml4;
 }

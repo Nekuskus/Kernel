@@ -22,7 +22,7 @@ extern "C" void* malloc(size_t bytes) {
         return nullptr;
     }
 
-    Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)top, p, pages, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)top, p, pages, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
 
     top += 0x1000 * (pages + 1);
     out = out + (0x1000 * pages - size);

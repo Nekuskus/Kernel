@@ -25,7 +25,7 @@ inline Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
     uint64_t address = base + virtual_physical_base;
     Acpi::RsdpInfo info{};
 
-    Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)address, (void*)base, (length + 0x1000 - 1) / 0x1000, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+    Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)address, (void*)base, (length + 0x1000 - 1) / 0x1000, (int)Vmm::VirtualMemoryFlags::PRESENT);
 
     for (size_t off = 0; off < length; off += 16) {
         Acpi::RsdpDescriptor* rsdp = (Acpi::RsdpDescriptor*)(address + off);
@@ -71,7 +71,7 @@ Acpi::SdtHeader* Acpi::get_table(const char* signature) {
 void Acpi::init() {
     auto ebda_seg_ptr = (uint16_t*)(0x40E + virtual_physical_base);
 
-    Vmm::map_pages(Vmm::get_ctx_kernel(), ebda_seg_ptr, (void*)0x40E, (sizeof(uint16_t) + 0x1000 - 1) / 0x1000, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+    Vmm::map_pages(Vmm::get_ctx_kernel(), ebda_seg_ptr, (void*)0x40E, (sizeof(uint16_t) + 0x1000 - 1) / 0x1000, (int)Vmm::VirtualMemoryFlags::PRESENT);
 
     rsdp_info = bios_detect_rsdp(*ebda_seg_ptr << 4, 0x400);
 
@@ -93,8 +93,8 @@ void Acpi::init() {
         for (size_t i = 0; i < entries; i++) {
             auto h = (SdtHeader*)(xsdt->tables[i] + virtual_physical_base);
 
-            Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void*)xsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
-            Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void*)xsdt->tables[i], (h->length + 0x1000 - 1) / 0x1000, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+            Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void*)xsdt->tables[i], 1, (int)Vmm::VirtualMemoryFlags::PRESENT);
+            Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void*)xsdt->tables[i], (h->length + 0x1000 - 1) / 0x1000, (int)Vmm::VirtualMemoryFlags::PRESENT);
 
             if (!calculate_checksum(h, h->length)) {
                 char text[255] = "";
@@ -112,8 +112,8 @@ void Acpi::init() {
         for (size_t i = 0; i < entries; i++) {
             auto h = (SdtHeader*)((uint64_t)rsdt->tables[i] + virtual_physical_base);
 
-            Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void*)(uint64_t)rsdt->tables[i], 1, Vmm::VirtualMemoryFlags::VMM_PRESENT);
-            Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void*)(uint64_t)rsdt->tables[i], (h->length + 0x1000 - 1) / 0x1000, Vmm::VirtualMemoryFlags::VMM_PRESENT);
+            Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void*)(uint64_t)rsdt->tables[i], 1, (int)Vmm::VirtualMemoryFlags::PRESENT);
+            Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void*)(uint64_t)rsdt->tables[i], (h->length + 0x1000 - 1) / 0x1000, (int)Vmm::VirtualMemoryFlags::PRESENT);
 
             if (!calculate_checksum(h, h->length)) {
                 char text[255] = "";

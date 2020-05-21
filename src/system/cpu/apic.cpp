@@ -25,7 +25,7 @@ void Cpu::Apic::LocalApic::init() {
     lapic_base = (apic_msr_base & 0xFFFFFFFFFFFFF000) + virtual_kernel_base;
     apic_msr_base |= 1 << 11;
 
-    Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)lapic_base, (void*)(apic_msr_base & 0xFFFFFFFFFFFFF000), 1, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)lapic_base, (void*)(apic_msr_base & 0xFFFFFFFFFFFFF000), 1, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
     Cpu::write_msr(apic_base, apic_msr_base);
     write(lapic_tpr, 0);
     write(0xF0, 0xFF | 0x100);

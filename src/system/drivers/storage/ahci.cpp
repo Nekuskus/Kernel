@@ -108,7 +108,7 @@ void Ahci::init() {
 
     memory_reg = (HbaMemory*)(ahci_base + virtual_physical_base);
 
-    Vmm::map_pages(Vmm::get_ctx_kernel(), memory_reg, (void*)ahci_base, (sizeof(HbaMemory) + 0x1000 - 1) / 0x1000, Vmm::VirtualMemoryFlags::VMM_PRESENT | Vmm::VirtualMemoryFlags::VMM_WRITE);
+    Vmm::map_pages(Vmm::get_ctx_kernel(), memory_reg, (void*)ahci_base, (sizeof(HbaMemory) + 0x1000 - 1) / 0x1000, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
 
     GenericHostControl::HbaControl ghc{};
     ghc.raw = memory_reg->host_control.global_hba_control.raw;
