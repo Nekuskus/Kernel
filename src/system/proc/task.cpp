@@ -9,6 +9,19 @@
 #include <system/mm/mm.hpp>
 #include <system/terminal.hpp>
 
+static constexpr inline Cpu::Registers default_kernel_regs{
+    .cs = 0x08,
+    .rflags = 0x202,
+    .ss = 0x10,
+};
+
+/* for later
+static constexpr inline Cpu::Registers default_user_regs{
+    .cs = 0x23,
+    .rflags = 0x202,
+    .ss = 0x1b,
+};*/
+
 static auto processes = LinkedList<Tasking::Process*>();
 
 inline Tasking::Thread* find_next_thread() {
@@ -61,12 +74,26 @@ inline Tasking::Thread* find_next_thread() {
     return kernel_idle_thread;
 }
 
-void Tasking::switch_task() {
-    [[maybe_unused]] auto thread = find_next_thread();
+void Tasking::switch_task(Cpu::Registers* registers, Thread* thread) {
+    auto current_cpu = Cpu::get_current_cpu();
+
+    if (current_cpu->process != 0) {
+        auto old_thread = *(*processes[current_cpu->process])->threads[current_cpu->thread];
+        old_thread->regs = *registers;
+        old_thread->fs_base = Cpu::read_msr(fs_base);
+        old_thread->gs_base = Cpu::read_msr(gs_base);
+    }
+
+    *registers = thread->regs;
+
+    Cpu::write_msr(fs_base, thread->fs_base);
+    Cpu::write_msr(gs_base, thread->gs_base);
 }
 
-void schedule([[maybe_unused]] const Cpu::Registers* registers) {
-    Tasking::switch_task();
+void schedule(Cpu::Registers* registers) {
+    auto thread = find_next_thread();
+
+    Tasking::switch_task(registers, thread);
 }
 
 void kernel_idle_task() {
@@ -91,9 +118,10 @@ void Tasking::init() {
 
         auto kernel_idle_thread = new Thread;
         kernel_idle_thread->tid = 0;
+        kernel_idle_thread->regs = default_kernel_regs;
         kernel_idle_thread->regs.rip = (uint64_t)kernel_idle_task;
         kernel_idle_thread->kernel_rsp = (uint64_t)calloc(0x10000, 1) + 0x10000;
-        kernel_idle_thread->user_rsp = (uint64_t)calloc(0x10000, 1) + 0x10000;
+        kernel_idle_thread->user_rsp = kernel_idle_thread->regs.rsp = (uint64_t)calloc(0x10000, 1) + 0x10000;
 
         kernel_idle->threads.push_back(kernel_idle_thread);
     }

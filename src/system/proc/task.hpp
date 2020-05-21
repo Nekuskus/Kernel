@@ -31,5 +31,5 @@ namespace Tasking {
     };
 
     void init();
-    void switch_task();
+    void switch_task(Cpu::Registers* registers, Thread* thread);
 }  // namespace Tasking

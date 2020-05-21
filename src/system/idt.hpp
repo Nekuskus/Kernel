@@ -18,12 +18,12 @@ namespace Idt {
     };
 
     struct InterruptHandler {
-        void (*function)(const Cpu::Registers*);
+        void (*function)(Cpu::Registers*);
         bool is_irq;
         bool should_iret;
     };
 
-    void register_interrupt_handler(uint16_t n, void (*function)(const Cpu::Registers*), bool is_irq, bool should_iret);
+    void register_interrupt_handler(uint16_t n, void (*function)(Cpu::Registers*), bool is_irq, bool should_iret);
     void set_irq(uint16_t n, bool is_irq);
     void init();
 }  // namespace Idt

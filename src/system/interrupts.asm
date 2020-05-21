@@ -65,10 +65,21 @@ isr_stub:
     push r14
     push r15
 
+    xor rax, rax
+    mov ax, ds
+    push rax
+    mov ax, 0x0
+    mov ds, ax
+    mov es, ax
+
     cld
     mov rdi, rsp
 
     call isr_handler
+
+    pop rax
+    mov ds, ax
+    mov es, ax
 
     pop r15
     pop r14

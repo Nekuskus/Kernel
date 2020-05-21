@@ -53,7 +53,7 @@ static constexpr inline Exception exceptions[] = {
 
 extern "C" void* isrs[256];
 
-extern "C" void isr_handler(const Cpu::Registers* registers) {
+extern "C" void isr_handler(Cpu::Registers* registers) {
     uint8_t n = registers->int_num & 0xFF;
     Idt::InterruptHandler* handler = &interrupt_handlers[n];
 
@@ -76,7 +76,7 @@ extern "C" void isr_handler(const Cpu::Registers* registers) {
             ;
 }
 
-void Idt::register_interrupt_handler(uint16_t n, void (*function)(const Cpu::Registers*), bool is_irq, bool should_iret) {
+void Idt::register_interrupt_handler(uint16_t n, void (*function)(Cpu::Registers*), bool is_irq, bool should_iret) {
     interrupt_handlers[n] = {
         .function = function,
         .is_irq = is_irq,
