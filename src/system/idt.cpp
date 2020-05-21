@@ -88,7 +88,7 @@ void Idt::set_irq(uint16_t n, bool is_irq) {
     interrupt_handlers[n].is_irq = is_irq;
 }
 
-void set_entry(uint8_t vec, uintptr_t function, uint16_t selector, uint8_t ist) {
+inline void set_entry(uint8_t vec, uintptr_t function, uint16_t selector, uint8_t ist) {
     idt_entries[vec] = {
         .offset_low = (uint16_t)(function & 0xFFFF),
         .selector = selector,
@@ -99,7 +99,7 @@ void set_entry(uint8_t vec, uintptr_t function, uint16_t selector, uint8_t ist) 
     };
 }
 
-void set_entry(uint8_t vec, uintptr_t function, uint16_t selector, uint8_t ist, uint8_t dpl) {
+inline void set_entry(uint8_t vec, uintptr_t function, uint16_t selector, uint8_t ist, uint8_t dpl) {
     idt_entries[vec] = {
         .offset_low = (uint16_t)(function & 0xFFFF),
         .selector = selector,
