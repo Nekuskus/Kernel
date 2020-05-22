@@ -23,7 +23,7 @@ The kernel for Firework, for the x86_64 (IA-32e) CPU architecture.
 - [x] Task scheduler, uses the APIC Timer, completely unfair with O(1)-like optimization (incomplete; works)
 - [x] Progress bar while it's starting (fancy!)
 - [ ] SATA AHCI (incomplete; doesn't work; see issue [#7](https://github.com/Firework-OS/Kernel/issues/7))
-- [ ] Networking (hasn't been worked on; see issue [#12](https://github.com/Firework-OS/Kernel/issues/12)
+- [ ] Networking (hasn't been worked on; see issue [#12](https://github.com/Firework-OS/Kernel/issues/12))
 - [x] GRUB Multiboot 1
 
 ## Goals
