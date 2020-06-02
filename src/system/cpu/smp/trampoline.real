@@ -7,8 +7,6 @@ cld
 xor ax, ax
 mov ds, ax
 
-mov byte [0x510], 1
-
 jmp 0x0:fix_cs
 fix_cs:
 mov es, ax
@@ -44,9 +42,6 @@ mov ax, 0x10
 mov ds, ax
 mov es, ax
 mov ss, ax
-mov ax, 0x1b
-mov fs, ax
-mov gs, ax
 
 mov rsp, [0x560]
 

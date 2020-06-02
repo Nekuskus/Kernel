@@ -22,6 +22,7 @@ static constexpr inline Cpu::Registers default_user_regs{
     .ss = 0x1b,
 };*/
 
+static Tasking::SchedulerStatus scheduler_status = Tasking::SchedulerStatus::BLOCKED;
 static auto processes = LinkedList<Tasking::Process *>();
 
 inline Tasking::Thread *find_next_thread() {
@@ -74,6 +75,19 @@ inline Tasking::Thread *find_next_thread() {
     return kernel_idle_thread;
 }
 
+static void schedule [[maybe_unused]] (Cpu::Registers *registers) {
+    if (scheduler_status == Tasking::SchedulerStatus::WORKING)
+        Tasking::switch_task(registers, find_next_thread());
+}
+
+static void kernel_idle_task() {
+    asm volatile(
+        "sti;"
+        "1: "
+        "hlt;"
+        "jmp 1b;");
+}
+
 void Tasking::switch_task(Cpu::Registers *registers, Thread *thread) {
     auto current_cpu = Cpu::get_current_cpu();
 
@@ -90,18 +104,8 @@ void Tasking::switch_task(Cpu::Registers *registers, Thread *thread) {
     Cpu::write_msr(gs_base, thread->gs_base);
 }
 
-void schedule(Cpu::Registers *registers) {
-    auto thread = find_next_thread();
-
-    Tasking::switch_task(registers, thread);
-}
-
-void kernel_idle_task() {
-    asm volatile(
-        "sti;"
-        "1: "
-        "hlt;"
-        "jmp 1b;");
+void Tasking::set_status(SchedulerStatus status) {
+    scheduler_status = status;
 }
 
 void Tasking::init() {
@@ -126,15 +130,15 @@ void Tasking::init() {
         kernel_idle->threads.push_back(kernel_idle_thread);
     }
 
-    Cpu::Apic::LocalApic::write(Cpu::Apic::LocalApic::TimerRegisters::TIMER_LVT, 232 | (1 << 17));
-    Cpu::Apic::LocalApic::write(Cpu::Apic::LocalApic::TimerRegisters::TIMER_DIV, 0x3);
-    Cpu::Apic::LocalApic::write(Cpu::Apic::LocalApic::TimerRegisters::TIMER_INITCNT, 0xFFFFFFFF);
+    Cpu::Apic::LocalApic::write((uint32_t)Cpu::Apic::LocalApic::TimerRegisters::LVT_TIMER, 232 | (1 << 17));
+    Cpu::Apic::LocalApic::write((uint32_t)Cpu::Apic::LocalApic::TimerRegisters::DIVIDE_CONFIG, 0x3);
+    Cpu::Apic::LocalApic::write((uint32_t)Cpu::Apic::LocalApic::TimerRegisters::INITIAL_COUNT, 0xFFFFFFFF);
 
     Time::ksleep(20);
 
-    uint32_t ticks = 0xFFFFFFFF - Cpu::Apic::LocalApic::read(Cpu::Apic::LocalApic::TimerRegisters::TIMER_CURRCNT);
+    uint32_t ticks = 0xFFFFFFFF - Cpu::Apic::LocalApic::read((uint32_t)Cpu::Apic::LocalApic::TimerRegisters::CURRENT_COUNT);
 
-    Cpu::Apic::LocalApic::write(Cpu::Apic::LocalApic::TimerRegisters::TIMER_INITCNT, ticks / 10);
+    Cpu::Apic::LocalApic::write((uint32_t)Cpu::Apic::LocalApic::TimerRegisters::CURRENT_COUNT, ticks / 10);
 
     Idt::register_interrupt_handler(232, schedule, true, true);
 

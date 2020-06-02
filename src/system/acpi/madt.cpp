@@ -8,29 +8,14 @@
 #include <system/mm/vmm.hpp>
 #include <system/panic.hpp>
 
-static auto lapics = LinkedList<Madt::LocalApic *>();
-static auto ioapics = LinkedList<Madt::IoApic *>();
-static auto isos = LinkedList<Madt::InterruptSourceOverride *>();
-static bool legacy_pic;
-
-LinkedList<Madt::LocalApic *> &Madt::get_lapics() {
-    return lapics;
-}
-
-LinkedList<Madt::IoApic *> &Madt::get_ioapics() {
-    return ioapics;
-}
-
-LinkedList<Madt::InterruptSourceOverride *> &Madt::get_isos() {
-    return isos;
-}
-
-bool Madt::has_legacy_pic() {
-    return legacy_pic;
-}
+auto Madt::lapics = LinkedList<Madt::LocalApic *>();
+auto Madt::ioapics = LinkedList<Madt::IoApic *>();
+auto Madt::isos = LinkedList<Madt::InterruptSourceOverride *>();
+bool Madt::legacy_pic = false;
+Madt::MadtHeader *Madt::madt = nullptr;
 
 void Madt::init() {
-    MadtHeader *madt = (MadtHeader *)Acpi::get_table("APIC");
+    madt = (MadtHeader *)Acpi::get_table("APIC");
 
     if (!madt)
         panic("UNSUPPORTED_HARDWARE_MADT_MISSING");

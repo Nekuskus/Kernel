@@ -65,8 +65,7 @@ extern "C" void _start(void *stivale_ptr) {
     Acpi::init(stivale->rsdp);
     Hpet::init();
     Madt::init();
-    Cpu::Apic::IoApic::init();
-    Cpu::Apic::LocalApic::init();
+    Cpu::Apic::init();
     asm volatile("sti");
     Ahci::init();
     Tasking::init();

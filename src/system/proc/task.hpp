@@ -6,6 +6,10 @@
 #include <system/mm/vmm.hpp>
 
 namespace Tasking {
+    enum class SchedulerStatus : uint16_t {
+        BLOCKED,
+        WORKING,
+    };
     enum class ThreadState : uint16_t {
         SUSPENDED,
         ACTIVE,
@@ -31,5 +35,6 @@ namespace Tasking {
     };
 
     void init();
+    void set_status(SchedulerStatus status);
     void switch_task(Cpu::Registers *registers, Thread *thread);
 }  // namespace Tasking

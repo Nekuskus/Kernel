@@ -1,4 +1,5 @@
 #pragma once
+#include <stddef.h>
 #include <stdint.h>
 
 #include <system/acpi/acpi.hpp>
@@ -46,5 +47,5 @@ namespace Hpet {
 }  // namespace Hpet
 
 namespace Time {
-    void ksleep(uint64_t time);
+    void ksleep(size_t ms);
 }  // namespace Time

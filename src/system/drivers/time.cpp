@@ -8,12 +8,12 @@
 #include <system/panic.hpp>
 
 static Hpet::Hpet *hpet = nullptr;
-static uint64_t clk = 0;
+static size_t clk = 0;
 
-void Time::ksleep(uint64_t time) {
-    uint64_t final_time = hpet->main_counter_value + (time * 1000000000000) / clk;
+void Time::ksleep(size_t ms) {
+    size_t target = hpet->main_counter_value + (ms * 1000000000000) / clk;
 
-    while (hpet->main_counter_value < final_time)
+    while (hpet->main_counter_value < target)
         asm volatile("pause");
 }
 

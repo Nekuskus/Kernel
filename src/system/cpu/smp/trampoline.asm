@@ -17,7 +17,6 @@ trampoline_size: dq _trampoline_size
 section .text
 
 prepare_trampoline:
-    mov byte [0x510], 0
     mov qword [0x520], rdi
     sgdt [0x530]
     sidt [0x540]
@@ -32,11 +31,6 @@ prepare_trampoline:
     mov rdi, rcx
     call load_tss
 
-    ret
-
-check_ap_flag:
-    xor rax, rax
-    mov al, byte [0x510]
     ret
 
 init_bsp_local:
