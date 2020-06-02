@@ -127,6 +127,5 @@ namespace Acpi {
     };
 
     Acpi::SdtHeader* get_table(const char* signature);
-    void init();
-    void init(XsdpDescriptor* param_xsdp);
+    void init(uint64_t rsdp);
 }  // namespace Acpi

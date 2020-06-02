@@ -11,6 +11,21 @@ namespace Stivale {
         uint64_t entry_point;
     };
 
+    enum class [[gnu::packed]] StivaleMMapType : uint32_t{
+        USABLE_RAM = 1,
+        RESERVED,
+        ACPI_RECLAIMABLE,
+        ACPI_NVS,
+        BAD_MEMORY,
+    };
+
+    struct [[gnu::packed]] StivaleMMapEntry {
+        uint64_t base;
+        uint64_t length;
+        StivaleMMapType type;
+        uint32_t unused;
+    };
+
     struct [[gnu::packed]] Stivale {
         uint64_t cmdline;
         uint64_t memory_map_addr;

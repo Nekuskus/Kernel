@@ -128,7 +128,7 @@ init_gdt:
 section .bss
 align 0x1000
 stack:
-    resb 0x1000
+    resb 0x10000
 
 global stack_end
 stack_end:

@@ -1,63 +1,65 @@
+org 0x1000
 bits 16
 
-global smp_entry
-smp_entry:
-    cli
-    cld
+cli
+cld
 
-    xor ax, ax
-    mov ds, ax
+xor ax, ax
+mov ds, ax
 
-    jmp 0x0:fix_cs
-    fix_cs:
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
+mov byte [0x510], 1
 
-    lgdt [gdt_ptr]
+jmp 0x0:fix_cs
+fix_cs:
+mov es, ax
+mov fs, ax
+mov gs, ax
+mov ss, ax
 
-    mov edx, dword [0x510]
-    mov cr3, edx
+lgdt [gdt_ptr]
 
-    mov eax, cr4
-    or eax, 1 << 5
-    or eax, 1 << 7
-    mov cr4, eax
+mov edx, dword [0x520]
+mov cr3, edx
 
-    mov ecx, 0xc0000080
-    rdmsr
+mov eax, cr4
+or eax, 1 << 5
+or eax, 1 << 7
+mov cr4, eax
 
-    or eax, 0x00000100
-    wrmsr
+mov ecx, 0xc0000080
+rdmsr
 
-    mov eax, cr0
-    or eax, 0x80000001
-    and eax, ~(0x60000000)
-    mov cr0, eax
+or eax, 0x00000100
+wrmsr
 
-    jmp 0x08:.mode64
-    .mode64:
-    bits 64
-    mov ax, 0
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
+mov eax, cr0
+or eax, 0x80000001
+and eax, ~(0x60000000)
+mov cr0, eax
 
-    mov rsp, [0x550]
+jmp 0x08:.mode64
+.mode64:
+bits 64
+mov ax, 0x10
+mov ds, ax
+mov es, ax
+mov ss, ax
+mov ax, 0x1b
+mov fs, ax
+mov gs, ax
 
-    lgdt [0x520]
-    lidt [0x530]
+mov rsp, [0x560]
 
-    mov ax, 0x38
-    ltr ax
+lgdt [0x530]
+lidt [0x540]
 
-    cld
+mov ax, 0x38
+ltr ax
 
-    mov rax, [0x540]
-    call rax
+cld
+
+mov rbx, qword [0x550]
+call rbx
 
 align 16
 
@@ -67,7 +69,6 @@ gdt_ptr:
 
 align 16
 .gdt_start:
-
 .null_descriptor:
     dw 0x0000
     dw 0x0000

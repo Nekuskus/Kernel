@@ -1,34 +1,52 @@
 ENTRY(_start)
 
-SECTIONS
-{
-    . = 0xFFFFFFFF80000000 + 0x200000;
+SECTIONS {
+    . = 0xFFFFFFFF80100000;
     _kernel_start = .;
 
-    .stivalehdr ALIGN(4K) :
-    {
-        KEEP(*(.stivalehdr))
+    .stivalehdr : {
+        *(.stivalehdr)
     }
 
-    .text ALIGN(4K) :
-    {
-        KEEP(*(.text*))
+    . = ALIGN(0x1000);
+
+    .text : {
+        *(.text*)
     }
 
-    .rodata ALIGN(4K) :
-    {
-        KEEP(*(.rodata*))
+    . = ALIGN(0x1000);
+
+    .ctors : {
+        KEEP (*crtbegin.o(.ctors))
+        KEEP (*crtbegin?.o(.ctors))
+        KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .ctors))
+        KEEP (*(SORT(.ctors.*)))
+        KEEP (*(.ctors))
     }
 
-    .data ALIGN(4K) :
-    {
-        KEEP(*(.data*))
+    .dtors : {
+        KEEP (*crtbegin.o(.dtors))
+        KEEP (*crtbegin?.o(.dtors))
+        KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
+        KEEP (*(SORT(.dtors.*)))
+        KEEP (*(.dtors))
     }
 
-    .bss ALIGN(4K) :
-    {
-        KEEP(*(COMMON))
-        KEEP(*(.bss*))
+    . = ALIGN(0x1000);
+
+    .rodata : {
+        *(.rodata*)
+    }
+
+    . = ALIGN(0x1000);
+
+    .data : {
+        *(.data*)
+    }
+
+    .bss : {
+        *(.bss*)
+        *(COMMON*)
     }
 
    _kernel_end = .;

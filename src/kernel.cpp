@@ -13,7 +13,6 @@
 #include <system/drivers/time.hpp>
 #include <system/exceptions.hpp>
 #include <system/idt.hpp>
-#include <system/mm/e820.hpp>
 #include <system/mm/mm.hpp>
 #include <system/mm/pmm.hpp>
 #include <system/mm/vmm.hpp>
@@ -45,7 +44,7 @@ extern "C" void _start(void* stivale_ptr) {
 
     Debug::print("~~~~ Welcome to Firework! ~~~~\n\r");
 
-    Pmm::init((E820::E820Entry*)stivale->memory_map_addr, stivale->memory_map_entries);
+    Pmm::init((Stivale::StivaleMMapEntry*)stivale->memory_map_addr, stivale->memory_map_entries);
     Vmm::init();
 
     uint32_t* virtual_fb = (uint32_t*)(stivale->framebuffer_addr + virtual_kernel_base);
@@ -63,27 +62,15 @@ extern "C" void _start(void* stivale_ptr) {
     Graphics::init(mode_info);
     Idt::init();
     Exceptions::init();
-    Acpi::init();
+    Acpi::init(stivale->rsdp);
     Hpet::init();
     Madt::init();
     Cpu::Apic::IoApic::init();
     Cpu::Apic::LocalApic::init();
-    asm("sti");
+    asm volatile("sti");
     Ahci::init();
     Tasking::init();
     Cpu::Smp::init();
-
-    for (;;)
-        asm volatile("hlt");
-}
-
-extern "C" void smp_kernel_main() {
-    Idt::init();
-    Exceptions::init();
-    Tasking::init();
-    Cpu::Smp::set_booted();
-
-    asm("sti");
 
     for (;;)
         asm volatile("hlt");

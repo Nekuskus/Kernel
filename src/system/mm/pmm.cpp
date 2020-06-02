@@ -39,18 +39,18 @@ bool bitmap_is_free(size_t idx, size_t count) {
     return true;
 }
 
-uintptr_t find_available_memory_top(E820::E820Entry* mmap, size_t mmap_len) {
+uintptr_t find_available_memory_top(Stivale::StivaleMMapEntry* mmap, size_t mmap_len) {
     uintptr_t top = 0;
 
     for (size_t i = 0; i < mmap_len; i++)
-        if (mmap[i].type == E820::E820Type::USABLE_RAM)
+        if (mmap[i].type == Stivale::StivaleMMapType::USABLE_RAM)
             if (uint64_t entry_end = mmap[i].base + mmap[i].length; entry_end > top)
                 top = entry_end;
 
     return top;
 }
 
-void Pmm::init(E820::E820Entry* mmap, size_t mmap_len) {
+void Pmm::init(Stivale::StivaleMMapEntry* mmap, size_t mmap_len) {
     auto mem_top = find_available_memory_top(mmap, mmap_len);
     uint32_t mem_pages = (mem_top + 0x1000 - 1) / 0x1000;
     bitmap = (uint64_t*)(memory_base + virtual_physical_base);
@@ -60,7 +60,7 @@ void Pmm::init(E820::E820Entry* mmap, size_t mmap_len) {
     memset(bitmap, 0xFF, bitmap_len / 8);
 
     for (size_t i = 0; i < mmap_len; i++) {
-        if (mmap[i].type == E820::E820Type::USABLE_RAM) {
+        if (mmap[i].type == Stivale::StivaleMMapType::USABLE_RAM) {
             uintptr_t start = Math::round_up(mmap[i].base, 0x1000);
             size_t len = Math::round_down(mmap[i].length, 0x1000), count = len / 0x1000;
 

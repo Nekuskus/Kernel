@@ -21,45 +21,6 @@ inline uint8_t calculate_checksum(void* ptr, size_t size) {
     return sum;
 }
 
-inline Acpi::RsdpInfo bios_detect_rsdp(uint64_t base, size_t length) {
-    uint64_t address = base + virtual_physical_base;
-    Acpi::RsdpInfo info{};
-
-    Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)address, (void*)base, (length + 0x1000 - 1) / 0x1000, (int)Vmm::VirtualMemoryFlags::PRESENT);
-
-    for (size_t off = 0; off < length; off += 16) {
-        Acpi::RsdpDescriptor* rsdp = (Acpi::RsdpDescriptor*)(address + off);
-
-        if (strncmp(rsdp->signature, "RSD PTR ", 8) || calculate_checksum(rsdp, sizeof(Acpi::RsdpDescriptor)))
-            continue;
-
-        info.rsdp_address = address + off;
-
-        memcpy(info.oem_id, rsdp->oem_id, 6);
-
-        info.oem_id[6] = '\0';
-
-        if (!rsdp->revision) {
-            info.version = 1;
-            info.address = (uint64_t)rsdp->rsdt_address + virtual_physical_base;
-
-            break;
-        } else {
-            Acpi::XsdpDescriptor* xsdp = (Acpi::XsdpDescriptor*)rsdp;
-
-            if (calculate_checksum(xsdp, sizeof(Acpi::XsdpDescriptor)))
-                continue;
-
-            info.version = 2;
-            info.address = xsdp->xsdt_address + virtual_physical_base;
-
-            break;
-        }
-    }
-
-    return info;
-}
-
 Acpi::SdtHeader* Acpi::get_table(const char* signature) {
     for (auto table : acpi_tables)
         if (!strncmp(table->signature, signature, 4))
@@ -68,22 +29,19 @@ Acpi::SdtHeader* Acpi::get_table(const char* signature) {
     return nullptr;
 }
 
-void Acpi::init() {
-    auto ebda_seg_ptr = (uint16_t*)(0x40E + virtual_physical_base);
+void Acpi::init(uint64_t rsdp) {
+    rsdp_info.rsdp_address = rsdp + virtual_kernel_base;
 
-    Vmm::map_pages(Vmm::get_ctx_kernel(), ebda_seg_ptr, (void*)0x40E, (sizeof(uint16_t) + 0x1000 - 1) / 0x1000, (int)Vmm::VirtualMemoryFlags::PRESENT);
+    RsdpDescriptor* rsdp_ptr = (RsdpDescriptor*)rsdp_info.rsdp_address;
+    rsdp_info.version = rsdp_ptr->revision + 1;
+    rsdp_info.address = (uint64_t)rsdp_ptr->rsdt_address + virtual_physical_base;
 
-    rsdp_info = bios_detect_rsdp(*ebda_seg_ptr << 4, 0x400);
-
-    if (!rsdp_info.version)
-        rsdp_info = bios_detect_rsdp(0xE0000, 0x20000);
-
-    if (!rsdp_info.version)
-        panic("UNSUPPORTED_HARDWARE_ACPI_MISSING");
+    memcpy(rsdp_info.oem_id, rsdp_ptr->oem_id, 6);
+    rsdp_info.oem_id[6] = '\0';
 
     char text[255] = "";
 
-    sprintf(text, "[ACPI] Found ACPI with OEM ID '%s' and version %d.\n\r", rsdp_info.oem_id, rsdp_info.version);
+    sprintf(text, "[ACPI] Given ACPI with OEM ID '%s' and version %d.\n\r", rsdp_info.oem_id, rsdp_info.version);
     Debug::print(text);
 
     if (rsdp_info.version >= 2) {
