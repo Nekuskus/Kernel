@@ -2,17 +2,17 @@
 #include <stddef.h>
 
 template <typename T>
-struct NodeLink {
+struct Node {
     T data;
-    NodeLink<T> *next;
+    Node<T> *next;
 };
 
 template <typename T>
-class NodeLinkIterator {
+class NodeIterator {
 public:
-    NodeLink<T> *link;
+    Node<T> *link;
 
-    explicit NodeLinkIterator(NodeLink<T> *link)
+    explicit NodeIterator(Node<T> *link)
         : link(link) {
     }
 
@@ -25,14 +25,14 @@ public:
             link = link->next;
     }
 
-    bool operator!=(NodeLinkIterator it) {
+    bool operator!=(NodeIterator it) {
         return link != it.link;
     }
 };
 
 template <typename T>
 class LinkedList {
-    NodeLink<T> *list;
+    Node<T> *list;
     size_t _length;
 
     void update() {
@@ -41,7 +41,7 @@ class LinkedList {
         if (!list)
             return;
 
-        NodeLink<T> *last = list;
+        Node<T> *last = list;
 
         while (last) {
             _length++;
@@ -58,7 +58,7 @@ public:
         clear();
     }
 
-    NodeLink<T> *find(int index) {
+    Node<T> *find(int index) {
         auto temp = list;
 
         while (temp && index--)
@@ -74,7 +74,7 @@ public:
     }
 
     void push(T value) {
-        auto node = new NodeLink<T>;
+        auto node = new Node<T>;
         node->data = value;
         node->next = list;
         list = node;
@@ -83,7 +83,7 @@ public:
     }
 
     void push_back(T value) {
-        NodeLink<T> *node = new NodeLink<T>, *last = list;
+        Node<T> *node = new Node<T>, *last = list;
         node->data = value;
         node->next = nullptr;
 
@@ -99,7 +99,7 @@ public:
     }
 
     bool insert_before(int index, T value) {
-        NodeLink<T> *node = list, *last, *result = new NodeLink<T>;
+        Node<T> *node = list, *last, *result = new Node<T>;
 
         while (node && index--) {
             last = node;
@@ -128,7 +128,7 @@ public:
     }
 
     bool insert_after(int index, T value) {
-        NodeLink<T> *node = list, *last, *result = new NodeLink<T>;
+        Node<T> *node = list, *last, *result = new Node<T>;
 
         while (node && index--)
             node = node->next;
@@ -174,7 +174,7 @@ public:
         if (!list)
             return false;
 
-        NodeLink<T> *node = list, *last;
+        Node<T> *node = list, *last;
 
         int idx = index;
 
@@ -206,7 +206,7 @@ public:
         if (!list)
             return false;
 
-        NodeLink<T> *node = list, *last = nullptr;
+        Node<T> *node = list, *last = nullptr;
 
         if (!node || !node->next)
             list = nullptr;
@@ -235,12 +235,12 @@ public:
             pop_back();
     }
 
-    NodeLinkIterator<T> begin() {
-        return NodeLinkIterator<T>(list);
+    NodeIterator<T> begin() {
+        return NodeIterator<T>(list);
     }
 
-    NodeLinkIterator<T> end() {
-        return NodeLinkIterator<T>(nullptr);
+    NodeIterator<T> end() {
+        return NodeIterator<T>(nullptr);
     }
 
     size_t length() {
