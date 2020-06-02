@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+
 #include "cpu/cpu.hpp"
 
 namespace Idt {
@@ -18,12 +19,12 @@ namespace Idt {
     };
 
     struct InterruptHandler {
-        void (*function)(Cpu::Registers*);
+        void (*function)(Cpu::Registers *);
         bool is_irq;
         bool should_iret;
     };
 
-    void register_interrupt_handler(uint16_t n, void (*function)(Cpu::Registers*), bool is_irq, bool should_iret);
+    void register_interrupt_handler(uint16_t n, void (*function)(Cpu::Registers *), bool is_irq, bool should_iret);
     void set_irq(uint16_t n, bool is_irq);
     void init();
 }  // namespace Idt

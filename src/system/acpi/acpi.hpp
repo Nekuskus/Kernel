@@ -126,6 +126,6 @@ namespace Acpi {
         GenericAddress x_gpe1_block;
     };
 
-    Acpi::SdtHeader* get_table(const char* signature);
+    Acpi::SdtHeader *get_table(const char *signature);
     void init(uint64_t rsdp);
 }  // namespace Acpi

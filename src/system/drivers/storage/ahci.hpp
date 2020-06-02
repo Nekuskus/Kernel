@@ -5,7 +5,7 @@
 
 namespace Ahci {
     struct HbaConfiguration {
-        Pci::Device* device;
+        Pci::Device *device;
 
         uint32_t bar0() {
             return Pci::read(device->bus, device->slot, device->function, 16, 4);
@@ -373,6 +373,6 @@ namespace Ahci {
     bool gain_ownership();
     void wait_idle(uint16_t port);
     void wait_ready(uint16_t port);
-    void* read(uint16_t port, size_t sectors);
-    void write(uint16_t port, size_t sectors, void* data);
+    void *read(uint16_t port, size_t sectors);
+    void write(uint16_t port, size_t sectors, void *data);
 }  // namespace Ahci

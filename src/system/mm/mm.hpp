@@ -12,6 +12,6 @@ struct HeapHeader {
     uint64_t pages;
 };
 
-extern "C" void* malloc(size_t bytes);
-extern "C" void* calloc(size_t bytes, size_t elem);
-extern "C" void free(void* ptr);
+extern "C" void *malloc(size_t bytes);
+extern "C" void *calloc(size_t bytes, size_t elem);
+extern "C" void free(void *ptr);

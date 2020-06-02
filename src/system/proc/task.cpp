@@ -22,9 +22,9 @@ static constexpr inline Cpu::Registers default_user_regs{
     .ss = 0x1b,
 };*/
 
-static auto processes = LinkedList<Tasking::Process*>();
+static auto processes = LinkedList<Tasking::Process *>();
 
-inline Tasking::Thread* find_next_thread() {
+inline Tasking::Thread *find_next_thread() {
     auto current_cpu = Cpu::get_current_cpu();
     auto kernel_idle_thread = *(*processes[0])->threads[0];
     auto current_process_threads_len = (*processes[current_cpu->process])->threads.length();
@@ -74,7 +74,7 @@ inline Tasking::Thread* find_next_thread() {
     return kernel_idle_thread;
 }
 
-void Tasking::switch_task(Cpu::Registers* registers, Thread* thread) {
+void Tasking::switch_task(Cpu::Registers *registers, Thread *thread) {
     auto current_cpu = Cpu::get_current_cpu();
 
     if (current_cpu->process != 0) {
@@ -90,7 +90,7 @@ void Tasking::switch_task(Cpu::Registers* registers, Thread* thread) {
     Cpu::write_msr(gs_base, thread->gs_base);
 }
 
-void schedule(Cpu::Registers* registers) {
+void schedule(Cpu::Registers *registers) {
     auto thread = find_next_thread();
 
     Tasking::switch_task(registers, thread);
@@ -108,7 +108,7 @@ void Tasking::init() {
     if (processes.length() < 1) {
         Debug::print("[Multitasking] Creating PID 0 (Kernel Idle Task).\n\r");
 
-        Process* kernel_idle = new Process;
+        Process *kernel_idle = new Process;
 
         processes.push_back(kernel_idle);
 

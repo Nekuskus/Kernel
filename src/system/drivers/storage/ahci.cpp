@@ -7,7 +7,7 @@
 #include <system/mm/vmm.hpp>
 
 static Ahci::HbaConfiguration controller{};
-static Ahci::HbaMemory* memory_reg = nullptr;
+static Ahci::HbaMemory *memory_reg = nullptr;
 
 void Ahci::wait_idle(uint16_t port) {
     PortRegister mem_port = memory_reg->ports[port];
@@ -106,9 +106,9 @@ void Ahci::init() {
 
     auto ahci_base = (uint64_t)controller.ahci_base();
 
-    memory_reg = (HbaMemory*)(ahci_base + virtual_physical_base);
+    memory_reg = (HbaMemory *)(ahci_base + virtual_physical_base);
 
-    Vmm::map_pages(Vmm::get_ctx_kernel(), memory_reg, (void*)ahci_base, (sizeof(HbaMemory) + 0x1000 - 1) / 0x1000, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
+    Vmm::map_pages(Vmm::get_ctx_kernel(), memory_reg, (void *)ahci_base, (sizeof(HbaMemory) + 0x1000 - 1) / 0x1000, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
 
     GenericHostControl::HbaControl ghc{};
     ghc.raw = memory_reg->host_control.global_hba_control.raw;

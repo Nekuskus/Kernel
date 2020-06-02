@@ -20,7 +20,7 @@
 
 extern "C" void (*__CTOR_LIST__ [[gnu::visibility("hidden")]])();
 extern "C" void (*__CTOR_END__ [[gnu::visibility("hidden")]])();
-extern "C" void* stack_end;
+extern "C" void *stack_end;
 extern "C" void init_gdt();
 
 extern "C" [[gnu::section(".stivalehdr"), gnu::used]] Stivale::StivaleHeader header = {
@@ -32,7 +32,7 @@ extern "C" [[gnu::section(".stivalehdr"), gnu::used]] Stivale::StivaleHeader hea
     .entry_point = 0,
 };
 
-extern "C" void _start(void* stivale_ptr) {
+extern "C" void _start(void *stivale_ptr) {
     init_gdt();
 
     auto ctor = &__CTOR_LIST__;
@@ -40,16 +40,16 @@ extern "C" void _start(void* stivale_ptr) {
     while (ctor != &__CTOR_END__)
         (*ctor++)();
 
-    Stivale::Stivale* stivale = (Stivale::Stivale*)((uint64_t)stivale_ptr + virtual_kernel_base);
+    Stivale::Stivale *stivale = (Stivale::Stivale *)((uint64_t)stivale_ptr + virtual_kernel_base);
 
     Debug::print("~~~~ Welcome to Firework! ~~~~\n\r");
 
-    Pmm::init((Stivale::StivaleMMapEntry*)stivale->memory_map_addr, stivale->memory_map_entries);
+    Pmm::init((Stivale::StivaleMMapEntry *)stivale->memory_map_addr, stivale->memory_map_entries);
     Vmm::init();
 
-    uint32_t* virtual_fb = (uint32_t*)(stivale->framebuffer_addr + virtual_kernel_base);
+    uint32_t *virtual_fb = (uint32_t *)(stivale->framebuffer_addr + virtual_kernel_base);
 
-    Vmm::map_huge_pages(Vmm::get_ctx_kernel(), virtual_fb, (void*)stivale->framebuffer_addr, (stivale->framebuffer_width * stivale->framebuffer_pitch + 0x200000 - 1) / 0x200000, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
+    Vmm::map_huge_pages(Vmm::get_ctx_kernel(), virtual_fb, (void *)stivale->framebuffer_addr, (stivale->framebuffer_width * stivale->framebuffer_pitch + 0x200000 - 1) / 0x200000, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
 
     Graphics::ModeInfo mode_info = {
         .framebuffer = virtual_fb,

@@ -51,7 +51,7 @@ void Serial::write(const char a) {
     Port::outb(base, a);
 }
 
-void Serial::write(const char* a) {
+void Serial::write(const char *a) {
     lock.lock();
 
     while (*a)

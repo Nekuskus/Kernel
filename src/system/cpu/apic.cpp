@@ -13,11 +13,11 @@
 static uint64_t lapic_base = 0;
 
 uint32_t Cpu::Apic::LocalApic::read(uint32_t reg) {
-    return *(uint32_t*)(lapic_base + reg);
+    return *(uint32_t *)(lapic_base + reg);
 }
 
 void Cpu::Apic::LocalApic::write(uint32_t reg, uint32_t data) {
-    *(uint32_t*)(lapic_base + reg) = data;
+    *(uint32_t *)(lapic_base + reg) = data;
 }
 
 void Cpu::Apic::LocalApic::init() {
@@ -25,7 +25,7 @@ void Cpu::Apic::LocalApic::init() {
     lapic_base = (apic_msr_base & 0xFFFFFFFFFFFFF000) + virtual_kernel_base;
     apic_msr_base |= 1 << 11;
 
-    Vmm::map_pages(Vmm::get_ctx_kernel(), (void*)lapic_base, (void*)(apic_msr_base & 0xFFFFFFFFFFFFF000), 1, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
+    Vmm::map_pages(Vmm::get_ctx_kernel(), (void *)lapic_base, (void *)(apic_msr_base & 0xFFFFFFFFFFFFF000), 1, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
     Cpu::write_msr(apic_base, apic_msr_base);
     write(lapic_tpr, 0);
     write(0xF0, 0xFF | 0x100);
@@ -46,14 +46,14 @@ void Cpu::Apic::LocalApic::send_eoi() {
 }
 
 uint32_t Cpu::Apic::IoApic::read(uint32_t ioapic_base, uint32_t reg) {
-    auto ioapic = (uint32_t*)((uint64_t)ioapic_base + virtual_kernel_base);
+    auto ioapic = (uint32_t *)((uint64_t)ioapic_base + virtual_kernel_base);
     ioapic[0] = reg & 0xFF;
 
     return ioapic[4];
 }
 
 void Cpu::Apic::IoApic::write(uint32_t ioapic_base, uint32_t reg, uint32_t data) {
-    auto ioapic = (uint32_t*)((uint64_t)ioapic_base + virtual_kernel_base);
+    auto ioapic = (uint32_t *)((uint64_t)ioapic_base + virtual_kernel_base);
     ioapic[0] = reg & 0xFF;
     ioapic[4] = data;
 }
@@ -71,7 +71,7 @@ uint64_t Cpu::Apic::IoApic::read_entry(uint8_t gsi) {
     return 0;
 }
 
-uint64_t Cpu::Apic::IoApic::read_entry(Madt::IoApic* ioapic, uint8_t gsi) {
+uint64_t Cpu::Apic::IoApic::read_entry(Madt::IoApic *ioapic, uint8_t gsi) {
     if (ioapic->gsi_base > gsi && ((read(ioapic->ioapic_base, ioapic_ver) >> 16) & 0xFF) + 1 + ioapic->gsi_base <= gsi)
         return 0;
 
@@ -94,7 +94,7 @@ void Cpu::Apic::IoApic::set_entry(uint8_t gsi, uint64_t data) {
     }
 }
 
-void Cpu::Apic::IoApic::set_entry(Madt::IoApic* ioapic, uint8_t gsi, uint64_t data) {
+void Cpu::Apic::IoApic::set_entry(Madt::IoApic *ioapic, uint8_t gsi, uint64_t data) {
     if (ioapic->gsi_base > gsi && ((read(ioapic->ioapic_base, ioapic_ver) >> 16) & 0xFF) + 1 + ioapic->gsi_base <= gsi)
         return;
 
@@ -118,7 +118,7 @@ void Cpu::Apic::IoApic::set_entry(uint8_t gsi, uint8_t vector, DeliveryMode deli
     set_entry(gsi, data);
 }
 
-void Cpu::Apic::IoApic::set_entry(Madt::IoApic* ioapic, uint8_t gsi, uint8_t vector, DeliveryMode delivery_mode, DestinationMode destination_mode, uint16_t flags, uint32_t destination) {
+void Cpu::Apic::IoApic::set_entry(Madt::IoApic *ioapic, uint8_t gsi, uint8_t vector, DeliveryMode delivery_mode, DestinationMode destination_mode, uint16_t flags, uint32_t destination) {
     uint64_t data = vector | (delivery_mode << 8) | (destination_mode << 11);
 
     if (flags & 2)

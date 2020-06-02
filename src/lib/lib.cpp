@@ -2,7 +2,7 @@
 
 #include "ctype.hpp"
 
-int sprintf(char* text, const char* format, ...) {
+int sprintf(char *text, const char *format, ...) {
     va_list parameters;
 
     va_start(parameters, format);
@@ -34,7 +34,7 @@ int sprintf(char* text, const char* format, ...) {
             continue;
         }
 
-        const char* format_begun_at = format++;
+        const char *format_begun_at = format++;
 
         switch (*format) {
             case 'c': {
@@ -56,7 +56,7 @@ int sprintf(char* text, const char* format, ...) {
 
             case 's': {
                 format++;
-                auto str = va_arg(parameters, const char*);
+                auto str = va_arg(parameters, const char *);
                 size_t len = strlen(str);
 
                 if (maxrem < len) {
@@ -122,7 +122,7 @@ int sprintf(char* text, const char* format, ...) {
                 break;
             }
             case 'p': {
-                auto item = va_arg(parameters, void*);
+                auto item = va_arg(parameters, void *);
                 char str[32] = "";
 
                 htoa((uintptr_t)item, str, false);
@@ -172,7 +172,7 @@ int sprintf(char* text, const char* format, ...) {
     return written;
 }
 
-int strncmp(const char* s1, const char* s2, size_t n) {
+int strncmp(const char *s1, const char *s2, size_t n) {
     while (n && *s1 && *s1 == *s2) {
         ++s1;
         ++s2;
@@ -182,7 +182,7 @@ int strncmp(const char* s1, const char* s2, size_t n) {
     return !n ? 0 : s1 - s2;
 }
 
-size_t strlen(const char* chr) {
+size_t strlen(const char *chr) {
     size_t size = 0;
 
     while (*chr++)
@@ -191,7 +191,7 @@ size_t strlen(const char* chr) {
     return size;
 }
 
-size_t strnlen(const char* chr, size_t max_len) {
+size_t strnlen(const char *chr, size_t max_len) {
     size_t size = 0;
 
     while (size < max_len && chr[size])
@@ -200,7 +200,7 @@ size_t strnlen(const char* chr, size_t max_len) {
     return size;
 }
 
-char* itoa(int value, char* result, int base) {
+char *itoa(int value, char *result, int base) {
     if (base < 2 || base > 36) {
         *result = '\0';
 
@@ -232,7 +232,7 @@ char* itoa(int value, char* result, int base) {
     return rc;
 }
 
-void htoa(uint64_t n, char* str, bool caps) {
+void htoa(uint64_t n, char *str, bool caps) {
     *str++ = '0';
     *str++ = 'x';
 
@@ -253,8 +253,8 @@ void htoa(uint64_t n, char* str, bool caps) {
     *str++ = tmp >= 0xA ? tmp - 0xA + (caps ? 'A' : 'a') : tmp + '0';
 }
 
-extern "C" void* memset(void* s, int c, size_t n) {
-    auto p = (unsigned char*)s;
+extern "C" void *memset(void *s, int c, size_t n) {
+    auto p = (unsigned char *)s;
     auto fill = (unsigned char)c;
 
     while (n--)
@@ -263,8 +263,8 @@ extern "C" void* memset(void* s, int c, size_t n) {
     return s;
 }
 
-extern "C" void* memcpy(void* dest, const void* src, size_t len) {
-    char *d = (char*)dest, *s = (char*)src;
+extern "C" void *memcpy(void *dest, const void *src, size_t len) {
+    char *d = (char *)dest, *s = (char *)src;
 
     while (len--)
         *d++ = *s++;

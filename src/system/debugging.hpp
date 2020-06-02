@@ -1,5 +1,5 @@
 #pragma once
 
 namespace Debug {
-    void print(const char* text);
+    void print(const char *text);
 }  // namespace Debug

@@ -6,20 +6,20 @@
 template <typename T>
 struct NodeLink {
     T data;
-    NodeLink<T>* next;
+    NodeLink<T> *next;
     int index;
 };
 
 template <typename T>
 class NodeLinkIterator {
 public:
-    NodeLink<T>* link;
+    NodeLink<T> *link;
 
-    explicit NodeLinkIterator(NodeLink<T>* link)
+    explicit NodeLinkIterator(NodeLink<T> *link)
         : link(link) {
     }
 
-    T& operator*() {
+    T &operator*() {
         return link->data;
     }
 
@@ -35,20 +35,19 @@ public:
 
 template <typename T>
 class LinkedList {
-    NodeLink<T>* list;
+    NodeLink<T> *list;
     size_t _length;
-    Spinlock lock;
 
     void update() {
         _length = 0;
 
-        if (list == nullptr)
+        if (!list)
             return;
 
-        NodeLink<T>* last = list;
+        NodeLink<T> *last = list;
         int idx = 0;
 
-        while (last != nullptr) {
+        while (last) {
             _length++;
             last->index = idx++;
             last = last->next;
@@ -57,53 +56,44 @@ class LinkedList {
 
 public:
     LinkedList()
-        : list(nullptr), _length(0), lock() {
+        : list(nullptr), _length(0) {
     }
 
     ~LinkedList() {
         clear();
     }
 
-    NodeLink<T>* find(int index) {
-        lock.lock();
-
+    NodeLink<T> *find(int index) {
         auto temp = list;
 
         while (temp && temp->index != index)
             temp = temp->next;
 
-        lock.release();
-
         return temp;
     }
 
-    T* operator[](int index) {
+    T *operator[](int index) {
         auto node = find(index);
 
         return node ? &node->data : nullptr;
     }
 
     void push(T value) {
-        lock.lock();
-
         auto node = new NodeLink<T>;
         node->data = value;
         node->next = list;
         list = node;
 
         update();
-        lock.release();
     }
 
     void push_back(T value) {
-        lock.lock();
-
         NodeLink<T> *node = new NodeLink<T>, *last = list;
         node->data = value;
         node->next = nullptr;
 
-        if (list != nullptr) {
-            while (last->next != nullptr)
+        if (list) {
+            while (last->next)
                 last = last->next;
 
             last->next = node;
@@ -111,19 +101,14 @@ public:
             list = node;
 
         update();
-        lock.release();
     }
 
     bool insert_before(int index, T value) {
-        lock.lock();
-
         NodeLink<T> *node = list, *last, *result = new NodeLink<T>;
         bool found = false;
 
-        while (node != nullptr) {
+        while (node) {
             if (node->index == index) {
-                lock.release();
-
                 found = true;
 
                 break;
@@ -146,28 +131,20 @@ public:
                 update();
             }
 
-            lock.release();
-
             return true;
         }
 
         delete result;
 
-        lock.release();
-
         return false;
     }
 
     bool insert_after(int index, T value) {
-        lock.lock();
-
         NodeLink<T> *node = list, *last, *result = new NodeLink<T>;
         bool found = false;
 
-        while (node != nullptr) {
+        while (node) {
             if (node->index == index) {
-                lock.release();
-
                 found = true;
 
                 break;
@@ -188,15 +165,13 @@ public:
                 result->next = last;
 
                 update();
-                lock.release();
+
 
                 return true;
             }
         }
 
         delete result;
-
-        lock.release();
 
         return false;
     }
@@ -205,15 +180,12 @@ public:
         if (!list)
             return false;
 
-        lock.lock();
-
         auto node = list;
         list = list->next;
 
         delete node;
 
         update();
-        lock.release();
 
         return true;
     }
@@ -222,12 +194,10 @@ public:
         if (!list)
             return false;
 
-        lock.lock();
-
         NodeLink<T> *node = list, *last;
         bool found = false;
 
-        while (node != nullptr) {
+        while (node) {
             if (node->index == index) {
                 found = true;
 
@@ -239,11 +209,8 @@ public:
         }
 
         if (found) {
-            if (node == list) {
-                lock.release();
-
+            if (node == list)
                 return false;
-            }
 
             if (node == list->next)
                 list = node;
@@ -253,12 +220,9 @@ public:
             delete last;
 
             update();
-            lock.release();
 
             return true;
         }
-
-        lock.release();
 
         return false;
     }
@@ -267,23 +231,18 @@ public:
         if (!list)
             return false;
 
-        lock.lock();
-
         NodeLink<T> *node = list, *last = nullptr;
 
-        if (node == nullptr || !node->next)
+        if (!node || !node->next)
             list = nullptr;
         else {
-            while (node->next != nullptr) {
+            while (node->next) {
                 last = node;
                 node = node->next;
             }
 
-            if (last == nullptr) {
-                lock.release();
-
+            if (!last)
                 return false;
-            }
 
             last->next = nullptr;
         }
@@ -294,10 +253,10 @@ public:
     }
 
     void clear() {
-        if (list == nullptr)
+        if (!list)
             return;
 
-        while (list != nullptr)
+        while (list)
             pop_back();
     }
 

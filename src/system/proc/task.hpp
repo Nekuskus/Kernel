@@ -24,12 +24,12 @@ namespace Tasking {
 
     struct Process {
         size_t pid;
-        const char* path;
-        const char* cwd;
-        Vmm::PageTable* cr3;
-        LinkedList<Thread*> threads;
+        const char *path;
+        const char *cwd;
+        Vmm::PageTable *cr3;
+        LinkedList<Thread *> threads;
     };
 
     void init();
-    void switch_task(Cpu::Registers* registers, Thread* thread);
+    void switch_task(Cpu::Registers *registers, Thread *thread);
 }  // namespace Tasking

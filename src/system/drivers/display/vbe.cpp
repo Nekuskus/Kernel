@@ -37,7 +37,7 @@ void Graphics::write_text(const char c, uint16_t x, uint16_t y, uint32_t foregro
                 set_pixel(x + nx, y + ny, foreground);
 }
 
-void Graphics::write_text(const char* str, uint16_t x, uint16_t y, uint32_t foreground) {
+void Graphics::write_text(const char *str, uint16_t x, uint16_t y, uint32_t foreground) {
     if (!is_working)
         return;
 
@@ -56,7 +56,7 @@ void Graphics::write_text(const char c, uint16_t x, uint16_t y, uint32_t foregro
             set_pixel(x + nx, y + ny, __font_bitmap__[font_off + ny] & (1 << (8 - nx)) ? foreground : background);
 }
 
-void Graphics::write_text(const char* str, uint16_t x, uint16_t y, uint32_t foreground, uint32_t background) {
+void Graphics::write_text(const char *str, uint16_t x, uint16_t y, uint32_t foreground, uint32_t background) {
     if (!is_working)
         return;
 
@@ -71,6 +71,6 @@ void Graphics::set_pixel(uint16_t x, uint16_t y, uint32_t color) {
     mode_info.framebuffer[(x * 4 + y * mode_info.pitch) / (mode_info.bpp / 8)] = color;
 }
 
-Graphics::ModeInfo& Graphics::get_mode_info() {
+Graphics::ModeInfo &Graphics::get_mode_info() {
     return mode_info;
 }

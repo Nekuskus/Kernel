@@ -14,6 +14,6 @@ public:
     ~Serial();
     void set_baud_rate(uint32_t baud_rate);
     void write(const char a);
-    void write(const char* a);
+    void write(const char *a);
     char read();
 };

@@ -7,7 +7,7 @@
 #include <system/mm/mm.hpp>
 #include <system/panic.hpp>
 
-static Hpet::Hpet* hpet = nullptr;
+static Hpet::Hpet *hpet = nullptr;
 static uint64_t clk = 0;
 
 void Time::ksleep(uint64_t time) {
@@ -18,12 +18,12 @@ void Time::ksleep(uint64_t time) {
 }
 
 void Hpet::init() {
-    auto hpet_table = (HpetTable*)Acpi::get_table("HPET");
+    auto hpet_table = (HpetTable *)Acpi::get_table("HPET");
 
     if (!hpet_table)
         panic("UNSUPPORTED_HARDWARE_MISSING_HPET");
 
-    hpet = (Hpet*)(hpet_table->address + virtual_physical_base);
+    hpet = (Hpet *)(hpet_table->address + virtual_physical_base);
     clk = (hpet->general_capabilities >> 32) & 0xFFFFFFFF;
 
     hpet->general_configuration = 0;

@@ -60,9 +60,9 @@ namespace Madt {
         InterruptController interrupt_controllers[];
     };
 
-    LinkedList<Madt::LocalApic*>& get_lapics();
-    LinkedList<Madt::IoApic*>& get_ioapics();
-    LinkedList<Madt::InterruptSourceOverride*>& get_isos();
+    LinkedList<Madt::LocalApic *> &get_lapics();
+    LinkedList<Madt::IoApic *> &get_ioapics();
+    LinkedList<Madt::InterruptSourceOverride *> &get_isos();
     bool has_legacy_pic();
     void init();
 }  // namespace Madt

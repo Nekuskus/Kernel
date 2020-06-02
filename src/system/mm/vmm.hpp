@@ -26,18 +26,18 @@ namespace Vmm {
         size_t pt;
     };
 
-    PageTableEntries virtual_to_entries(void* virt);
-    void* entries_to_virtual(PageTableEntries entries);
+    PageTableEntries virtual_to_entries(void *virt);
+    void *entries_to_virtual(PageTableEntries entries);
     void init();
-    void map_pages(PageTable* pml4, void* virt, void* phys, size_t count, int perms);
-    bool unmap_pages(PageTable* pml4, void* virt, size_t count);
-    bool update_perms(PageTable* pml4, void* virt, size_t count, int perms);
-    bool map_huge_pages(PageTable* pml4, void* virt, void* phys, size_t count, int perms);
-    bool unmap_huge_pages(PageTable* pml4, void* virt, size_t count);
-    bool update_huge_perms(PageTable* pml4, void* virt, size_t count, int perms);
-    uintptr_t get_entry(PageTable* pml4, void* virt);
-    PageTable* new_address_space();
-    PageTable* get_ctx_kernel();
-    void set_context(PageTable* ctx);
-    PageTable* get_current_context();
+    void map_pages(PageTable *pml4, void *virt, void *phys, size_t count, int perms);
+    bool unmap_pages(PageTable *pml4, void *virt, size_t count);
+    bool update_perms(PageTable *pml4, void *virt, size_t count, int perms);
+    bool map_huge_pages(PageTable *pml4, void *virt, void *phys, size_t count, int perms);
+    bool unmap_huge_pages(PageTable *pml4, void *virt, size_t count);
+    bool update_huge_perms(PageTable *pml4, void *virt, size_t count, int perms);
+    uintptr_t get_entry(PageTable *pml4, void *virt);
+    PageTable *new_address_space();
+    PageTable *get_ctx_kernel();
+    void set_context(PageTable *ctx);
+    PageTable *get_current_context();
 }  // namespace Vmm

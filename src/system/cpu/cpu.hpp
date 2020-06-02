@@ -41,7 +41,7 @@ namespace Cpu {
 
     struct CpuState {
         bool booted;
-        Tss* tss;
+        Tss *tss;
         uint32_t id;
         size_t process;
         size_t thread;
@@ -51,7 +51,7 @@ namespace Cpu {
     uint64_t read_msr(uint32_t msr);
     void write_msr(uint32_t msr, uint64_t value);
     void halt_forever();
-    void push(CpuState* cpu_state);
-    CpuState* get_current_cpu();
-    LinkedList<CpuState*>& get_cpu_states();
+    void push(CpuState *cpu_state);
+    CpuState *get_current_cpu();
+    LinkedList<CpuState *> &get_cpu_states();
 }  // namespace Cpu

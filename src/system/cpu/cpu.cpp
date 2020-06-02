@@ -2,7 +2,7 @@
 
 #include <cpuid.h>
 
-static auto cpu_states = LinkedList<Cpu::CpuState*>();
+static auto cpu_states = LinkedList<Cpu::CpuState *>();
 
 bool Cpu::check_msr(uint32_t flag) {
     uint32_t a, b, c, d;
@@ -38,15 +38,15 @@ void Cpu::halt_forever() {
         : "memory");
 }
 
-LinkedList<Cpu::CpuState*>& Cpu::get_cpu_states() {
+LinkedList<Cpu::CpuState *> &Cpu::get_cpu_states() {
     return cpu_states;
 }
 
-void Cpu::push(Cpu::CpuState* cpu_state) {
+void Cpu::push(Cpu::CpuState *cpu_state) {
     cpu_states.push_back(cpu_state);
 }
 
-Cpu::CpuState* Cpu::get_current_cpu() {
+Cpu::CpuState *Cpu::get_current_cpu() {
     uint32_t a, b, c, d;
     __cpuid(1, a, b, c, d);
 

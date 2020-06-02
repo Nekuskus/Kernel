@@ -9,7 +9,7 @@
 #include "idt.hpp"
 #include "terminal.hpp"
 
-void page_fault_handler(Cpu::Registers* registers) {
+void page_fault_handler(Cpu::Registers *registers) {
     uint64_t cr2 = 0;
 
     asm volatile("mov %%cr2, %0"
@@ -22,7 +22,7 @@ void page_fault_handler(Cpu::Registers* registers) {
     Debug::print(text);
 }
 
-void general_protection_fault_handler(Cpu::Registers* registers) {
+void general_protection_fault_handler(Cpu::Registers *registers) {
     char text[255] = "";
 
     sprintf(text, "    Segment selector index: %i.\n\r", registers->error_code);

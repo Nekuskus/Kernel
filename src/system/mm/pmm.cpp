@@ -6,14 +6,14 @@
 
 #include "mm.hpp"
 
-static uint64_t* bitmap;
+static uint64_t *bitmap;
 static size_t bitmap_len = 64;
 static size_t free_pages = 0;
 static size_t total_pages = 0;
 static size_t cur_idx = 0;
 
-extern "C" void* _kernel_start;
-extern "C" void* _kernel_end;
+extern "C" void *_kernel_start;
+extern "C" void *_kernel_end;
 extern "C" uint64_t trampoline_size;
 
 bool bit_read(size_t idx) {
@@ -38,7 +38,7 @@ bool bitmap_is_free(size_t idx, size_t count) {
     return true;
 }
 
-uintptr_t find_available_memory_top(Stivale::StivaleMMapEntry* mmap, size_t mmap_len) {
+uintptr_t find_available_memory_top(Stivale::StivaleMMapEntry *mmap, size_t mmap_len) {
     uintptr_t top = 0;
 
     for (size_t i = 0; i < mmap_len; i++)
@@ -49,10 +49,10 @@ uintptr_t find_available_memory_top(Stivale::StivaleMMapEntry* mmap, size_t mmap
     return top;
 }
 
-void Pmm::init(Stivale::StivaleMMapEntry* mmap, size_t mmap_len) {
+void Pmm::init(Stivale::StivaleMMapEntry *mmap, size_t mmap_len) {
     auto mem_top = find_available_memory_top(mmap, mmap_len);
     uint32_t mem_pages = (mem_top + 0x1000 - 1) / 0x1000;
-    bitmap = (uint64_t*)(memory_base + virtual_physical_base);
+    bitmap = (uint64_t *)(memory_base + virtual_physical_base);
     bitmap_len = mem_pages;
     size_t bitmap_phys = (size_t)bitmap - virtual_physical_base;
 
@@ -74,14 +74,14 @@ void Pmm::init(Stivale::StivaleMMapEntry* mmap, size_t mmap_len) {
 
             if (Math::overlaps(bitmap_phys, bitmap_len / 8, start, len)) {
                 if (start < bitmap_phys)
-                    free((void*)start, (start - bitmap_phys) / 0x1000);
+                    free((void *)start, (start - bitmap_phys) / 0x1000);
 
                 start = bitmap_phys + bitmap_len / 8;
                 len -= bitmap_len / 8;
                 count = len / 0x1000;
             }
 
-            free((void*)start, count);
+            free((void *)start, count);
         }
     }
 
@@ -93,7 +93,7 @@ void Pmm::init(Stivale::StivaleMMapEntry* mmap, size_t mmap_len) {
     alloc((bitmap_len / 8 + 0x1000 - 1) / 0x1000);
 }
 
-void* Pmm::alloc(size_t count) {
+void *Pmm::alloc(size_t count) {
     for (size_t i = 0; i < bitmap_len; i++) {
         if (cur_idx == bitmap_len)
             cur_idx = 0;
@@ -109,7 +109,7 @@ void* Pmm::alloc(size_t count) {
         if (total_pages)
             free_pages -= count;
 
-        return (void*)(cur_idx * 0x1000);
+        return (void *)(cur_idx * 0x1000);
     }
 
     panic("OUT_OF_MEMORY");
@@ -117,7 +117,7 @@ void* Pmm::alloc(size_t count) {
     return nullptr;
 }
 
-void Pmm::free(void* mem, size_t count) {
+void Pmm::free(void *mem, size_t count) {
     size_t idx = (size_t)mem / 0x1000;
 
     bit_write(idx, 0, count);

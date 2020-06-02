@@ -18,7 +18,7 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: false
 Cpp11BracedListStyle: false
 ColumnLimit: 0
 DerivePointerAlignment: false
-PointerAlignment: Left
+PointerAlignment: Right
 DisableFormat: false
 IndentCaseLabels: true
 Language: Cpp
