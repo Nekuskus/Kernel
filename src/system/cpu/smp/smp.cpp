@@ -66,6 +66,9 @@ void Cpu::Smp::init() {
                 return;
             }
 
+            sprintf(debug, "[SMP] Allocated stack for CPU with lapic ID %d\n\r", lapic->id);
+            Debug::print(debug);
+
             uint64_t trampoline_stack_end = (uint64_t)trampoline_stack + 0x10000;
 
             auto cpu = new Cpu::CpuState;

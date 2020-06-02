@@ -1,13 +1,10 @@
 #pragma once
 #include <stddef.h>
 
-#include "spinlock.hpp"
-
 template <typename T>
 struct NodeLink {
     T data;
     NodeLink<T> *next;
-    int index;
 };
 
 template <typename T>
@@ -45,11 +42,9 @@ class LinkedList {
             return;
 
         NodeLink<T> *last = list;
-        int idx = 0;
 
         while (last) {
             _length++;
-            last->index = idx++;
             last = last->next;
         }
     }
@@ -66,7 +61,7 @@ public:
     NodeLink<T> *find(int index) {
         auto temp = list;
 
-        while (temp && temp->index != index)
+        while (temp && index--)
             temp = temp->next;
 
         return temp;
@@ -105,20 +100,13 @@ public:
 
     bool insert_before(int index, T value) {
         NodeLink<T> *node = list, *last, *result = new NodeLink<T>;
-        bool found = false;
 
-        while (node) {
-            if (node->index == index) {
-                found = true;
-
-                break;
-            }
-
+        while (node && index--) {
             last = node;
             node = node->next;
         }
 
-        if (found) {
+        if (node) {
             if (node == list) {
                 push(value);
 
@@ -141,19 +129,11 @@ public:
 
     bool insert_after(int index, T value) {
         NodeLink<T> *node = list, *last, *result = new NodeLink<T>;
-        bool found = false;
 
-        while (node) {
-            if (node->index == index) {
-                found = true;
-
-                break;
-            }
-
+        while (node && index--)
             node = node->next;
-        }
 
-        if (found) {
+        if (node) {
             if (node->next == nullptr) {
                 push_back(value);
 
@@ -195,27 +175,22 @@ public:
             return false;
 
         NodeLink<T> *node = list, *last;
-        bool found = false;
 
-        while (node) {
-            if (node->index == index) {
-                found = true;
+        int idx = index;
 
-                break;
-            }
-
+        while (node && index--) {
             last = node;
             node = node->next;
         }
 
-        if (found) {
+        if (node) {
             if (node == list)
                 return false;
 
             if (node == list->next)
                 list = node;
             else
-                find(last->index - 1)->next = node;
+                find(idx - 2)->next = node;
 
             delete last;
 
