@@ -14,8 +14,7 @@ static size_t cur_idx = 0;
 
 extern "C" void* _kernel_start;
 extern "C" void* _kernel_end;
-extern "C" void* _trampoline_start;
-extern "C" void* _trampoline_end;
+extern "C" uint64_t trampoline_size;
 
 bool bit_read(size_t idx) {
     size_t off = idx / 64, mask = 1UL << (idx % 64UL);
@@ -87,6 +86,7 @@ void Pmm::init(Stivale::StivaleMMapEntry* mmap, size_t mmap_len) {
     }
 
     bit_write((size_t)(&_kernel_start - virtual_kernel_base) / 0x1000, 1, ((size_t)(&_kernel_end - &_kernel_start) + 0x1000 - 1) / 0x1000);
+    bit_write(1, 1, (trampoline_size + 0x1000 - 1) / 0x1000);
 
     total_pages = free_pages;
     bit_write(bitmap_phys / 0x1000, 1, (bitmap_len / 8 + 0x1000 - 1) / 0x1000);

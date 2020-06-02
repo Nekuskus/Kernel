@@ -41,57 +41,13 @@ extern "C" void ap_entry() {
         asm volatile("hlt");
 }
 
-inline void boot_cpu(Vmm::PageTable* kernel_pml4, uint32_t lapic_id) {
-    auto trampoline_stack = calloc(0x10000, 1);
-    char debug[255] = "";
-
-    if (!trampoline_stack) {
-        sprintf(debug, "[SMP] Failed to allocate stack for CPU with lapic ID %d\n\r", lapic_id);
-        Debug::print(debug);
-
-        return;
-    }
-
-    uint64_t trampoline_stack_end = (uint64_t)trampoline_stack + 0x10000;
-
-    auto cpu = new Cpu::CpuState;
-    cpu->id = lapic_id;
-
-    Cpu::push(cpu);
-
-    Cpu::Tss* tss = new Cpu::Tss;
-    tss->rsp[0] = trampoline_stack_end;
-
-    cpu->tss = tss;
-
-    prepare_trampoline(kernel_pml4, ap_entry, (void*)trampoline_stack_end, tss);
-
-    Cpu::Apic::LocalApic::send_ipi(lapic_id, Cpu::Apic::LocalApic::IcrFlags::TM_LEVEL | Cpu::Apic::LocalApic::IcrFlags::LEVELASSERT | Cpu::Apic::LocalApic::IcrFlags::DM_INIT);
-    Cpu::Apic::LocalApic::send_ipi(lapic_id, Cpu::Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)0x1000 >> 12) & 0xFF));
-
-    if (!wait_for_boot())
-        Cpu::Apic::LocalApic::send_ipi(lapic_id, Cpu::Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)0x1000 >> 12) & 0xFF));
-
-    if (wait_for_boot()) {
-        cpu->booted = true;
-
-        sprintf(debug, "[SMP] Booted CPU with lapic ID #%d\n\r", lapic_id);
-        Debug::print(debug);
-    } else {
-        sprintf(debug, "[SMP] Failed to boot CPU with lapic ID #%d\n\r", lapic_id);
-        Debug::print(debug);
-    }
-}
-
 void Cpu::Smp::init() {
     auto current_cpu = Cpu::get_current_cpu();
 
-    Tss* bsp_tss = new Tss;
+    Tss* bsp_tss = current_cpu->tss = new Tss;
     bsp_tss->rsp[0] = (uint64_t)&stack_end;
 
     init_bsp_local(bsp_tss);
-
-    current_cpu->tss = bsp_tss;
 
     auto kernel_pml4 = Vmm::get_ctx_kernel();
 
@@ -99,8 +55,45 @@ void Cpu::Smp::init() {
     Vmm::map_pages(kernel_pml4, (void*)0x510, (void*)0x510, 1, (int)Vmm::VirtualMemoryFlags::PRESENT | (int)Vmm::VirtualMemoryFlags::WRITE);
 
     for (auto lapic : Madt::get_lapics())
-        if (((lapic->flags & 1) || (lapic->flags & 2)) && lapic->id != current_cpu->id)
-            boot_cpu(kernel_pml4, lapic->id);
+        if (((lapic->flags & 1) || (lapic->flags & 2)) && lapic->id != current_cpu->id) {
+            auto trampoline_stack = calloc(0x10000, 1);
+            char debug[255] = "";
+
+            if (!trampoline_stack) {
+                sprintf(debug, "[SMP] Failed to allocate stack for CPU with lapic ID %d\n\r", lapic->id);
+                Debug::print(debug);
+
+                return;
+            }
+
+            uint64_t trampoline_stack_end = (uint64_t)trampoline_stack + 0x10000;
+
+            auto cpu = new Cpu::CpuState;
+            cpu->id = lapic->id;
+
+            Cpu::push(cpu);
+
+            Cpu::Tss* tss = cpu->tss = new Cpu::Tss;
+            tss->rsp[0] = trampoline_stack_end;
+
+            prepare_trampoline(kernel_pml4, ap_entry, (void*)trampoline_stack_end, tss);
+
+            Cpu::Apic::LocalApic::send_ipi(lapic->id, Cpu::Apic::LocalApic::IcrFlags::TM_LEVEL | Cpu::Apic::LocalApic::IcrFlags::LEVELASSERT | Cpu::Apic::LocalApic::IcrFlags::DM_INIT);
+            Cpu::Apic::LocalApic::send_ipi(lapic->id, Cpu::Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)0x1000 >> 12) & 0xFF));
+
+            if (!wait_for_boot())
+                Cpu::Apic::LocalApic::send_ipi(lapic->id, Cpu::Apic::LocalApic::IcrFlags::DM_SIPI | (((uint64_t)0x1000 >> 12) & 0xFF));
+
+            if (wait_for_boot()) {
+                cpu->booted = true;
+
+                sprintf(debug, "[SMP] Booted CPU with lapic ID #%d\n\r", lapic->id);
+                Debug::print(debug);
+            } else {
+                sprintf(debug, "[SMP] Failed to boot CPU with lapic ID #%d\n\r", lapic->id);
+                Debug::print(debug);
+            }
+        }
 
     Debug::print("[SMP] Finished setting up.\n\r");
 }
