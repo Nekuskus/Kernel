@@ -1,43 +1,35 @@
-ENTRY(loader)
-KERNEL_VMA = 0xFFFFFFFF80000000;
+ENTRY(_start)
 
-SECTIONS {
-    . = KERNEL_VMA + 0x200000;
+SECTIONS
+{
+    . = 0xFFFFFFFF80000000 + 0x200000;
     _kernel_start = .;
 
-    .text : AT(ADDR(.text) - KERNEL_VMA) {
-        *(.multiboot)
-        *(.text)
-        _rodata = .;
-        *(.rodata*)
+    .stivalehdr ALIGN(4K) :
+    {
+        KEEP(*(.stivalehdr))
     }
 
-    .data ALIGN (0x1000) : AT(ADDR(.data) - KERNEL_VMA) {
-        *(.data)
+    .text ALIGN(4K) :
+    {
+        KEEP(*(.text*))
     }
 
-    .bss : AT(ADDR(.bss) - KERNEL_VMA) {
-        _sbss = .;
-        *(COMMON)
-        *(.bss)
-        _ebss = .;
+    .rodata ALIGN(4K) :
+    {
+        KEEP(*(.rodata*))
     }
 
-    .init : AT(ADDR(.init) - KERNEL_VMA) {
-        *(.init)
+    .data ALIGN(4K) :
+    {
+        KEEP(*(.data*))
     }
 
-    .finit : AT(ADDR(.finit) - KERNEL_VMA) {
-        *(.finit)
+    .bss ALIGN(4K) :
+    {
+        KEEP(*(COMMON))
+        KEEP(*(.bss*))
     }
 
-    _kernel_end = .;
-
-    . = 0x1000;
-
-    .trampoline : AT(0x400000) {
-        _trampoline_start = .;
-        *(.trampoline)
-        _trampoline_end = .;
-   }
+   _kernel_end = .;
 }

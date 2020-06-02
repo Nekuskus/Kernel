@@ -10,9 +10,9 @@ static bool is_working = false;
 void Graphics::init(ModeInfo gfx_mode_info) {
     is_working = false;
     mode_info = gfx_mode_info;
-    is_working = true;
 
     clear(0x000000);
+    is_working = true;
     Debug::print("[VBE] Initialized display.\n\r");
 }
 

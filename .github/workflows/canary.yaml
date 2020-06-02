@@ -1,24 +1,30 @@
-name: Automagically bundle Canary ISO
+name: Automagically bundle Canary image
 on:
   push:
     tags:
       - "!*"
       - "*-canary*"
 jobs:
-  tagged-release:
-    name: "Canary"
-    runs-on: "ubuntu-latest"
+  canary-build:
+    name: "Canary build"
+    runs-on: "ubuntu-20.04"
     steps:
       - name: "Install dependencies"
-        run: sudo apt install build-essential clang-9 lld-9 nasm make grub-pc-bin xorriso mtools && alias clang++=clang++-9
-      - name: "Clone FWBuild"
-        run: git clone https://github.com/Firework-OS/FWBuild
-      - name: "Build & Run FWBuild to create ISO"
-        run: cd FWBuild && make && cd build && ./FireworkBuild
-      - name: "Create Release"
+        run: sudo apt update && sudo apt dist-upgrade && sudo apt install build-essential clang lld nasm make python3 python3-pip python3-venv curl fuse libfuse-dev
+      - name: "Install Python Poetry"
+        run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3
+      - name: "Clone Bootstrap"
+        run: git clone https://github.com/Firework-OS/Bootstrap
+      - name: "Install etchfs"
+        run: git clone https://github.com/qword-os/echfs.git && cd echfs && make && sudo make install
+      - name: "Install Bootstrap dependencies"
+        run: cd Bootstrap && source $HOME/.poetry/env && poetry update
+      - name: "Run Bootstrap"
+        run: cd Bootstrap && source $HOME/.poetry/env && poetry run python3 fwstrap.py
+      - name: "Create release"
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: true
           files: |
-            FWBuild/build/out/Debug/Firework.iso
+            Bootstrap/build/Firework.img

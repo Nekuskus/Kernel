@@ -8,7 +8,7 @@ namespace Graphics {
         uint32_t pitch;
         uint32_t width;
         uint32_t height;
-        uint8_t bpp;
+        uint16_t bpp;
     };
 
     void init(ModeInfo gfx_mode_info);

@@ -5,7 +5,7 @@
 #include "mm.hpp"
 #include "pmm.hpp"
 
-extern "C" Vmm::PageTable* kernel_pml4;
+static Vmm::PageTable* kernel_pml4;
 
 inline Vmm::PageTableEntries Vmm::virtual_to_entries(void* virt) {
     PageTableEntries off = {
