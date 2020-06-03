@@ -54,19 +54,39 @@ void Acpi::init(uint64_t rsdp) {
     auto ctx = Vmm::get_ctx_kernel();
     int flags = (int)Vmm::VirtualMemoryFlags::PRESENT;
 
-    for (size_t i = 0; i < entries; i++) {
-        auto h = (SdtHeader *)((uint64_t)rsdt->tables[i] + virtual_physical_base);
-        auto h_phys = (void *)(uint64_t)rsdt->tables[i];
+    if (rsdp_info.version < 2) {
+        for (size_t i = 0; i < entries; i++) {
+            auto h = (SdtHeader *)((uint64_t)rsdt->tables[i] + virtual_physical_base);
+            auto h_phys = (void *)(uint64_t)rsdt->tables[i];
 
-        Vmm::map_pages(ctx, h, h_phys, 1, flags);
-        Vmm::map_pages(ctx, h, h_phys, (h->length + 0x1000 - 1) / 0x1000, flags);
+            Vmm::map_pages(ctx, h, h_phys, 1, flags);
+            Vmm::map_pages(ctx, h, h_phys, (h->length + 0x1000 - 1) / 0x1000, flags);
 
-        if (!calculate_checksum(h, h->length)) {
-            sprintf(text, "[ACPI] Found table '%c%c%c%c' at %x.\n\r", h->signature[0], h->signature[1], h->signature[2], h->signature[3], h_phys);
-            Debug::print(text);
-            Terminal::write(text, 0xFFFFFF);
+            if (!calculate_checksum(h, h->length)) {
+                sprintf(text, "[ACPI] Found table '%c%c%c%c' at %x.\n\r", h->signature[0], h->signature[1], h->signature[2], h->signature[3], h_phys);
+                Debug::print(text);
+                Terminal::write(text, 0xFFFFFF);
 
-            acpi_tables.push_back(h);
+                acpi_tables.push_back(h);
+            }
+        }
+    } else {
+        auto xsdt = (XsdtHeader *)rsdp_info.address;
+
+        for (size_t i = 0; i < entries; i++) {
+            auto h = (SdtHeader *)(xsdt->tables[i] + virtual_physical_base);
+            auto h_phys = (void *)xsdt->tables[i];
+
+            Vmm::map_pages(ctx, h, h_phys, 1, flags);
+            Vmm::map_pages(ctx, h, h_phys, (h->length + 0x1000 - 1) / 0x1000, flags);
+
+            if (!calculate_checksum(h, h->length)) {
+                sprintf(text, "[ACPI] Found table '%c%c%c%c' at %x.\n\r", h->signature[0], h->signature[1], h->signature[2], h->signature[3], h_phys);
+                Debug::print(text);
+                Terminal::write(text, 0xFFFFFF);
+
+                acpi_tables.push_back(h);
+            }
         }
     }
 
