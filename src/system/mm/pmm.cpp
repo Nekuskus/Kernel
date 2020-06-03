@@ -112,7 +112,7 @@ void *Pmm::alloc(size_t count) {
         return (void *)(cur_idx * 0x1000);
     }
 
-    panic("OUT_OF_MEMORY");
+    panic("Uh oh, the operating system has run out of memory, make sure you have the specs for the programs you need to run!");
 
     return nullptr;
 }

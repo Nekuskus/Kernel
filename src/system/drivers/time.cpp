@@ -21,7 +21,7 @@ void Hpet::init() {
     auto hpet_table = (HpetTable *)Acpi::get_table("HPET");
 
     if (!hpet_table)
-        panic("UNSUPPORTED_HARDWARE_MISSING_HPET");
+        panic("This is akward; This computer is missing HPET from the ACPI tables, usually computers have this, make sure you didn't disable it in your BIOS settings!");
 
     hpet = (Hpet *)(hpet_table->address + virtual_physical_base);
     clk = (hpet->general_capabilities >> 32) & 0xFFFFFFFF;

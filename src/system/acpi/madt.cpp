@@ -18,7 +18,7 @@ void Madt::init() {
     madt = (MadtHeader *)Acpi::get_table("APIC");
 
     if (!madt)
-        panic("UNSUPPORTED_HARDWARE_MADT_MISSING");
+        panic("Your hardware is unsupported, usually computers from this era have this MADT table in ACPI, but yours doesn't!");
 
     legacy_pic = madt->flags & 1ULL;
 

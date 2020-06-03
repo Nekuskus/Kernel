@@ -31,6 +31,9 @@ Acpi::SdtHeader *Acpi::get_table(const char *signature) {
 }
 
 void Acpi::init(uint64_t rsdp) {
+    if (!rsdp)
+        panic("Your hardware is unsupported; ACPI is missing on your computer, that's little weird, usually computers have that.");
+
     rsdp_info.rsdp_address = rsdp + virtual_kernel_base;
 
     RsdpDescriptor *rsdp_ptr = (RsdpDescriptor *)rsdp_info.rsdp_address;
