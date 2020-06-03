@@ -45,46 +45,31 @@ void Acpi::init(uint64_t rsdp) {
 
     char text[255] = "";
 
-    sprintf(text, "[ACPI] Given ACPI with OEM ID '%s' and version %d.\n\r", rsdp_info.oem_id, rsdp_info.version);
+    sprintf(text, "[ACPI] Given ACPI v%d by OEM '%s':\n\r", rsdp_info.version, rsdp_info.oem_id);
     Debug::print(text);
+    Terminal::write(text, 0xFFFFFF);
 
-    if (rsdp_info.version >= 2) {
-        auto xsdt = (XsdtHeader *)rsdp_info.address;
-        size_t entries = (xsdt->header.length - sizeof(SdtHeader)) / 8;
+    auto rsdt = (RsdtHeader *)rsdp_info.address;
+    size_t entries = (rsdt->header.length - sizeof(SdtHeader)) / (rsdp_info.version < 2 ? 4 : 8);
+    auto ctx = Vmm::get_ctx_kernel();
+    int flags = (int)Vmm::VirtualMemoryFlags::PRESENT;
 
-        for (size_t i = 0; i < entries; i++) {
-            auto h = (SdtHeader *)(xsdt->tables[i] + virtual_physical_base);
+    for (size_t i = 0; i < entries; i++) {
+        auto h = (SdtHeader *)((uint64_t)rsdt->tables[i] + virtual_physical_base);
+        auto h_phys = (void *)(uint64_t)rsdt->tables[i];
 
-            Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void *)xsdt->tables[i], 1, (int)Vmm::VirtualMemoryFlags::PRESENT);
-            Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void *)xsdt->tables[i], (h->length + 0x1000 - 1) / 0x1000, (int)Vmm::VirtualMemoryFlags::PRESENT);
+        Vmm::map_pages(ctx, h, h_phys, 1, flags);
+        Vmm::map_pages(ctx, h, h_phys, (h->length + 0x1000 - 1) / 0x1000, flags);
 
-            if (!calculate_checksum(h, h->length)) {
-                char text[255] = "";
+        if (!calculate_checksum(h, h->length)) {
+            sprintf(text, "[ACPI] Found table '%c%c%c%c' at %x.\n\r", h->signature[0], h->signature[1], h->signature[2], h->signature[3], h_phys);
+            Debug::print(text);
+            Terminal::write(text, 0xFFFFFF);
 
-                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c\n\r", xsdt->tables[i], h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
-                Debug::print(text);
-                Terminal::write(text, 0xFFFFFF);
-                acpi_tables.push_back(h);
-            }
-        }
-    } else {
-        auto rsdt = (RsdtHeader *)rsdp_info.address;
-        size_t entries = (rsdt->header.length - sizeof(SdtHeader)) / 4;
-
-        for (size_t i = 0; i < entries; i++) {
-            auto h = (SdtHeader *)((uint64_t)rsdt->tables[i] + virtual_physical_base);
-
-            Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void *)(uint64_t)rsdt->tables[i], 1, (int)Vmm::VirtualMemoryFlags::PRESENT);
-            Vmm::map_pages(Vmm::get_ctx_kernel(), h, (void *)(uint64_t)rsdt->tables[i], (h->length + 0x1000 - 1) / 0x1000, (int)Vmm::VirtualMemoryFlags::PRESENT);
-
-            if (!calculate_checksum(h, h->length)) {
-                char text[255] = "";
-
-                sprintf(text, "[ACPI] Found table with address %x and signature %c%c%c%c\n\r", (uint64_t)h - virtual_physical_base, h->signature[0], h->signature[1], h->signature[2], h->signature[3]);
-                Debug::print(text);
-                Terminal::write(text, 0xFFFFFF);
-                acpi_tables.push_back(h);
-            }
+            acpi_tables.push_back(h);
         }
     }
+
+    Debug::print("[ACPI] Finished setting up.");
+    Terminal::write("[ACPI] Finished setting up.", 0xFFFFFF);
 }
