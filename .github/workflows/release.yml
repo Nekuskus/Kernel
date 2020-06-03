@@ -10,7 +10,7 @@ jobs:
     runs-on: "ubuntu-20.04"
     steps:
       - name: "Install dependencies"
-        run: sudo apt update && sudo apt dist-upgrade && sudo apt install build-essential clang lld nasm make python3 python3-pip python3-venv curl fuse libfuse-dev
+        run: sudo apt update && sudo apt install build-essential clang lld nasm make python3 python3-pip python3-venv curl fuse libfuse-dev
       - name: "Install Python Poetry"
         run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 && source $HOME/.poetry/env
       - name: "Clone Bootstrap"
