@@ -111,16 +111,25 @@ inline void set_entry(uint8_t vec, uintptr_t function, uint16_t selector, uint8_
 }
 
 void Idt::init() {
-    Port::outb(0x20, 17);
-    Port::outb(0xA0, 17);
+    uint8_t mask0 = Port::inb(0x21), mask1 = Port::inb(0xA1);
+
+    Port::outb(0x20, 0x11);
+    Port::outb(0xA0, 0x11);
+
     Port::outb(0x21, 32);
     Port::outb(0xA1, 40);
-    Port::outb(0x21, 1);
-    Port::outb(0xA1, 1);
+
     Port::outb(0x21, 4);
     Port::outb(0xA1, 2);
-    Port::outb(0x21, 255);
-    Port::outb(0xA1, 255);
+
+    Port::outb(0x21, 0x01);
+    Port::outb(0xA1, 0x01);
+
+    Port::outb(0x21, mask0);
+    Port::outb(0xA1, mask1);
+
+    Port::outb(0xA1, 0xFF);
+    Port::outb(0x21, 0xFF);
 
     for (size_t i = 0; i < 249; i++)
         set_entry(i, (uintptr_t)isrs[i], 0x08, 0);
