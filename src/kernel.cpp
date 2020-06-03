@@ -70,6 +70,7 @@ extern "C" void _start(void *stivale_ptr) {
     Ahci::init();
     Tasking::init();
     Cpu::Smp::init();
+    Tasking::set_status(Tasking::SchedulerStatus::WORKING);
 
     for (;;)
         asm volatile("hlt");

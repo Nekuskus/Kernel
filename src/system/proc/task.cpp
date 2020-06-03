@@ -75,9 +75,11 @@ inline Tasking::Thread *find_next_thread() {
     return kernel_idle_thread;
 }
 
-static void schedule [[maybe_unused]] (Cpu::Registers *registers) {
-    if (scheduler_status == Tasking::SchedulerStatus::WORKING)
-        Tasking::switch_task(registers, find_next_thread());
+static void schedule(Cpu::Registers *registers) {
+    if (scheduler_status != Tasking::SchedulerStatus::WORKING)
+        return;
+
+    Tasking::switch_task(registers, find_next_thread());
 }
 
 static void kernel_idle_task() {

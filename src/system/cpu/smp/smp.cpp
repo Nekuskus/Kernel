@@ -4,6 +4,7 @@
 #include <lib/linked_list.hpp>
 #include <system/acpi/madt.hpp>
 #include <system/cpu/apic.hpp>
+#include <system/cpu/cpu.hpp>
 #include <system/debugging.hpp>
 #include <system/drivers/time.hpp>
 #include <system/mm/mm.hpp>
@@ -17,17 +18,15 @@ extern "C" void init_bsp_local(void *);
 extern "C" void prepare_trampoline(void *, void (*)(), void *, void *);
 
 static bool wait_for_boot() {
-    for (int i = 0; i < 1000; i++) {
-        Time::ksleep(1);
-
-        if (*(bool *)0x510)
+    for (int i = 0; i < 1000; i++)
+        if (Time::ksleep(1); *(bool *)0x510)
             return true;
-    }
 
     return false;
 }
 
 static void ap_entry() {
+    Cpu::Apic::LocalApic::init();
     Tasking::init();
     *(bool *)0x510 = true;
 
@@ -56,13 +55,13 @@ void Cpu::Smp::init() {
             char debug[255] = "";
 
             if (!trampoline_stack) {
-                sprintf(debug, "[SMP] Failed to allocate stack for CPU with lapic ID %d\n\r", lapic->id);
+                sprintf(debug, "[SMP] Failed to allocate stack for AP #%d\n\r", lapic->id);
                 Debug::print(debug);
 
                 return;
             }
 
-            sprintf(debug, "[SMP] Allocated stack for CPU with lapic ID %d\n\r", lapic->id);
+            sprintf(debug, "[SMP] Allocated stack for AP #%d\n\r", lapic->id);
             Debug::print(debug);
 
             uint64_t trampoline_stack_end = (uint64_t)trampoline_stack + 0x10000;
@@ -87,10 +86,10 @@ void Cpu::Smp::init() {
             if (wait_for_boot()) {
                 cpu->booted = true;
 
-                sprintf(debug, "[SMP] Booted CPU with lapic ID #%d\n\r", lapic->id);
+                sprintf(debug, "[SMP] Booted AP #%d\n\r", lapic->id);
                 Debug::print(debug);
             } else {
-                sprintf(debug, "[SMP] Failed to boot CPU with lapic ID #%d\n\r", lapic->id);
+                sprintf(debug, "[SMP] Failed to boot AP #%d\n\r", lapic->id);
                 Debug::print(debug);
             }
         }
