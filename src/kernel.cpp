@@ -63,14 +63,17 @@ extern "C" void _start(void *stivale_ptr) {
     Idt::init();
     Exceptions::init();
     Acpi::init(stivale->rsdp);
-    Hpet::init();
     Madt::init();
     Cpu::Apic::init();
     asm volatile("sti");
+    Hpet::init();
     Ahci::init();
-    Tasking::init();
     Cpu::Smp::init();
+    asm volatile("cli");
+    Tasking::init();
     Tasking::set_status(Tasking::SchedulerStatus::WORKING);
+    
+    asm volatile("sti");
 
     for (;;)
         asm volatile("hlt");
