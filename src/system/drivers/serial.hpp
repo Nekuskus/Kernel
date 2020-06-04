@@ -5,7 +5,7 @@
 
 class Serial {
     uint16_t base;
-    Spinlock lock;
+    uint32_t lock;
     bool transmit_empty();
     bool received();
 

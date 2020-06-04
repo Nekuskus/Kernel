@@ -1,12 +1,4 @@
 #pragma once
-#include <stdatomic.h>
 
-class Spinlock {
-    atomic_bool locked;
-
-public:
-    Spinlock();
-    ~Spinlock();
-    void lock();
-    void release();
-};
+extern "C" void acquire_lock(uint32_t *lock);
+extern "C" void release_lock(uint32_t *lock);

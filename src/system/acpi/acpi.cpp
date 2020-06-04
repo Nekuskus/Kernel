@@ -90,6 +90,6 @@ void Acpi::init(uint64_t rsdp) {
         }
     }
 
-    Debug::print("[ACPI] Finished setting up.");
-    Terminal::write("[ACPI] Finished setting up.", 0xFFFFFF);
+    Debug::print("[ACPI] Finished setting up.\n\r");
+    Terminal::write_line("[ACPI] Finished setting up.", 0xFFFFFF);
 }

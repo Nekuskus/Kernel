@@ -4,6 +4,7 @@
 
 #include <lib/lib.hpp>
 #include <system/debugging.hpp>
+#include <system/drivers/time.hpp>
 #include <system/mm/mm.hpp>
 
 #include "cpu.hpp"
@@ -25,6 +26,37 @@ void Cpu::Apic::LocalApic::send_eoi() {
 void Cpu::Apic::LocalApic::send_ipi(uint32_t lapic, uint32_t vector) {
     write(lapic_icr1, lapic << 24);
     write(lapic_icr0, vector);
+}
+
+void Cpu::Apic::LocalApic::set_timer_mask(bool mask) {
+    auto entry = read((uint32_t)TimerRegisters::LVT_TIMER);
+
+    if (mask)
+        entry |= 1UL << 16;
+    else
+        entry &= ~(1UL << 16);
+
+    write((uint32_t)TimerRegisters::LVT_TIMER, entry);
+}
+
+void Cpu::Apic::LocalApic::enable_timer() {
+    write((uint32_t)TimerRegisters::DIVIDE_CONFIG, 0x3);
+    write((uint32_t)TimerRegisters::INITIAL_COUNT, 0xFFFFFFFF);
+
+    set_timer_mask(false);
+    Time::ksleep(10);
+    set_timer_mask(true);
+
+    size_t ticks_per_ms = (0xFFFFFFFF - (size_t)read((uint32_t)TimerRegisters::CURRENT_COUNT)) / 10;
+    auto entry = read((uint32_t)TimerRegisters::LVT_TIMER);
+    entry &= ~(0b11 << 17);
+    entry |= 1 << 17;
+    entry = (entry & 0xFFFFFF00) | 128;
+
+    write((uint32_t)TimerRegisters::LVT_TIMER, entry);
+    write((uint32_t)TimerRegisters::DIVIDE_CONFIG, 0x3);
+    write((uint32_t)TimerRegisters::INITIAL_COUNT, (uint32_t)ticks_per_ms);
+    set_timer_mask(false);
 }
 
 void Cpu::Apic::LocalApic::init() {

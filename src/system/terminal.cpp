@@ -5,8 +5,7 @@
 
 #include "drivers/display/vbe.hpp"
 
-static Spinlock lock{};
-
+static uint32_t lock = 0;
 static uint16_t x = 0, y = 0;
 
 inline bool handle_special_characters(const char c) {
@@ -44,21 +43,21 @@ inline void Terminal::set_cursor(uint16_t nx, uint16_t ny) {
 }
 
 void Terminal::write(const char *str, uint32_t foreground, uint32_t background) {
-    lock.lock();
+    acquire_lock(&lock);
 
     while (*str)
         write(*str++, foreground, background);
 
-    lock.release();
+    release_lock(&lock);
 }
 
 void Terminal::write(const char *str, uint32_t foreground) {
-    lock.lock();
+    acquire_lock(&lock);
 
     while (*str)
         write(*str++, foreground);
 
-    lock.release();
+    release_lock(&lock);
 }
 
 void Terminal::write(const char c, uint32_t foreground, uint32_t background) {

@@ -10,6 +10,7 @@ namespace Tasking {
         BLOCKED,
         WORKING,
     };
+
     enum class ThreadState : uint16_t {
         SUSPENDED,
         ACTIVE,
@@ -22,7 +23,6 @@ namespace Tasking {
         size_t tid;
         Cpu::Registers regs;
         uint64_t fs_base, gs_base;
-        uint64_t user_rsp;
         uint64_t kernel_rsp;
     };
 
@@ -35,6 +35,6 @@ namespace Tasking {
     };
 
     void init();
-    void set_status(SchedulerStatus status);
+    void set_mask(bool mask);
     void switch_task(Cpu::Registers *registers, Thread *thread);
 }  // namespace Tasking

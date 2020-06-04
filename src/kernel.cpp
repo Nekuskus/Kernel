@@ -71,8 +71,7 @@ extern "C" void _start(void *stivale_ptr) {
     Cpu::Smp::init();
     asm volatile("cli");
     Tasking::init();
-    Tasking::set_status(Tasking::SchedulerStatus::WORKING);
-    
+    Tasking::set_mask(false);
     asm volatile("sti");
 
     for (;;)

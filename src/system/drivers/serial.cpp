@@ -3,7 +3,7 @@
 #include "port.hpp"
 
 Serial::Serial(uint16_t com_port, uint32_t baud_rate)
-    : lock() {
+    : lock(0) {
     base = com_port;
 
     Port::outb(base + 3, 0x03);
@@ -52,10 +52,10 @@ void Serial::write(const char a) {
 }
 
 void Serial::write(const char *a) {
-    lock.lock();
+    acquire_lock(&this->lock);
 
     while (*a)
         write(*a++);
 
-    lock.release();
+    release_lock(&this->lock);
 }

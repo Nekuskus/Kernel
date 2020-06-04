@@ -24,19 +24,15 @@ namespace Cpu {
         uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
         uint64_t rbp, rdi, rsi, rdx, rcx, rbx, rax;
         uint64_t int_num, error_code;
-        uint64_t rip;
-        uint64_t cs;
-        uint64_t rflags;
-        uint64_t rsp;
-        uint64_t ss;
+        uint64_t rip, cs, rflags, rsp, ss;
     };
 
     struct CpuState {
         bool booted;
         Tss *tss;
         uint32_t id;
-        size_t process;
-        size_t thread;
+        size_t last_process, last_thread;
+        size_t process, thread;
     };
 
     bool check_msr(uint32_t flag);

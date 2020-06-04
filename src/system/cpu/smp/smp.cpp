@@ -16,10 +16,11 @@ extern "C" void *stack_end;
 
 extern "C" void init_bsp_local(void *);
 extern "C" void prepare_trampoline(void *, void (*)(), void *, void *);
+extern "C" bool check_ap_flag();
 
 static bool wait_for_boot() {
     for (int i = 0; i < 1000; i++)
-        if (Time::ksleep(1); *(bool *)0x510)
+        if (Time::ksleep(1); check_ap_flag())
             return true;
 
     return false;
@@ -28,7 +29,6 @@ static bool wait_for_boot() {
 static void ap_entry() {
     Cpu::Apic::LocalApic::init();
     Tasking::init();
-    *(bool *)0x510 = true;
 
     asm volatile("sti");
 

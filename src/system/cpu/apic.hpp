@@ -28,6 +28,8 @@ namespace Cpu::Apic {
         void write(uint32_t reg, uint32_t data);
         void send_eoi();
         void send_ipi(uint32_t lapic, uint32_t vector);
+        void set_timer_mask(bool mask);
+        void enable_timer();
         void init();
     }  // namespace LocalApic
     void init();
