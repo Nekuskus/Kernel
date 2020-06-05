@@ -37,7 +37,7 @@ To run this OS in Qemu you can run `qemu-system-x86_64 -drive format=raw,file=pa
 
 While this repository contains Firework's kernel, it isn't enough to build a full Firework distribution.
 
-Instead, look at the [Bootstrap](https://github.org/Firework-OS/Bootstrap) repository.
+Instead, look at the [Bootstrap](https://github.com/Firework-OS/Bootstrap) repository.
 
 ## Known bugs
 
